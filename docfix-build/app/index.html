@@ -1,0 +1,1003 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0c253b"><meta name="description" content="DocFix: corregge scansioni, PDF e documenti sul tuo dispositivo."><style>:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px;color:#162d40;background:#f4f6f8}*{box-sizing:border-box}body{margin:0}body.dialog-open{overflow:hidden}button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}[hidden]{display:none!important}.shell{max-width:1110px;margin:0 auto;padding:0 28px}.top{height:82px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e4e9ed}.brand{display:flex;align-items:center;gap:10px;color:#19334a;text-decoration:none;font-size:24px;font-weight:850;line-height:1}.brand>span:last-child>span{color:#0d8c83}.brand small{display:block;font-size:11px;color:#79919f;letter-spacing:.5px;margin-top:4px}.logo{width:47px;height:47px;display:grid;place-items:center;background:#103d53;color:white;border-radius:14px;font-size:29px}.safe{font-size:13px;color:#607c8e;background:#fff;border:1px solid #dfe8ec;border-radius:40px;padding:9px 14px}.safe span{color:#00a788;margin-right:6px}.intro{text-align:center;padding:46px 16px 18px}.eyebrow{font-weight:900;font-size:11px;letter-spacing:2px;color:#178f86}.intro h1{font-size:clamp(37px,5vw,65px);line-height:1.08;letter-spacing:-2px;margin:18px 0 15px}.intro em{color:#11988a;font-style:normal}.intro p{font-size:17px;color:#617888;line-height:1.6;max-width:740px;margin:0 auto}.dropzone{margin:28px auto 32px;max-width:740px;background:white;border:2px dashed #a8c8d6;border-radius:24px;padding:42px 24px;text-align:center;outline-offset:4px;box-shadow:0 9px 40px #183b530b;transition:.2s}.dropzone:is(:hover,:focus-visible,.dragging){border-color:#158c82;background:#f5fffd}.upload-icon{display:grid;place-items:center;margin:0 auto 16px;background:#e6f7f3;color:#198d83;width:64px;height:64px;border-radius:19px;font-size:41px}.dropzone h2{font-size:25px;letter-spacing:-.7px;margin:0 0 8px}.dropzone p{font-size:15px;color:#7690a0;margin:0 0 20px}.choose{display:inline-flex;align-items:center;justify-content:center;min-height:50px;background:#143c57;color:white;padding:12px 24px;border-radius:12px;font-weight:800}.dropzone small{display:block;font-size:12px;color:#93a7b4;margin-top:14px}.workspace{margin:22px auto 45px;max-width:960px}.result-header{display:flex;align-items:end;justify-content:space-between;gap:12px}.result-header h2{font-size:32px;letter-spacing:-1.2px;margin:6px 0}.pill{border-radius:30px;background:#def3ed;color:#126f66;font-weight:800;font-size:13px;padding:10px 17px}.status{font-size:15px;color:#5a7585;margin:12px 0}.progress-wrap{height:7px;background:#e1edf0;border-radius:12px;overflow:hidden;margin:12px 0}.progress-bar{height:100%;width:0;background:#189c8c}.review-row{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:18px 0;font-size:13px;color:#648195}.review-row strong{color:#b45f1a;white-space:nowrap}.pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}.page-card{border:1px solid #dbe5ed;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 4px 19px #16354c0b}.page-card.needs-check{border-color:#efc67c}.preview{position:relative;border:0;background:#edf2f5;width:100%;height:260px;display:flex;align-items:center;justify-content:center;padding:17px}.preview img{max-width:100%;max-height:226px;object-fit:contain;box-shadow:0 4px 20px #18334224}.tag{position:absolute;top:12px;left:12px;background:#d4f4e6;color:#096b59;padding:5px 10px;border-radius:30px;font-size:11px;font-weight:800}.tag.warning{color:#805006;background:#ffebbe}.page-number{position:absolute;right:12px;bottom:10px;background:#ffffffdd;color:#405d70;padding:4px 8px;border-radius:8px;font-size:11px}.card-info{padding:15px}.card-info strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.card-info small{display:block;font-size:12px;color:#678695;margin-top:7px;min-height:30px}.card-controls{margin-top:11px;display:flex}.card-controls button{border:1px solid #c6d9e2;color:#214b62;background:#f8fbfd;border-radius:10px;font-size:13px;font-weight:800;padding:10px 16px;width:100%}.warnings{background:#fff4db;color:#80500b;padding:15px 18px;border-radius:12px;margin:18px 0;font-size:13px;line-height:1.5}.action-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:26px 0 12px}.download{background:#109184;color:#fff;border:0;padding:17px 24px;border-radius:13px;font-size:17px;font-weight:900}.reset{background:#fff;color:#3e6073;border:1px solid #cadce3;border-radius:13px;padding:15px 21px;font-weight:700}.sizes{text-align:center;color:#7a92a0;font-size:13px}.bottom{max-width:750px;margin:38px auto;display:flex;align-items:center;gap:14px;padding:18px;background:#e8f0f3;border-radius:15px}.bottom-icon{font-size:32px;color:#12867a}.bottom strong{display:block;font-size:13px}.bottom span{display:block;color:#67818e;font-size:12px;line-height:1.5;margin-top:3px}footer{padding:24px 0;border-top:1px solid #dae3e8;color:#849daa;font-size:12px;display:flex;justify-content:space-between;gap:20px}.editor-overlay{position:fixed;inset:0;background:#0c243bdc;z-index:100;display:grid;place-items:center;padding:18px;overflow-y:auto}.editor-dialog{width:min(850px,100%);max-height:95vh;overflow-y:auto;background:#fff;border-radius:24px;padding:22px;box-shadow:0 20px 80px #071b2a50}.editor-head{display:flex;justify-content:space-between;align-items:center}.editor-head h2{margin:3px 0;font-size:24px}.editor-head button{width:42px;height:42px;border:0;border-radius:12px;background:#f2f4f7;font-size:28px}.editor-dialog>p{color:#698496;font-size:14px}.editor-frame{position:relative;display:flex;justify-content:center;align-items:center;max-height:56vh;min-height:180px;margin:15px auto;width:fit-content;max-width:100%;background:#eff1f4;border-radius:8px}.editor-frame img{display:block;max-width:100%;max-height:56vh;object-fit:contain}.corners{position:absolute;inset:0;touch-action:none}.quad{width:100%;height:100%;position:absolute;inset:0;overflow:visible;pointer-events:none}.quad polygon{fill:#0a94871a;stroke:#0f988c;stroke-width:.7;vector-effect:non-scaling-stroke}.corner{position:absolute;width:26px;height:26px;border-radius:50%;background:#fff;border:5px solid #0e948b;transform:translate(-50%,-50%);touch-action:none;box-shadow:0 2px 8px #0004}.editor-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:17px}.editor-actions button{border:1px solid #c8dce1;background:#f6f9fa;padding:12px 15px;border-radius:11px;font-size:13px;font-weight:800}.editor-actions .confirm{background:#118d83;color:#fff;border:1px solid #118d83}@media(max-width:600px){.shell{padding:0 15px}.top{height:72px}.safe{font-size:0;padding:10px}.intro{padding:34px 4px 8px}.intro h1{font-size:38px;letter-spacing:-1.7px}.intro p{font-size:14px}.dropzone{padding:30px 16px}.pages{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.preview{height:173px;padding:8px}.preview img{max-height:160px}.card-info{padding:10px}.card-info small{min-height:48px}.review-row{align-items:start}.page-number{font-size:10px}.action-bar{flex-direction:column}.download,.reset{width:100%}.editor-dialog{padding:15px}.editor-actions button{flex:1;min-width:40%}.bottom{margin:25px auto}footer{flex-direction:column}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Group 3: readable output wins over minimizing bytes. */
+.quality-choice{display:flex;flex-wrap:wrap;align-items:center;gap:9px 14px;margin:22px 0 3px;padding:13px 17px;border:1px solid #dbe5ed;border-radius:13px;background:#fff}
+.quality-choice label{font-weight:800;font-size:14px;color:#26485c}
+.quality-choice select{border:1px solid #b9d4dc;background:#f5fbfb;color:#17384b;border-radius:9px;min-height:42px;padding:8px 12px;font-size:14px}
+.quality-choice small{flex-basis:100%;font-size:12px;color:#617e8b}
+/* Group 2: compact, accessible controls for each page's orientation. */
+.card-controls{gap:6px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));}
+.card-controls button{padding:10px 4px;min-width:0;font-size:12px;}
+.card-controls button:last-child{grid-column:1/-1;background:#e8f6f3;color:#146f67;}
+.editor-actions{justify-content:center;}
+@media(max-width:600px){.card-controls{gap:4px}.card-controls button{font-size:11px;padding:9px 2px}}
+/* Once a document is loaded, prioritize its visible pages and the final PDF. */
+.has-document .intro{display:none}
+.has-document .workspace{margin-top:30px}
+.has-document .shell{min-height:100vh}
+.has-document .safe{background:#e9f8f5;border-color:#c1e6db}
+.has-document .result-header h2{font-size:clamp(24px,4vw,31px)}
+@media(max-width:600px){.has-document .workspace{margin-top:20px}.has-document .pages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Gruppo 4 — batch add, reorder and single-page delete, touch-first */
+.has-document .intro{padding:15px 8px 5px}.has-document .intro h1{font-size:clamp(25px,3vw,37px);margin:6px 0}.has-document .intro p{display:none}
+.has-document .dropzone{padding:12px 18px;margin:12px auto 10px;border-radius:14px;max-width:960px;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.has-document .dropzone .upload-icon{display:none}.has-document .dropzone h2{font-size:15px;margin:0}.has-document .dropzone p,.has-document .dropzone small{display:none}.has-document .dropzone .choose{min-height:39px;padding:8px 12px;font-size:13px}
+.batch-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 0 16px}.batch-toolbar button{border:1px solid #cbdde3;background:#fff;color:#18526b;padding:10px 14px;border-radius:11px;font-weight:800;font-size:13px;min-height:43px}.batch-toolbar .add-more{background:#e8f7f2;border-color:#9ed7c7;color:#096b59}.batch-toolbar #queue-count{font-size:13px;color:#8a5c15;font-weight:750}.batch-toolbar .undo-remove{margin-left:auto}
+.page-card .card-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;flex-wrap:wrap}.page-card .card-controls button{min-width:0;width:auto;padding:8px 3px;font-size:12px}.page-card .card-order{display:grid;grid-template-columns:1fr 1fr 2fr;gap:6px;margin-top:8px}.page-card .card-order button{border:1px solid #d6e1e8;background:#f8fafb;color:#345669;padding:9px 4px;border-radius:9px;font-size:12px;font-weight:800}.page-card .card-order .delete-page{background:#fff6f5;color:#a73931;border-color:#f1cbca}.page-card.drag-sort{opacity:.65;outline:2px dashed #11988a}
+@media(max-width:600px){.has-document .dropzone{padding:10px}.has-document .intro h1{font-size:25px}.batch-toolbar button{flex:1 1 auto}.page-card .card-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.page-card .card-order{grid-template-columns:1fr 1fr}.page-card .card-order .delete-page{grid-column:span 2}.page-card .card-order button{font-size:11px}}
+/* Gruppo 5 — optional, hidden from the one-click workflow */
+.layout-choice{display:flex;flex-direction:column;gap:5px;margin:14px 0 18px;color:#3d6171}.layout-choice label{font-weight:800;font-size:14px}.layout-choice select{font:inherit;border:1px solid #ccdce3;background:#fff;border-radius:12px;padding:10px 12px;max-width:440px;width:100%;color:#15364a}.layout-choice small{color:#648396;line-height:1.4;max-width:620px}
+
+/* Gruppo 6 — ergonomia e installazione */
+.top{min-height:86px;height:auto;gap:12px;flex-wrap:wrap;padding-block:12px}.install-actions{display:flex;align-items:center;gap:8px}.install-actions button{border-radius:12px;min-height:44px;padding:10px 14px;font-size:13px;font-weight:800}.install-app{background:#103e58;color:white;border:1px solid #103e58}.update-app{background:white;color:#234a61;border:1px solid #c8d9e1}.install-help{max-width:1054px;margin:10px auto 0;padding:14px 18px;border:1px solid #b5d6da;background:#eefafa;color:#204f5c;border-radius:12px;font-size:14px;line-height:1.55}.choose,.download,.reset,.add-more,.undo-remove{min-height:48px}.page-card button{min-height:42px}.dropzone:focus-visible,button:focus-visible{outline:3px solid #13a69b;outline-offset:3px}.dropzone{margin-top:20px}.intro{padding-top:30px}.intro h1{font-size:clamp(34px,4.5vw,56px)}.bottom{margin-bottom:22px}
+@media(max-width:600px){.top{justify-content:center}.brand{margin-right:auto}.install-actions{width:100%;justify-content:stretch}.install-actions button{flex:1}.intro{padding-top:22px}.intro h1{font-size:35px}.pages{grid-template-columns:1fr}.preview{height:230px}.preview img{max-height:205px}.card-info small{min-height:0}.install-help{margin-inline:14px}.dropzone{margin-top:14px}}
+
+/* DocFix Desktop 1.0 — professional desktop skin */
+:root{--navy:#10364c;--teal:#0b9789;--bg:#edf3f5;--line:#d5e2e7}html{background:var(--bg)}body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,transparent 32%),radial-gradient(circle at 100% 10%,#dbeaf1 0,transparent 34%),linear-gradient(180deg,#f9fbfc,#edf3f5 58%,#e8eff2)}.shell{max-width:1220px;padding-inline:34px}.top{position:sticky;top:0;z-index:20;margin:0 -10px;padding:14px 10px;background:#f9fbfbdc;backdrop-filter:blur(18px);box-shadow:0 10px 30px #15374809}.logo{width:50px;height:50px;border-radius:15px;background:linear-gradient(145deg,#113d56,#0a897f);box-shadow:0 10px 24px #0d5a5f2d}.safe{background:#fff;border-radius:14px;box-shadow:0 5px 18px #153a4a0b}.intro{padding:54px 16px 16px}.intro .eyebrow{display:inline-flex;padding:7px 12px;border-radius:999px;background:#e3f5f1}.intro h1{font-size:clamp(45px,5.4vw,68px);letter-spacing:-3px;color:#102f43}.dropzone{max-width:820px;padding:48px 30px;border:1px solid #cfe0e5;background:linear-gradient(180deg,#fff,#fbfdfd);box-shadow:0 24px 70px #153b4b12;position:relative}.dropzone:before{content:"";position:absolute;inset:9px;border:2px dashed #bad5dc;border-radius:17px;pointer-events:none}.dropzone:is(:hover,:focus-visible,.dragging){transform:translateY(-2px);border-color:#7bc5ba}.choose{position:relative;background:linear-gradient(135deg,#123f59,#0b7472);box-shadow:0 10px 25px #0b59672a}.workspace{max-width:1030px}.page-card{border-radius:20px;box-shadow:0 10px 30px #173b4c0d;transition:.15s}.page-card:hover{transform:translateY(-2px);box-shadow:0 15px 35px #173b4c15}.quality-choice,.layout-choice{background:#ffffffde;box-shadow:0 5px 20px #153b4b09}.action-bar{position:sticky;bottom:16px;z-index:12;width:max-content;max-width:100%;margin:28px auto 15px;padding:9px;border:1px solid var(--line);background:#ffffffeb;backdrop-filter:blur(14px);border-radius:18px;box-shadow:0 18px 50px #14394a1c}.download{min-width:240px;background:linear-gradient(135deg,#0b9b8c,#087f79);box-shadow:0 8px 24px #0a887f2c}.editor-overlay{backdrop-filter:blur(8px)}@media(max-width:800px){.shell{padding-inline:18px}.top{position:static}.action-bar{width:100%}}
+</style><title>DocFix Desktop</title><link rel="icon" href="./icon-192.png" type="image/png"><meta name="docfix-build" content="desktop-1.0.0-20261104"></head><body>
+<div class="shell"><header class="top"><a class="brand" href="./"><span class="logo">▣</span><span>Doc<span>Fix</span><small>by Jorrob</small></span></a><span class="safe"><span>●</span> Tutto sul tuo dispositivo</span></header>
+<main><section class="intro"><div class="eyebrow">DOCUMENTI PRONTI IN POCHI PASSAGGI</div><h1>Carica le foto.<br><em>Scarica il PDF.</em></h1><p>Libretto, patente, carta d’identità e PDF: correggo orientamento e bordi, preservo la qualità e preparo il documento pronto da usare.</p></section>
+<section id="dropzone" role="button" tabindex="0" aria-label="Carica foto o PDF" class="dropzone"><span class="upload-icon">↥</span><h2>Trascina qui i documenti</h2><p>Oppure selezionali dal dispositivo</p><div class="choose">+ Aggiungi foto o PDF</div><small>JPG, PNG, WebP, PDF · più file insieme</small></section><input hidden id="picker" type="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp" multiple>
+<section id="workspace" class="workspace" hidden><div class="result-header"><div><div class="eyebrow">RISULTATO</div><h2>Le tue pagine</h2></div><span id="summary" class="pill"></span></div><p id="status" role="status" class="status" aria-live="polite"></p><div id="progress-wrap" class="progress-wrap" hidden><div id="progress-bar" class="progress-bar"></div></div><div class="review-row"><span>Controlla le anteprime; usa le frecce per scegliere l’ordine delle pagine.</span><strong id="review-count"></strong></div><div class="batch-toolbar"><button type="button" id="add-more" class="add-more">＋ Aggiungi altre foto o PDF</button><span id="queue-count" role="status" aria-live="polite" hidden></span><button type="button" id="undo-remove" class="undo-remove" hidden>↶ Annulla eliminazione</button></div><div id="cards" class="pages"></div><div id="warnings" class="warnings" hidden></div><div class="quality-choice"><label for="pdf-quality">Qualità del PDF</label><select id="pdf-quality" aria-label="Qualità del PDF"><option value="high" selected>Alta qualità · consigliata</option><option value="compact">PDF più leggero</option></select><small>Alta qualità preserva maggiormente scritte e dettagli; foto già sfocate non possono essere recuperate.</small></div><div class="layout-choice"><label for="pdf-layout">Impaginazione</label><select id="pdf-layout" aria-label="Impaginazione PDF"><option value="document" selected>Forma originale del documento</option><option value="a4">A4 per stampare · documento intero centrato</option></select><small>Il PDF rispetta sempre le proporzioni e non taglia i bordi. L’opzione A4 aggiunge margini bianchi per la stampa.</small></div><div class="action-bar"><button type="button" id="download" disabled class="download">↓ Scarica PDF pronto</button><button type="button" id="reset" class="reset">+ Nuovo documento</button></div><p id="sizes" class="sizes"></p></section>
+<div class="bottom"><div class="bottom-icon">♧</div><div><strong>I documenti restano sul tuo dispositivo</strong><span>Nessun file personale viene inviato ai nostri server. PDF e OCR funzionano con i componenti installati localmente insieme a DocFix Desktop.</span></div></div></main>
+<footer>DocFix Desktop · Versione 1.0 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
+<div id="editor" class="editor-overlay" hidden><div class="editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-title"><div class="editor-head"><div><span class="eyebrow">CORREZIONE</span><h2 id="edit-title">Pagina</h2></div><button type="button" id="edit-close" aria-label="Chiudi">×</button></div><p>Sposta i quattro punti se il bordo è sbagliato. Qui trovi solo ciò che serve.</p><div class="editor-frame"><img id="editor-image" alt="Documento da correggere"><div id="corners" class="corners"><svg class="quad" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon id="frame-poly" points=""/></svg></div></div><div class="editor-actions"><button type="button" id="edit-left">↶ Sinistra 90°</button><button type="button" id="edit-rotate">↷ Destra 90°</button><button type="button" id="edit-flip">↻ Capovolgi 180°</button><button type="button" id="edit-full">Usa pagina completa</button><button type="button" id="edit-cancel">Annulla</button><button type="button" id="edit-apply" class="confirm">✓ Applica ritaglio</button></div></div></div>
+<script src="./group3-quality.js"></script><script src="./group5-export.js"></script><script>/* DocFix 37 — single, hardened PDF.js engine for every PDF operation. */
+'use strict';
+(() => {
+ const BASE='./vendor/pdfjs/';
+ const MODULE=BASE+'pdf.min.mjs';
+ const WORKER=BASE+'pdf.worker.min.mjs';
+ let pending=null;
+ async function load() {
+   if(window.pdfjsLib?.__docfixSecureEngine)return window.pdfjsLib;
+   if(!pending)pending=import(MODULE).then(mod=>{
+     if(!mod?.getDocument||!mod?.GlobalWorkerOptions)throw Error('Il lettore PDF aggiornato non è disponibile.');
+     mod.GlobalWorkerOptions.workerSrc=WORKER;
+     // Explicitly disable evaluation and document scripting for every tool.
+     const safe=Object.create(null);
+     Object.assign(safe,mod);
+     safe.getDocument=(source)=>{
+       const config=(source instanceof ArrayBuffer || ArrayBuffer.isView(source) || typeof source==='string')?{data:source}:Object.assign({},source);
+       return mod.getDocument({...config,isEvalSupported:false,enableScripting:false,enableXfa:false,stopAtErrors:true});
+     };
+     Object.defineProperty(safe,'__docfixSecureEngine',{value:true});
+     window.pdfjsLib=safe;
+     return safe;
+   }).catch(err=>{pending=null;throw Error('Motore PDF aggiornato non disponibile. Controlla la connessione e riprova. '+(err?.message||''))});
+   return pending;
+ }
+ window.DocFixPdfEngine=Object.freeze({load,urls:Object.freeze({module:MODULE,worker:WORKER}),version:'4.10.38'});
+})();
+</script><script>/* DocFix scanner 8.0 — local-only scanner, optimized light normalization. */
+(() => {
+'use strict';
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function area(q){return Math.abs(q.reduce((sum,p,i)=>sum+p.x*q[(i+1)%q.length].y-q[(i+1)%q.length].x*p.y,0))/2}
+function defaultQuad(){return [{x:.035,y:.035},{x:.965,y:.035},{x:.965,y:.965},{x:.035,y:.965}]}
+function normalize(quad,width,height){return quad.map(p=>({x:p.x/width,y:p.y/height}))}
+function validQuad(quad){if(!quad||quad.length!==4||quad.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)))return false;const cross=[];for(let i=0;i<4;i++){let a=quad[i],b=quad[(i+1)%4],c=quad[(i+2)%4];cross.push((b.x-a.x)*(c.y-b.y)-(b.y-a.y)*(c.x-b.x))}return cross.every(c=>c>0.004)||cross.every(c=>c<-.004)}
+function downsample(source,maxSide=420){const ratio=Math.min(1,maxSide/Math.max(source.width,source.height)),w=Math.max(1,Math.floor(source.width*ratio)),h=Math.max(1,Math.floor(source.height*ratio));const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(source,0,0,w,h);return {w,h,rgba:ctx.getImageData(0,0,w,h).data};}
+function histogramMedian(hist,total){let sum=0;for(let i=0;i<256;i++){sum+=hist[i];if(sum>=total/2)return i}return 0}
+function otsuThreshold(hist,total){let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let low=0,left=0,best=0,threshold=128;for(let t=0;t<256;t++){left+=hist[t];if(!left)continue;let right=total-left;if(!right)break;low+=t*hist[t];const a=low/left,b=(sum-low)/right,score=left*right*(a-b)*(a-b);if(score>best){best=score;threshold=t}}return threshold}
+
+/* Light-desk ID card detector.
+   Old luminance-only segmentation mistakes pastel cards for the tabletop.
+   Detect the coherent chromatic surface and fit an oriented rectangle via
+   principal axes. Never claim a crop when background/card separation is weak.
+   Works completely on-device without external model files or OCR. */
+function detectChromaticCard(source){
+ const {w,h,rgba}=downsample(source,420),N=w*h;
+ if(w<100||h<100)return null;
+ const perimeter=[];
+ for(let y=0;y<h;y+=3)for(let x=0;x<w;x+=3){
+  if(!((x<w*.12||x>w*.88)&&(y<h*.12||y>h*.88)))continue;
+  const i=(y*w+x)*4,r=rgba[i],g=rgba[i+1],b=rgba[i+2];
+  perimeter.push((Math.max(r,g,b)-Math.min(r,g,b))*255/Math.max(1,Math.max(r,g,b)));
+ }
+ if(perimeter.length<20)return null;
+ perimeter.sort((a,b)=>a-b);
+ const bgSat=perimeter[perimeter.length>>1];
+ // On saturated desks the colour cue is unreliable; use existing detectors.
+ if(bgSat>18)return null;
+ const threshold=Math.max(24,bgSat+15),raw=new Uint8Array(N);
+ for(let i=0;i<N;i++){
+  const j=i*4,r=rgba[j],g=rgba[j+1],b=rgba[j+2];
+  const hi=Math.max(r,g,b),lo=Math.min(r,g,b);
+  raw[i]=hi>36&&(hi-lo)*255/hi>=threshold?1:0;
+ }
+ // A small morphological closing joins green areas separated by text/barcodes.
+ const radius=9,expanded=new Uint8Array(N),mask=new Uint8Array(N);
+ for(let y=radius;y<h-radius;y++)for(let x=radius;x<w-radius;x++){
+  let found=0;
+  for(let dy=-radius;dy<=radius&&!found;dy++)for(let dx=-radius;dx<=radius;dx++)if(raw[(y+dy)*w+x+dx]){found=1;break;}
+  expanded[y*w+x]=found;
+ }
+ for(let y=radius*2;y<h-radius*2;y++)for(let x=radius*2;x<w-radius*2;x++){
+  let full=1;
+  for(let dy=-radius;dy<=radius&&full;dy++)for(let dx=-radius;dx<=radius;dx++)if(!expanded[(y+dy)*w+x+dx]){full=0;break;}
+  mask[y*w+x]=full;
+ }
+ const seen=new Uint8Array(N),queue=new Int32Array(N);
+ let best=null;
+ for(let origin=0;origin<N;origin++){
+  if(!mask[origin]||seen[origin])continue;
+  let head=0,tail=1,sx=0,sy=0,sxx=0,syy=0,sxy=0;
+  queue[0]=origin;seen[origin]=1;
+  const points=[];
+  while(head<tail){
+   const p=queue[head++],x=p%w,y=(p/w)|0;
+   sx+=x;sy+=y;sxx+=x*x;syy+=y*y;sxy+=x*y;
+   points.push(p);
+   for(const next of [p-1,p+1,p-w,p+w]){
+    if(next<0||next>=N||seen[next]||!mask[next]||(Math.abs(next-p)===1&&((next/w)|0)!==y))continue;
+    seen[next]=1;queue[tail++]=next;
+   }
+  }
+  if(tail<N*.045||tail>N*.78)continue;
+  // Minimum area oriented bounding rectangle. PCA alone is biased because
+  // the MRZ/barcode can create long, low-saturation holes across a card.
+  const stride=Math.max(1,Math.floor(points.length/4500));
+  function boundsAt(angle,step){
+   const ux=Math.cos(angle),uy=Math.sin(angle),vx=-uy,vy=ux;
+   let a=Infinity,b=-Infinity,c=Infinity,d=-Infinity;
+   for(let k=0;k<points.length;k+=step){const p=points[k],x=p%w,y=(p/w)|0,u=x*ux+y*uy,v=x*vx+y*vy;
+    if(u<a)a=u;if(u>b)b=u;if(v<c)c=v;if(v>d)d=v;
+   }
+   return {angle,rect:(b-a)*(d-c),a,b,c,d,ux,uy,vx,vy};
+  }
+  let shape=null;
+  for(let deg=-88;deg<=90;deg+=2){const candidate=boundsAt(deg*Math.PI/180,stride);if(!shape||candidate.rect<shape.rect)shape=candidate;}
+  for(let deg=-2;deg<=2;deg+=.4){const candidate=boundsAt(shape.angle+deg*Math.PI/180,stride);if(candidate.rect<shape.rect)shape=candidate;}
+  const {ux,uy,vx,vy}=shape;
+  const fine=boundsAt(shape.angle,1);
+  let minU=fine.a,maxU=fine.b,minV=fine.c,maxV=fine.d;
+  const spanU=maxU-minU,spanV=maxV-minV,minSide=Math.min(spanU,spanV),maxSide=Math.max(spanU,spanV);
+  const ratio=maxSide/Math.max(1,minSide),rectArea=spanU*spanV,relative=rectArea/N,coverage=tail/Math.max(1,rectArea);
+  if(ratio<1.39||ratio>1.92||minSide<Math.min(w,h)*.18||relative<.08||relative>.79||coverage<.24||coverage>.98)continue;
+  const expand=Math.max(2,Math.min(5,minSide*.012));
+  minU-=expand;maxU+=expand;minV-=expand;maxV+=expand;
+  const corners=[[minU,minV],[maxU,minV],[maxU,maxV],[minU,maxV]].map(([a,b])=>({x:(a*ux+b*vx)/w,y:(a*uy+b*vy)/h}));
+  const tl=corners.reduce((a,b)=>a.x+a.y<b.x+b.y?a:b);
+  const br=corners.reduce((a,b)=>a.x+a.y>b.x+b.y?a:b);
+  const tr=corners.reduce((a,b)=>a.x-a.y>b.x-b.y?a:b);
+  const bl=corners.reduce((a,b)=>a.x-a.y<b.x-b.y?a:b);
+  // Chromatic pixels rarely cover the white MRZ stripe. Extend the bottom
+  // edge conservatively so the third machine-readable line remains intact.
+  // Leaving extra desk is safer than deleting legal/identity information.
+  const depth=.135;
+  const brr={x:br.x+(br.x-tr.x)*depth,y:br.y+(br.y-tr.y)*depth};
+  const bll={x:bl.x+(bl.x-tl.x)*depth,y:bl.y+(bl.y-tl.y)*depth};
+  const quad=[tl,tr,brr,bll].map(p=>({x:clamp(p.x,.001,.999),y:clamp(p.y,.001,.999)}));
+  if(new Set([tl,tr,br,bl]).size!==4||!validQuad(quad))continue;
+  const touchesEdge=quad.filter(p=>p.x<.006||p.x>.994||p.y<.006||p.y>.994).length;
+  if(touchesEdge>=2)continue; // probably a clipped card, keep original
+  const conf=clamp(.79+(coverage-.24)*.13+(1-Math.abs(ratio-1.59))*.07,0,.96);
+  const quality=tail/N*coverage;
+  if(!best||quality>best.quality)best={quad,confidence:conf,status:'found',reason:'Carta identificata per colore e contorni',quality};
+ }
+ return best;
+}
+/* V48: Conservative card-boundary detector for patterned desks. The older
+ * chroma and paper detectors can lock onto card typography rather than its
+ * external edges. Here we score four physical edge lines together, enforce
+ * actual ISO-card proportions and preserve a safety margin. */
+function detectCenteredCard(source){
+ const {w,h,rgba}=downsample(source,400),N=w*h;
+ if(w<130||h<150)return null;
+ // Optimized for full card photos; no destructive auto-crop if document
+ // is small, touches the frame, or has an implausible aspect ratio.
+ const pixels=new Float32Array(N*3),radius=4;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const k=(y*w+x)*4,z=(y*w+x)*3;
+  pixels[z]=rgba[k];pixels[z+1]=rgba[k+1];pixels[z+2]=rgba[k+2];
+ }
+ const diffH=new Float32Array(N),diffV=new Float32Array(N);
+ for(let y=radius;y<h-radius;y++)for(let x=radius;x<w-radius;x++){
+  const z=(y*w+x)*3, left=z-radius*3,right=z+radius*3,up=z-radius*w*3,down=z+radius*w*3;
+  let hd=0,vd=0;
+  for(let ch=0;ch<3;ch++){
+   hd+=(pixels[left+ch]-pixels[right+ch])**2;
+   vd+=(pixels[up+ch]-pixels[down+ch])**2;
+  }
+  const i=y*w+x;diffH[i]=Math.sqrt(hd/3);diffV[i]=Math.sqrt(vd/3);
+ }
+ // Smooth the edge response perpendicular to each side. This prevents
+ // background texture and isolated text strokes from winning single samples.
+ const smooth=(data,x,y,isX)=>{
+  let sum=0;for(let n=-2;n<=2;n++){
+   let xx=isX?x:x+n, yy=isX?y+n:y;
+   if(xx<radius||xx>=w-radius||yy<radius||yy>=h-radius)continue;
+   sum+=data[yy*w+xx];
+  }
+  return sum/5;
+ };
+ const find=(portrait)=>{
+  const minW=portrait?w*.39:w*.47,maxW=portrait?w*.76:w*.90;
+  const xmid=[.42,.45,.48,.51,.54,.57].map(a=>a*w);
+  const ymid=[.43,.46,.49,.52,.55,.58].map(a=>a*h);
+  const ratios=portrait?[1.54,1.59,1.64]:[1.54,1.59,1.64];
+  let best=null;
+  for(let ww=minW;ww<=maxW;ww+=Math.max(3,w*.015))for(const ratio of ratios){
+   const hh=portrait?ww*ratio:ww/ratio;
+   if(hh>=h*.84||hh<h*.18)continue;
+   for(const cx of xmid)for(const cy of ymid){
+    const xl=Math.round(cx-ww/2),xr=Math.round(cx+ww/2),yt=Math.round(cy-hh/2),yb=Math.round(cy+hh/2);
+    if(xl<Math.round(w*.07)||xr>w*.93||yt<h*.07||yb>h*.93)continue;
+    let sum=0;
+    for(let j=1;j<=13;j++){
+     const f=.11+j*.055;
+     const yy=Math.round(yt+(yb-yt)*f),xx=Math.round(xl+(xr-xl)*f);
+     sum+=smooth(diffH,xl,yy,true)+smooth(diffH,xr,yy,true);
+     sum+=smooth(diffV,xx,yt,false)+smooth(diffV,xx,yb,false);
+    }
+    // Give preference to complete physical edges over text boxes inside a card.
+    const factor=Math.pow((portrait?ww:w*.65)/Math.max(1,w*.54),.70);
+    const score=sum/(13*4)*factor;
+    if(!best||score>best.score)best={score,xl,xr,yt,yb,portrait};
+   }
+  }
+  return best;
+ };
+ const p=find(true),l=find(false);let b=(h>w*1.14&&p&&p.score>=27)?p:((!l||p?.score>l.score)?p:l);
+ if(!b||b.score<26)return null;
+ let {xl,xr,yt,yb}=b;
+ // Prefer extra background to loss of the printed physical edges. The 3%
+ // pad also compensates for the rounded corners of plastic cards.
+ const padX=Math.max(2,(xr-xl)*.13),padY=Math.max(2,(yb-yt)*.115);
+ xl-=padX;xr+=padX;yt-=padY;yb+=padY;
+ let quad=[{x:xl/w,y:yt/h},{x:xr/w,y:yt/h},{x:xr/w,y:yb/h},{x:xl/w,y:yb/h}];
+ if(quad.some(p=>p.x<.01||p.x>.99||p.y<.01||p.y>.99))return null;
+ if(!validQuad(quad)||area(quad)<.09||area(quad)>.76)return null;
+ return {quad,confidence:clamp(.80+(b.score-26)/220, .80,.93),status:'found',reason:'Quattro lati stimati sul bordo esterno della tessera',method:'card-edges'};
+}
+
+/* V49: physical-edge card detector. Unlike the v48 rectangle scorer, it
+ * measures the coloured plastic itself instead of enlarging a guessed box.
+ * Uses a tiny local binary-image morphology algorithm; no third-party upload.
+ * This detector is intentionally specific to cyan/blue ID-style cards on
+ * reasonably neutral backgrounds. Other documents use the existing pipeline. */
+function detectPreciseBlueCard(source){
+ const {w,h,rgba}=downsample(source,420),N=w*h;
+ if(w<110||h<140||h/w<1.15)return null;
+ const mask=new Uint8Array(N);
+ for(let i=0;i<N;i++){
+  const j=i*4,r=rgba[j],g=rgba[j+1],b=rgba[j+2];
+  const highest=Math.max(r,g,b),lowest=Math.min(r,g,b),delta=highest-lowest;
+  // Approx. blue Lab b*, chroma and hue selection; suppress gray desk texture.
+  let hue=0;
+  if(delta>0){if(highest===r)hue=60*((g-b)/delta+((g<b)?6:0));
+   else if(highest===g)hue=60*((b-r)/delta+2);else hue=60*((r-g)/delta+4);}
+  const sat=highest?delta*255/highest:0;
+  const cool=b-(r+g)*.5;
+  mask[i]=+(cool>6.2&&sat>14&&hue>150&&hue<310);
+ }
+ // Binary box morphology using summed area tables. Four constant-time passes.
+ function morph(src,rx,ry,dilate){
+  const stride=w+1,integral=new Int32Array((w+1)*(h+1));
+  for(let y=0;y<h;y++){
+   let row=0;for(let x=0;x<w;x++){row+=src[y*w+x];integral[(y+1)*stride+x+1]=row+integral[y*stride+x+1];}
+  }
+  const out=new Uint8Array(N);
+  for(let y=0;y<h;y++){
+   const y0=Math.max(0,y-ry),y1=Math.min(h-1,y+ry);
+   for(let x=0;x<w;x++){
+    const x0=Math.max(0,x-rx),x1=Math.min(w-1,x+rx),ones=integral[(y1+1)*stride+x1+1]-integral[y0*stride+x1+1]-integral[(y1+1)*stride+x0]+integral[y0*stride+x0];
+    out[y*w+x]=dilate?+(ones>0):+(ones===(2*rx+1)*(2*ry+1));
+   }
+  }
+  return out;
+ }
+ let bin=morph(morph(mask,3,2,false),3,2,true);
+ const closeX=Math.max(8,Math.round(w*.045)),closeY=Math.max(12,Math.round(h*.103));
+ bin=morph(morph(bin,closeX,closeY,true),closeX,closeY,false);
+ // Connected components; ignore thin desk lines or fragments of printed text.
+ const seen=new Uint8Array(N),queue=new Int32Array(N);let best=null;
+ for(let idx=0;idx<N;idx++){
+  if(!bin[idx]||seen[idx])continue;
+  let head=0,tail=1,xmin=w,xmax=0,ymin=h,ymax=0,number=0;queue[0]=idx;seen[idx]=1;
+  while(head<tail){const q=queue[head++],x=q%w,y=(q/w)|0;number++;
+   xmin=Math.min(xmin,x);xmax=Math.max(xmax,x);ymin=Math.min(ymin,y);ymax=Math.max(ymax,y);
+   if(x>0){const v=q-1;if(bin[v]&&!seen[v]){seen[v]=1;queue[tail++]=v;}}
+   if(x+1<w){const v=q+1;if(bin[v]&&!seen[v]){seen[v]=1;queue[tail++]=v;}}
+   if(y>0){const v=q-w;if(bin[v]&&!seen[v]){seen[v]=1;queue[tail++]=v;}}
+   if(y+1<h){const v=q+w;if(bin[v]&&!seen[v]){seen[v]=1;queue[tail++]=v;}}
+  }
+  const bw=xmax-xmin+1,bh=ymax-ymin+1,boxArea=bw*bh;
+  if(bh<h*.34||bw<w*.22||bh<h*.86&&number<.05*N||bh/bw<1.10||bh/bw>3.8||boxArea>.77*N||xmin<w*.065||xmax>w*.95||ymin<h*.045||ymax>h*.94)continue;
+  const score=number/N+boxArea/N*.15;
+  if(!best||score>best.score)best={xmin,xmax,ymin,ymax,number,score};
+ }
+ if(!best)return null;
+ // A reliable portrait ID-1 card has height/width ~= 1.586. The reverse of
+ // an ID can have a largely uncoloured MRZ side, so the blue segmented region
+ // may only cover 70-85% of the actual width; extend toward that uncoloured
+ // side rather than cutting a barcode or the entire MRZ.
+ let {xmin,xmax,ymin,ymax}=best;
+ const bh=ymax-ymin,measuredW=xmax-xmin,expectedW=bh/1.586;
+ const incomplete=best.number/((best.xmax-best.xmin)*(best.ymax-best.ymin))<.64;
+ const expanded=measuredW<expectedW*.91;
+ if(expanded){
+  const extra=expectedW-measuredW;
+  // The right edge on EU card backs is strongly blue while the left can be
+  // neutral white: keep the right edge fixed and reconstruct the left edge.
+  xmin-=extra;
+  ymax+=bh*.11; // Neutral MRZ strip extends below the last blue pixel.
+ }
+ if(incomplete&&!expanded){xmin-=Math.max(0,expectedW-measuredW);ymax+=bh*.11;}
+ if(measuredW>expectedW*1.14)return null;
+ // Tiny inward inset (<0.35% of card width) removes texture immediately
+ // outside the plastic without cutting the security print or MRZ.
+ const inset=Math.max(.2,Math.min(1.0,expectedW*.003));
+ xmin+=inset;xmax-=inset;ymin+=inset;ymax-=inset;
+ if(xmin<w*.018||xmax>w*.985||ymin<h*.015||ymax>h*.985)return null;
+ // Estimate slight camera roll from continuous chromatic side contours.
+ // When the samples are ambiguous, an axis-aligned safe estimate wins.
+ const band=(x0,x1,y0,y1)=>{
+  const pts=[];for(let y=Math.max(0,Math.round(y0));y<Math.min(h,Math.round(y1));y+=3){
+   let bx=-1;for(let x=Math.max(0,Math.round(x0));x<Math.min(w,Math.round(x1));x++){
+    if(mask[y*w+x]){bx=x;break;}}
+   if(bx>=0)pts.push([y,bx]);
+  }return pts;
+ };
+ let slope=0;
+ const side=band(xmin-5,xmin+12,ymin+bh*.17,ymax-bh*.17);
+ if(!expanded&&!incomplete&&side.length>bh*.11){
+  const ys=side.map(p=>p[0]),xs=side.map(p=>p[1]),mx=xs.reduce((a,b)=>a+b,0)/xs.length,my=ys.reduce((a,b)=>a+b,0)/ys.length;
+  let numer=0,denom=0;for(const [y,x] of side){numer+=(y-my)*(x-mx);denom+=(y-my)**2;}
+  if(denom>0){const test=numer/denom;if(Math.abs(test)<.055)slope=test;}
+ }
+ const midY=(ymin+ymax)*.5,midX=(xmin+xmax)*.5;
+ const width=xmax-xmin,height=ymax-ymin;
+ const tl={x:(midX-width/2+slope*(ymin-midY))/w,y:ymin/h};
+ const tr={x:(midX+width/2+slope*(ymin-midY))/w,y:ymin/h};
+ const br={x:(midX+width/2+slope*(ymax-midY))/w,y:ymax/h};
+ const bl={x:(midX-width/2+slope*(ymax-midY))/w,y:ymax/h};
+ const quad=[tl,tr,br,bl];
+ if(!validQuad(quad)||area(quad)<.09||area(quad)>.70)return null;
+ return {quad,confidence:.95,status:'found',cardLikely:true,method:'precise-color',cardBackLike:incomplete,reason:'Bordo fisico della carta identificato senza margine di sfondo'};
+}
+function documentShapeScore(q,w,h){
+ if(!validQuad(q))return 0;
+ const pts=q.map(p=>({x:p.x*w,y:p.y*h})),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+ const ww=(dist(pts[0],pts[1])+dist(pts[2],pts[3]))/2,hh=(dist(pts[1],pts[2])+dist(pts[3],pts[0]))/2;
+ return Math.max(ww,hh)/Math.max(1,Math.min(ww,hh));
+}
+function detectDocument(source){
+ const exact=detectPreciseBlueCard(source);if(exact)return exact;
+ const color=detectChromaticCard(source),base=detect(source),edge=detectCenteredCard(source);
+ // Reject falsely confident base quadrilaterals when their shape matches
+ // neither a business card nor a sheet. A bad crop is worse than no crop.
+ const rated=[color,edge,base].filter(x=>x&&x.status==='found'&&validQuad(x.quad));
+ for(const candidate of rated){
+  const cardRatio=documentShapeScore(candidate.quad,source.width,source.height);
+  const coverage=area(candidate.quad);
+  if(cardRatio>=1.43&&cardRatio<=1.94&&coverage>=.08&&coverage<=.84)return {...candidate,cardLikely:true};
+ }
+ // The old paper detector is still available for genuine A4 scans, but
+ // only if the rectangle is entirely inside the photo.
+ if(base.status==='found'&&area(base.quad)>.15&&base.quad.every(p=>p.x>.018&&p.x<.982&&p.y>.018&&p.y<.982))return {...base,cardLikely:false};
+ return {quad:defaultQuad(),confidence:0,status:'uncertain',reason:'Contorno ambiguo: mantengo la foto intera per non perdere dati.'};
+}
+
+function detect(source){
+ const {w,h,rgba}=downsample(source);const N=w*h,luma=new Uint8Array(N),hist=new Uint32Array(256),edgeHist=new Uint32Array(256),centerHist=new Uint32Array(256);let edges=0,centers=0;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x,j=i*4,r=rgba[j],g=rgba[j+1],b=rgba[j+2],v=Math.round(.2126*r+.7152*g+.0722*b);luma[i]=v;hist[v]++;if(x<Math.max(3,w*.045)||x>=w-Math.max(3,w*.045)||y<Math.max(3,h*.045)||y>=h-Math.max(3,h*.045)){edgeHist[v]++;edges++}if(x>=w*.25&&x<w*.75&&y>=h*.25&&y<h*.75){centerHist[v]++;centers++}}
+ const edge=histogramMedian(edgeHist,edges),center=histogramMedian(centerHist,centers),global=otsuThreshold(hist,N),bright=center>edge+14,dark=center<edge-25;
+ if(!bright&&!dark)return {quad:defaultQuad(),confidence:0,status:'uncertain',reason:'Foglio e sfondo hanno colori troppo simili. Puoi impostare i quattro angoli manualmente.'};
+ // Only use confident bright-paper segmentation; negative contrast is harder to distinguish from shadow/text.
+ const contrast=Math.abs(center-edge);
+ const threshold=bright?clamp(Math.max(global,edge+Math.max(10,contrast*.30)),edge+8,245):clamp(Math.min(global,edge-Math.max(10,contrast*.30)),10,edge-8);
+ const pixels=new Uint8Array(N);
+ for(let i=0;i<N;i++)pixels[i]=bright?+(luma[i]>=threshold):+(luma[i]<=threshold);
+ // A median-style hole fill bridges print strokes without turning distant background into the page.
+ const mask=new Uint8Array(pixels);for(let y=2;y<h-2;y++)for(let x=2;x<w-2;x++){let i=y*w+x;if(pixels[i])continue;let neighbors=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)neighbors+=pixels[i+dy*w+dx];if(neighbors>=7)mask[i]=1}
+ const visited=new Uint8Array(N),queue=new Int32Array(N);let best=null;const MIN_SIZE=Math.floor(N*.12);
+ for(let origin=0;origin<N;origin++){
+ if(visited[origin]||!mask[origin])continue;let tail=0,head=0;queue[tail++]=origin;visited[origin]=1;let minX=w,maxX=0,minY=h,maxY=0,edgeCount=0;const corners=[null,null,null,null],scores=[Infinity,-Infinity,-Infinity,Infinity];
+ while(head<tail){const p=queue[head++],x=p%w,y=(p/w)|0;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);if(x<3||y<3||x>w-4||y>h-4)edgeCount++;
+ const z=x+y,d=x-y;if(z<scores[0]){scores[0]=z;corners[0]={x,y}}if(d>scores[1]){scores[1]=d;corners[1]={x,y}}if(z>scores[2]){scores[2]=z;corners[2]={x,y}}if(d<scores[3]){scores[3]=d;corners[3]={x,y}};
+ for(const next of [p-1,p+1,p-w,p+w]){if(next<0||next>=N||visited[next]||!mask[next]||(Math.abs(next-p)===1&&((next/w)|0)!==y))continue;visited[next]=1;queue[tail++]=next;}
+ }
+ if(tail<MIN_SIZE)continue;
+ const box=(maxX-minX)*(maxY-minY)/N,filled=tail/N,edgeFrac=edgeCount/tail,quad=normalize(corners,w,h),qa=area(quad),convex=validQuad(quad);
+ const sideLengths=corners.map((p,i)=>Math.hypot(p.x-corners[(i+1)%4].x,p.y-corners[(i+1)%4].y)),minSide=Math.min(...sideLengths);
+ if(!convex||minSide<Math.min(w,h)*.17||qa<.12||qa>.96||filled>.96||box>.97||edgeFrac>.11)continue;
+ const coverage=filled/qa;if(coverage<.42||coverage>1.20)continue;
+ const score=qa*1.5+clamp(coverage,0,1)*.25+Math.min(contrast,90)/200-edgeFrac*2;
+ if(!best||score>best.score)best={quad,qa,box,filled,coverage,score,edgeFrac};
+ }
+ if(!best)return {quad:defaultQuad(),confidence:0,status:'uncertain',reason:'Non ho trovato un contorno chiuso affidabile. Usa i quattro punti per selezionare il foglio.'};
+ const geometry=clamp((best.coverage-.42)/.4,0,1),contrastScore=clamp((contrast-14)/50,0,1),borderScore=clamp(1-best.edgeFrac*10,0,1);
+ const confidence=clamp(.30+geometry*.34+contrastScore*.27+borderScore*.09,0,1);
+ const confident=confidence>=.86 && best.qa>.18 && best.qa<.92;
+ return {quad:best.quad,confidence,status:confident?'found':'uncertain',reason:confident?'Foglio rilevato. Controlla il risultato e, se serve, regola gli angoli.':'Ho trovato un possibile foglio, ma il risultato va controllato. Non applico tagli automatici.'};
+}
+/* Card detector: background-relative chroma segmentation, rather than a
+   single global brightness threshold. This detects separate coloured cards
+   on light desks even when the photo contains two different documents.
+   It is intentionally conservative: ambiguous contours require manual crop. */
+function detectAllLegacy(source){
+ const {w,h,rgba}=downsample(source,420),size=w*h;
+ if(w<65||h<65)return [];
+ const cb=new Float32Array(size),cr=new Float32Array(size);
+ const histCb=new Uint32Array(256),histCr=new Uint32Array(256),margin=Math.max(3,Math.round(Math.min(w,h)*.047));
+ let borderN=0;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const i=y*w+x,k=i*4,r=rgba[k],g=rgba[k+1],b=rgba[k+2];
+  cb[i]=128-.168736*r-.331264*g+.5*b;
+  cr[i]=128+.5*r-.418688*g-.081312*b;
+  if(x<margin||x>=w-margin||y<margin||y>=h-margin){
+   histCb[clamp(Math.round(cb[i]),0,255)]++;
+   histCr[clamp(Math.round(cr[i]),0,255)]++;
+   borderN++;
+  }
+ }
+ const backgroundCb=histogramMedian(histCb,borderN),backgroundCr=histogramMedian(histCr,borderN);
+ const threshold=11.5,original=new Uint8Array(size);
+ for(let i=0;i<size;i++)original[i]=+(Math.hypot(cb[i]-backgroundCb,cr[i]-backgroundCr)>threshold);
+ // A separable close fills text/barcode interruptions without joining cards
+ // separated by a meaningful strip of background.
+ function morphology(bits,radius,dilate){
+  const horizontal=new Uint8Array(size),out=new Uint8Array(size);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   let matches=0;for(let dx=-radius;dx<=radius;dx++)if(bits[y*w+clamp(x+dx,0,w-1)])matches++;
+   horizontal[y*w+x]=dilate?+(matches>0):+(matches===2*radius+1);
+  }
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   let matches=0;for(let dy=-radius;dy<=radius;dy++)if(horizontal[clamp(y+dy,0,h-1)*w+x])matches++;
+   out[y*w+x]=dilate?+(matches>0):+(matches===2*radius+1);
+  }
+  return out;
+ }
+ const closed=morphology(morphology(original,4,true),4,false),seen=new Uint8Array(size),queue=new Int32Array(size),candidates=[];
+ for(let start=0;start<size;start++){
+  if(!closed[start]||seen[start])continue;
+  seen[start]=1;let head=0,tail=1;queue[0]=start;
+  let minX=w,maxX=0,minY=h,maxY=0,borderHits=0,chromatic=0;
+  const extremes=[null,null,null,null],scores=[Infinity,-Infinity,-Infinity,Infinity];
+  while(head<tail){
+   const p=queue[head++],x=p%w,y=(p/w)|0;
+   minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+   if(x<=2||x>=w-3||y<=2||y>=h-3)borderHits++;
+   chromatic+=Math.hypot(cb[p]-backgroundCb,cr[p]-backgroundCr);
+   const sum=x+y,diff=x-y;
+   if(sum<scores[0]){scores[0]=sum;extremes[0]={x,y}}
+   if(diff>scores[1]){scores[1]=diff;extremes[1]={x,y}}
+   if(sum>scores[2]){scores[2]=sum;extremes[2]={x,y}}
+   if(diff<scores[3]){scores[3]=diff;extremes[3]={x,y}}
+   for(const next of [p-1,p+1,p-w,p+w]){
+    if(next<0||next>=size||seen[next]||!closed[next]||(Math.abs(next-p)===1&&((next/w)|0)!==y))continue;
+    seen[next]=1;queue[tail++]=next;
+   }
+  }
+  const bw=maxX-minX+1,bh=maxY-minY+1,rectArea=bw*bh,relative=rectArea/size,coverage=tail/rectArea,ratio=bw/bh;
+  if(relative<.035||relative>.83||coverage<.48||ratio<.48||ratio>2.7||borderHits>tail*.07)continue;
+  // Corner expansion compensates for rounded card edges and imperfect lighting.
+  const center={x:(minX+maxX)/2,y:(minY+maxY)/2};
+  const quad=extremes.map(p=>({x:clamp((center.x+(p.x-center.x)*1.035)/Math.max(1,w-1),0,1),y:clamp((center.y+(p.y-center.y)*1.035)/Math.max(1,h-1),0,1)}));
+  const qa=area(quad);if(!validQuad(quad)||qa<.028)continue;
+  const confidence=clamp(.55+Math.min(.18,(chromatic/tail-12)/85)+Math.min(.18,(coverage-.48)*.50)+Math.min(.07,relative/2),0,.98);
+  candidates.push({quad,confidence,status:confidence>=.69?'found':'uncertain',box:{x:minX/w,y:minY/h,width:bw/w,height:bh/h},relative});
+ }
+ candidates.sort((a,b)=>b.relative-a.relative);
+ const independent=[];
+ for(const item of candidates){
+  if(independent.some(existing=>{
+   const a=item.box,b=existing.box,x=Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)),y=Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y));
+   return x*y/Math.min(a.width*a.height,b.width*b.height)>.48;
+  }))continue;
+  independent.push(item);if(independent.length===8)break;
+ }
+ return independent.sort((a,b)=>a.box.y-b.box.y||a.box.x-b.box.x);
+}
+
+/* Conservative 2026 card grouping. A single connected contour may include two
+   touching cards; reject text fragments and recover their separate rectangles.
+   Never silently split a generic sheet if card geometry is not supported. */
+function detectSolidColorCards(source){
+  const {w,h,rgba}=downsample(source,360),pts=[];
+  // Work against a robust border colour rather than an absolute hue.
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   if(!((x<w*.07||x>w*.93)&&(y<h*.07||y>h*.93)))continue;
+   const i=(y*w+x)*4;pts.push([rgba[i],rgba[i+1],rgba[i+2]]);
+  }
+  if(pts.length<5)return [];
+  const med=values=>{values.sort((a,b)=>a-b);return values[values.length>>1]};
+  const ref=[0,1,2].map(j=>med(pts.map(p=>p[j])));
+  const mask=new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++){const j=i*4,r=rgba[j]-ref[0],g=rgba[j+1]-ref[1],b=rgba[j+2]-ref[2];mask[i]=+(r*r+g*g+b*b>44*44)}
+  const seen=new Uint8Array(w*h),queue=new Int32Array(w*h),boxes=[];
+  for(let pos=0;pos<w*h;pos++){
+   if(!mask[pos]||seen[pos])continue;
+   let head=0,tail=1,minX=w,maxX=0,minY=h,maxY=0,borders=0;queue[0]=pos;seen[pos]=1;
+   while(head<tail){const n=queue[head++],x=n%w,y=(n/w)|0;
+    minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+    if(x<2||y<2||x>=w-2||y>=h-2)borders++;
+    for(const q of [n-1,n+1,n-w,n+w]){if(q<0||q>=w*h||seen[q]||!mask[q]||(Math.abs(q-n)===1&&((q/w)|0)!==y))continue;seen[q]=1;queue[tail++]=q;}
+   }
+   const bw=maxX-minX+1,bh=maxY-minY+1,ratio=bw/bh,coverage=tail/(bw*bh),rel=bw*bh/(w*h);
+   if(rel<.07||rel>.65||coverage<.53||ratio<.42||ratio>2.8||borders>tail*.11)continue;
+   const pad=2.5,x=clamp((minX-pad)/w,0,1),y=clamp((minY-pad)/h,0,1),rx=clamp((maxX+pad)/w,0,1),ry=clamp((maxY+pad)/h,0,1);
+   boxes.push({quad:[{x,y},{x:rx,y},{x:rx,y:ry},{x,y:ry}],confidence:.82,status:'found',box:{x,y,width:rx-x,height:ry-y},size:rel});
+  }
+  return boxes.sort((a,b)=>b.size-a.size).slice(0,5).sort((a,b)=>a.box.y-b.box.y||a.box.x-b.box.x);
+}
+function detectAll(source){
+ const raw=detectAllLegacy(source),w=source.width,h=source.height;
+ const rect=(x,y,rw,rh,confidence=.76)=>{
+  x=clamp(x,0,.99);y=clamp(y,0,.99);rw=clamp(rw,.005,1-x);rh=clamp(rh,.005,1-y);
+  return {quad:[{x,y},{x:x+rw,y},{x:x+rw,y:y+rh},{x,y:y+rh}],confidence,status:'found',box:{x,y,width:rw,height:rh}};
+ };
+ const card=a=>{const bw=a.box.width*w,bh=a.box.height*h,ratio=bw/bh;return a.box.width>.45 && a.box.height>.11 && ratio>1.17 && ratio<2.35 && a.box.width*a.box.height>.09};
+ const valid=raw.filter(card);
+ const colored=detectSolidColorCards(source);
+ if(colored.length>=2)return colored;
+ if(valid.length>=2){
+  const top=valid.slice().sort((a,b)=>b.box.width*b.box.height-a.box.width*a.box.height).slice(0,4);
+  const unique=[];for(const r of top){if(unique.some(q=>{const a=r.box,b=q.box;const dx=Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)),dy=Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y));return dx*dy/Math.min(a.width*a.height,b.width*b.height)>.15}))continue;unique.push(r)}
+  if(unique.length>=2)return unique.sort((a,b)=>a.box.y-b.box.y||a.box.x-b.box.x);
+ }
+ const largest=raw.slice().sort((a,b)=>b.box.width*b.box.height-a.box.width*a.box.height)[0];
+ if(largest){
+  const b=largest.box,bw=b.width*w,bh=b.height*h;
+  // Two landscape cards joined into one vertical contour.
+  if(b.width>.60 && b.height>.36 && bw/bh>.64 && bw/bh<1.13 && b.width*b.height>.28){
+   const cut=b.y+b.height*.48;
+   return [rect(b.x,b.y,b.width,cut-b.y+.002),rect(b.x,cut+.002,b.width,b.y+b.height-cut-.002)];
+  }
+  // Broken segmentation: one complete lower card and only text fragments above.
+  const lower=valid.find(v=>v.box.y>.29&&v.box.width>.67);
+  const above=lower&&raw.filter(r=>r!==lower&&r.box.y+r.box.height<lower.box.y+.04&&r.box.y<lower.box.y);
+  if(lower&&above.length){
+   const box=lower.box,estH=(box.width*w/1.66)/h;
+   const y1=Math.max(.008,box.y-estH);
+   if(box.y-y1>.13)return [rect(box.x, y1,box.width,box.y-y1+.003,.76),lower].sort((a,b)=>a.box.y-b.box.y);
+  }
+ }
+ if(!valid.length){
+  const texture=detectCardByTexture(source);
+  if(texture)return [texture];
+ }
+ return valid;
+}
+function detectCardByTexture(source){
+  // Texture identifies a single horizontal ID card on a near-uniform desk.
+  // It never guesses if the supposed card touches image top/bottom boundaries.
+  const {w,h,rgba}=downsample(source,260);if(h<90||w<70)return null;
+  const rowStd=[],rowEdge=[];
+  for(let y=0;y<h;y++){
+   let sum=0,sumSq=0,edges=0,n=0,last=0;
+   for(let x=Math.round(w*.12);x<Math.round(w*.88);x++){
+    const off=(y*w+x)*4,val=rgba[off]*.299+rgba[off+1]*.587+rgba[off+2]*.114;
+    sum+=val;sumSq+=val*val;if(n)edges+=Math.abs(val-last);last=val;n++;
+   }
+   rowStd[y]=Math.sqrt(Math.max(0,sumSq/n-(sum/n)**2));rowEdge[y]=edges/n;
+  }
+  const med=arr=>{const ordered=arr.slice().sort((a,b)=>a-b);return ordered[Math.floor(ordered.length/2)]||0;};
+  const edges=[...rowStd.slice(0,Math.ceil(h*.15)),...rowStd.slice(Math.floor(h*.85))];
+  const eEdges=[...rowEdge.slice(0,Math.ceil(h*.15)),...rowEdge.slice(Math.floor(h*.85))];
+  const thresholdStd=med(edges)+Math.max(7,med(edges)*.55);
+  const thresholdEdge=med(eEdges)+Math.max(3,med(eEdges)*.9);
+  const scores=rowStd.map((s,i)=>s>thresholdStd||rowEdge[i]>thresholdEdge);
+  let bands=[],begin=-1,last=-1;
+  for(let y=0;y<h;y++){if(!scores[y])continue;if(begin<0)begin=y;else if(y-last>Math.ceil(h*.085)){bands.push([begin,last]);begin=y;}last=y;}
+  if(begin>=0)bands.push([begin,last]);
+  bands=bands.filter(b=>b[1]-b[0]>h*.08).sort((a,b)=>(b[1]-b[0])-(a[1]-a[0]));
+  if(!bands.length)return null;
+  const [start,end]=bands[0],span=(end-start)/h;
+  if(span<.23||start<h*.16||start>h*.43||end>h*.92||source.height/source.width<1.3)return null;
+  const bw=w*.95,bh=(end-start)*source.height/h*(w/source.width);
+  if(bw/(end-start)<.72)return null;
+  const y0=clamp(start/h-.017,.002,.998),y1=clamp(y0+(source.width*.965/1.57)/source.height+.022,.002,.998);
+  if((source.width*.95)/((y1-y0)*source.height)<1.15)return null;
+  const x0=.018,x1=.982;
+  const quad=[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}];
+  return {quad,box:{x:x0,y:y0,width:x1-x0,height:y1-y0},confidence:.82,status:'found'};
+}
+function getCanvas(file,max=2250){return new Promise((resolve,reject)=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{URL.revokeObjectURL(u);const scale=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*scale));c.height=Math.max(1,Math.round(im.naturalHeight*scale));c.getContext('2d',{willReadFrequently:true}).drawImage(im,0,0,c.width,c.height);resolve(c)};im.onerror=()=>{URL.revokeObjectURL(u);reject(Error('Immagine non leggibile.'))};im.src=u})}
+function resize(c,limit){if(Math.max(c.width,c.height)<=limit)return c;let s=limit/Math.max(c.width,c.height),o=document.createElement('canvas');o.width=Math.max(1,Math.round(c.width*s));o.height=Math.max(1,Math.round(c.height*s));o.getContext('2d',{willReadFrequently:true}).drawImage(c,0,0,o.width,o.height);return o}
+function rotate(c,deg){let a=(deg%360+360)%360;if(!a)return c;const o=document.createElement('canvas'),swap=a%180!==0;o.width=swap?c.height:c.width;o.height=swap?c.width:c.height;const ctx=o.getContext('2d',{willReadFrequently:true});ctx.translate(o.width/2,o.height/2);ctx.rotate(a*Math.PI/180);ctx.drawImage(c,-c.width/2,-c.height/2);return o}
+function getMatrix(src,dst){const a=[];for(let i=0;i<4;i++){let {x:u,y:v}=src[i],{x,y}=dst[i];a.push([x,y,1,0,0,0,-u*x,-u*y,u]);a.push([0,0,0,x,y,1,-v*x,-v*y,v])}for(let col=0;col<8;col++){let best=col;for(let r=col+1;r<8;r++)if(Math.abs(a[r][col])>Math.abs(a[best][col]))best=r;if(Math.abs(a[best][col])<1e-9)throw Error('Bordi del foglio non validi');[a[col],a[best]]=[a[best],a[col]];const v=a[col][col];for(let k=col;k<=8;k++)a[col][k]/=v;for(let r=0;r<8;r++)if(r!==col){let factor=a[r][col];for(let k=col;k<=8;k++)a[r][k]-=factor*a[col][k]}}return [...a.map(row=>row[8]),1]}
+function perspective(source,quad,limit=4200){if(!validQuad(quad)||area(quad)<.025)throw Error('Quattro angoli non validi: controlla il ritaglio.');const src=quad.map(p=>({x:p.x*(source.width-1),y:p.y*(source.height-1)})),distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),wide=Math.max(distance(src[0],src[1]),distance(src[2],src[3])),high=Math.max(distance(src[1],src[2]),distance(src[3],src[0]));if(wide<35||high<35)throw Error('Ritaglio troppo piccolo');const s=Math.min(1,limit/Math.max(wide,high)),w=Math.max(1,Math.round(wide*s)),h=Math.max(1,Math.round(high*s));
+ // Do not blur a straight document: native-pixel rectangle instead of perspective resampling.
+ const axis=Math.max(Math.abs(src[0].y-src[1].y),Math.abs(src[2].y-src[3].y),Math.abs(src[0].x-src[3].x),Math.abs(src[1].x-src[2].x));
+ if(axis<.75 && s===1){
+  const x=Math.max(0,Math.ceil(Math.min(src[0].x,src[3].x))),y=Math.max(0,Math.ceil(Math.min(src[0].y,src[1].y)));
+  const right=Math.min(source.width,Math.floor(Math.max(src[1].x,src[2].x))+1),bottom=Math.min(source.height,Math.floor(Math.max(src[2].y,src[3].y))+1);
+  if(right>x+35&&bottom>y+35){const out=document.createElement('canvas');out.width=right-x;out.height=bottom-y;const g=out.getContext('2d',{willReadFrequently:true});g.putImageData(source.getContext('2d',{willReadFrequently:true}).getImageData(x,y,out.width,out.height),0,0);return out}
+ }
+ const dst=[{x:0,y:0},{x:w-1,y:0},{x:w-1,y:h-1},{x:0,y:h-1}],H=getMatrix(src,dst),[a,b,c,d,e,f,g,k]=H,from=source.getContext('2d',{willReadFrequently:true}).getImageData(0,0,source.width,source.height).data,to=document.createElement('canvas');to.width=w;to.height=h;const ctx=to.getContext('2d',{willReadFrequently:true}),image=ctx.createImageData(w,h),out=image.data,W=source.width,Ht=source.height;
+ for(let y=0;y<h;y++){for(let x=0;x<w;x++){const v=g*x+k*y+1,sx=(a*x+b*y+c)/v,sy=(d*x+e*y+f)/v,j=(y*w+x)*4;if(!Number.isFinite(sx)||sx<0||sx>=W-1||sy<0||sy>=Ht-1){out[j]=out[j+1]=out[j+2]=out[j+3]=255;continue}let ix=sx|0,iy=sy|0,rx=sx-ix,ry=sy-iy,i=(iy*W+ix)*4,row=W*4;for(let ch=0;ch<3;ch++)out[j+ch]=from[i+ch]*(1-rx)*(1-ry)+from[i+4+ch]*rx*(1-ry)+from[i+row+ch]*(1-rx)*ry+from[i+row+4+ch]*rx*ry;out[j+3]=255}}ctx.putImageData(image,0,0);return to}
+/* V7: document illumination model. Estimate local paper brightness on a
+   downscaled image using per-cell high percentiles, then interpolate a smooth
+   lighting field. Avoid sharpening halos and preserve dark strokes. */
+function backgroundModel(canvas){
+ const sampled=downsample(canvas,288),{w,h,rgba}=sampled,step=14,nx=Math.ceil(w/step),ny=Math.ceil(h/step),field=new Float32Array(nx*ny);
+ const tones=new Uint8Array(w*h);
+ for(let i=0;i<tones.length;i++){const j=i*4;tones[i]=Math.round(.2126*rgba[j]+.7152*rgba[j+1]+.0722*rgba[j+2]);}
+ for(let cy=0;cy<ny;cy++)for(let cx=0;cx<nx;cx++){
+  const hist=new Uint16Array(256);let n=0;
+  for(let y=cy*step;y<Math.min(h,(cy+1)*step);y++)for(let x=cx*step;x<Math.min(w,(cx+1)*step);x++){hist[tones[y*w+x]]++;n++}
+  let cumulative=0,v=255;const cutoff=n*.88;
+  for(let i=0;i<256;i++){cumulative+=hist[i];if(cumulative>=cutoff){v=i;break}}
+  field[cy*nx+cx]=v;
+ }
+ // Smooth high-percentile estimates to suppress isolated text/picture tiles.
+ let smooth=field;
+ for(let pass=0;pass<3;pass++){
+  const next=new Float32Array(smooth.length);
+  for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){
+   let sum=0,weight=0;
+   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    const xx=clamp(x+dx,0,nx-1),yy=clamp(y+dy,0,ny-1),k=dx===0?(dy===0?4:2):(dy===0?2:1);
+    sum+=smooth[yy*nx+xx]*k;weight+=k;
+   }
+   next[y*nx+x]=sum/weight;
+  }
+  smooth=next;
+ }
+ const sorted=Array.from(smooth).sort((a,b)=>a-b),p10=sorted[Math.floor((sorted.length-1)*.1)],p85=sorted[Math.floor((sorted.length-1)*.85)],p96=sorted[Math.floor((sorted.length-1)*.96)];
+ // Never force an already evenly illuminated photograph to paper white.
+ const target=clamp(p85,175,241),variation=p85-p10;
+ return {w,h,nx,ny,step,field:smooth,target,variation,ambient:p96,
+  sample(x,y){
+   const fx=clamp(x*w/canvas.width/step-.5,0,nx-1),fy=clamp(y*h/canvas.height/step-.5,0,ny-1);
+   const ix=Math.floor(fx),iy=Math.floor(fy),xx=Math.min(nx-1,ix+1),yy=Math.min(ny-1,iy+1),a=fx-ix,b=fy-iy;
+   return smooth[iy*nx+ix]*(1-a)*(1-b)+smooth[iy*nx+xx]*a*(1-b)+smooth[yy*nx+ix]*(1-a)*b+smooth[yy*nx+xx]*a*b;
+  }};
+}
+function filter(c,mode,strength=65){
+ if(mode==='original'||(['smart','shadow'].includes(mode)&&Number(strength)<=0))return c;
+ // Always duplicate the pixels: switching filters must never damage originals.
+ const out=document.createElement('canvas');out.width=c.width;out.height=c.height;
+ const ctx=out.getContext('2d',{willReadFrequently:true});ctx.drawImage(c,0,0);
+ const im=ctx.getImageData(0,0,out.width,out.height),p=im.data;
+ const model=['smart','shadow','bw'].includes(mode)?backgroundModel(out):null;
+ const strength01=clamp(Number(strength)||0,0,100)/100;
+ const power=(mode==='shadow'?.48:.31)+strength01*(mode==='shadow'?.8:.58);
+ const w=out.width,h=out.height;
+ // Expensive illumination interpolation and Math.pow are NOT repeated for every pixel.
+ // The background field is smooth by design: interpolate it every 12 px and use
+ // a 256-entry gain table. Dark text still keeps its per-pixel preservation mask.
+ const correction=mode==='shadow'||mode==='smart';
+ let gainTable=null,need=0,contrast=correction?(mode==='shadow'?1.035:1.015):1;
+ if(correction){
+  need=clamp((model.variation-7)/25,0,1);
+  const maxGain=mode==='shadow'?1.75:1.42;
+  gainTable=new Float32Array(256);
+  for(let value=0;value<256;value++){
+   gainTable[value]=clamp(Math.pow(Math.max(1,model.target/Math.max(value,35)),power)*need+(1-need),1,maxGain);
+  }
+ }
+ const interpolateStep=12;
+ for(let y=0;y<h;y++){
+  let left=0,right=0,slope=0;
+  for(let x=0;x<w;x++){
+   if(model && x%interpolateStep===0){
+    left=model.sample(x,y);right=model.sample(Math.min(w-1,x+interpolateStep),y);
+    slope=(right-left)/interpolateStep;
+   }
+   const i=(y*w+x)*4,r=p[i],g=p[i+1],b=p[i+2],lum=.2126*r+.7152*g+.0722*b;
+   if(mode==='gray'){p[i]=p[i+1]=p[i+2]=Math.round(lum);continue}
+   if(mode==='natural'){
+    p[i]=clamp(Math.round((r-128)*1.025+129),0,255);
+    p[i+1]=clamp(Math.round((g-128)*1.025+129),0,255);
+    p[i+2]=clamp(Math.round((b-128)*1.025+129),0,255);continue;
+   }
+   if(model){
+    const local=left+slope*(x%interpolateStep);
+    if(mode==='bw'){
+     const threshold=clamp(local*.77,95,205),t=clamp((lum-threshold+18)/36,0,1);
+     p[i]=p[i+1]=p[i+2]=Math.round(255*t*t*(3-2*t));continue;
+    }
+    const desired=gainTable[clamp(Math.round(local),0,255)];
+    const ink=clamp((lum-25)/100,.28,1),gain=1+(desired-1)*ink;
+    p[i]=clamp(Math.round((r*gain-128)*contrast+128),0,255);
+    p[i+1]=clamp(Math.round((g*gain-128)*contrast+128),0,255);
+    p[i+2]=clamp(Math.round((b*gain-128)*contrast+128),0,255);
+   }
+  }
+ }
+ ctx.putImageData(im,0,0);return out;
+}
+function process(source,state,limit=1200){
+ // On preview-only crops, sampling the entire decoded photo is unnecessary.
+ // Geometry uses normalized corners, so scaling source first is equivalent
+ // within the preview's resolution and saves bandwidth/allocations.
+ const src=state.crop&&limit<=1300&&Math.max(source.width,source.height)>limit*1.35
+  ?resize(source,Math.round(limit*1.35)):source;
+ let canvas=state.crop?perspective(src,state.quad,limit):resize(src,limit);
+ canvas=rotate(canvas,state.rotation||0);
+ return filter(canvas,state.filter||'original',state.strength??65);
+}
+function analyzeLighting(canvas){const m=backgroundModel(canvas);return {variation:Math.round(m.variation),uneven:m.variation>=18,adequate:m.variation<9};}
+function qualityCanvas(canvas,quality=.96){const opaque=document.createElement('canvas');opaque.width=canvas.width;opaque.height=canvas.height;const ctx=opaque.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,opaque.width,opaque.height);ctx.drawImage(canvas,0,0);return new Promise((resolve,reject)=>opaque.toBlob(blob=>{opaque.width=opaque.height=0;blob?resolve(blob):reject(Error('Esportazione immagine fallita'))},'image/jpeg',quality))}
+window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCenteredCard,documentShapeScore,detectChromaticCard,detectAll,process,getCanvas,qualityCanvas,area,validQuad,defaultQuad,resize,analyzeLighting,backgroundModel};
+})();
+</script><script>/* DocFix 25 — precautionary validation for PDFs before edits.
+ * Heuristic recognition is NOT cryptographic signature verification.
+ * This module only reads local File bytes; no upload, storage or logging.
+ */
+(()=>{'use strict';
+ const cache=new WeakMap();
+ const MAX_BYTES=90*1048576;
+ const validPdf=file=>file && (file.type==='application/pdf'||/\.pdf$/i.test(file.name||''));
+ const latin=new TextDecoder('latin1');
+ function error(code,message){const e=new Error(message);e.code=code;return e}
+ async function inspect(file){
+  if(!validPdf(file))throw error('FORMAT','È necessario un file PDF.');
+  if(file.size<24)throw error('BROKEN','PDF vuoto o incompleto: prova a scaricare nuovamente l’originale.');
+  if(file.size>MAX_BYTES)throw error('SIZE','PDF troppo grande per un controllo sicuro su questo dispositivo.');
+  // The common file sniff also protects direct entries to PDF-only tools.
+  if(window.DocFixSecurity)await window.DocFixSecurity.file(file,{maxBytes:MAX_BYTES});
+  const saved=cache.get(file);if(saved)return saved;
+  const job=(async()=>{
+   const header=latin.decode(await file.slice(0,1024).arrayBuffer());
+   if(!/%PDF-(?:1\.[0-7]|2\.0)\b/.test(header))throw error('BROKEN','Il file non ha un’intestazione PDF valida: potrebbe essere danneggiato o avere un’estensione errata.');
+   const tail=latin.decode(await file.slice(Math.max(0,file.size-8192)).arrayBuffer());
+   if(!/%%EOF(?:\s|\x00)*$/.test(tail))throw error('BROKEN','Il PDF sembra incompleto: manca il marcatore finale. Scarica nuovamente il documento.');
+   const found={signature:false,signatureField:false,encrypted:false,form:false,xfa:false,attachment:false,script:false,incremental:false};
+   let previous='';let eofCount=0;
+   // Streaming scan: bounded memory, catches tokens across chunk boundaries.
+   for(let offset=0;offset<file.size;offset+=256*1024){
+    const block=latin.decode(await file.slice(offset,Math.min(file.size,offset+256*1024)).arrayBuffer());
+    const s=previous+block;
+    if(/\/ByteRange\s*\[\s*\d+\s+\d+\s+\d+\s+\d+\s*\]/.test(s) || /\/SubFilter\s*\/(?:adbe\.pkcs7|ETSI\.(?:CAdES|RFC3161))/.test(s))found.signature=true;
+    if(/\/FT\s*\/Sig\b|\/Type\s*\/Sig\b/.test(s))found.signatureField=true;
+    if(/\/Encrypt\s+(?:\d+\s+\d+\s+R|<<)|\/Filter\s*\/Standard\b/.test(s))found.encrypted=true;
+    if(/\/AcroForm\b/.test(s))found.form=true;
+    if(/\/XFA\b/.test(s))found.xfa=true;
+    if(/\/EmbeddedFiles?\b|\/Type\s*\/EmbeddedFile\b/.test(s))found.attachment=true;
+    if(/\/JavaScript\b|\/OpenAction\b|\/Launch\b/.test(s))found.script=true;
+    // Avoid double-counting the overlapped text from the previous chunk.
+    const start=offset===0?0:Math.max(0,previous.length-8);
+    eofCount+=(s.slice(start).match(/%%EOF\b/g)||[]).length;
+    previous=s.slice(-512);
+    if(offset%(1024*1024)===0)await new Promise(resolve=>setTimeout(resolve,0));
+   }
+   found.incremental=eofCount>1;
+   const signals=[];
+   if(found.signature||found.signatureField)signals.push('firma digitale o campo firma');
+   if(found.encrypted)signals.push('protezione o cifratura');
+   if(found.xfa)signals.push('moduli dinamici XFA');
+   else if(found.form)signals.push('campi modulo');
+   if(found.attachment)signals.push('allegati incorporati');
+   if(found.script)signals.push('azioni interattive');
+   if(found.incremental)signals.push('revisioni incrementali');
+   return Object.freeze({fileName:file.name,signals:Object.freeze(signals),...found});
+  })();
+  cache.set(file,job);
+  try{return await job}catch(e){cache.delete(file);throw e}
+ }
+ async function readable(file){const report=await inspect(file);if(report.encrypted)throw error('ENCRYPTED','PDF protetto o cifrato: questa versione non può aprirlo o modificarlo in sicurezza. Usa una copia non protetta ottenuta con autorizzazione.');return report}
+ async function editable(file,operation='modificare il PDF'){
+  const report=await readable(file);
+  if(report.signature||report.signatureField)throw error('SIGNED','Possibile firma digitale rilevata: modifica bloccata per non invalidarla. Verifica la firma in un lettore dedicato e utilizza una copia non firmata per '+operation+'.');
+  if(report.xfa)throw error('XFA','Modulo dinamico XFA: modifica bloccata perché i dati potrebbero scomparire. Esporta prima una copia piatta con un programma compatibile.');
+  if(report.form||report.attachment||report.script){
+   const details=[report.form?'campi modulo':null,report.attachment?'allegati':null,report.script?'azioni interattive':null].filter(Boolean).join(', ');
+   if(!window.confirm('ATTENZIONE: «'+file.name+'» contiene indizi di '+details+'.\n\nUna nuova copia modificata potrebbe perderli. La validità di eventuali firme NON è verificata automaticamente.\n\nVuoi creare comunque una COPIA? L’originale rimane intatto.'))throw error('CANCELLED','Operazione annullata: il documento originale non è stato modificato.');
+  }
+  return report;
+ }
+ async function allEditable(files,operation){for(const file of files){if(validPdf(file))await editable(file,operation)}}
+ function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
+ window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
+})();
+</script><script>/* DocFix Group 1 candidate: conservative outer-boundary recovery.
+ * No image network calls. Never fabricates identity information. */
+(()=>{'use strict';
+ const debug=window.__docfixDebug||null;
+ const scan=window.DocFixScanner;if(!scan)throw new Error('DocFix scanner non disponibile');
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const median=(a)=>{a.sort((x,y)=>x-y);return a[(a.length/2)|0]||0};
+ const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+ const norm=(q,w,h)=>q.map(p=>({x:p.x/w,y:p.y/h}));
+ const pixel=(d,w,x,y)=>{const p=(clamp(Math.round(y),0,1e9)*w+clamp(Math.round(x),0,w-1))*4;return [d[p],d[p+1],d[p+2]]};
+ const quadRatio=(q,w,h)=>{const p=q.map(z=>({x:z.x*w,y:z.y*h})),side=(i,j)=>Math.hypot(p[i].x-p[j].x,p[i].y-p[j].y),ww=(side(0,1)+side(2,3))/2,hh=(side(1,2)+side(3,0))/2;return Math.max(ww,hh)/Math.max(1,Math.min(ww,hh))};
+ function morph(bits,w,h,rx,ry,isDilation){
+  const stride=w+1,I=new Uint32Array((w+1)*(h+1));
+  for(let y=0;y<h;y++){let row=0;for(let x=0;x<w;x++){row+=bits[y*w+x];I[(y+1)*stride+x+1]=row+I[y*stride+x+1]}}
+  const out=new Uint8Array(w*h);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   const x0=Math.max(0,x-rx),x1=Math.min(w-1,x+rx),y0=Math.max(0,y-ry),y1=Math.min(h-1,y+ry);
+   const n=I[(y1+1)*stride+x1+1]-I[y0*stride+x1+1]-I[(y1+1)*stride+x0]+I[y0*stride+x0];
+   const area=(x1-x0+1)*(y1-y0+1);out[y*w+x]=isDilation?Number(n>0):Number(n===area);
+  }return out;
+ }
+ function edgeSupport(q,data,w,h){
+  // Physical edge must distinguish pixels just inside/outside most of each side.
+  const sample=[];let sidesOk=0;const eps=clamp(Math.min(w,h)*.018,3,8);
+  for(let i=0;i<4;i++){
+   const a=q[i],b=q[(i+1)%4],dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy),nx=dy/L,ny=-dx/L;let good=0,sum=0;
+   for(let j=0;j<13;j++){
+    const t=.15+.7*j/12,x=a.x+dx*t,y=a.y+dy*t;
+    const inside=pixel(data,w,x-nx*eps,y-ny*eps),outside=pixel(data,w,x+nx*eps,y+ny*eps);
+    const d=dist(inside,outside);sum+=d;if(d>16)good++;
+   }
+   const mean=sum/13;sample.push({mean,coverage:good/13});if(mean>18&&good>=6)sidesOk++;
+  }
+  return {sidesOk,sample,strength:sample.reduce((s,p)=>s+p.mean,0)/4};
+ }
+ function candidateFromBackground(source){
+  // Detect the *whole physical card*, not just the coloured ink region.
+  const samp=scan.resize(source,480),w=samp.width,h=samp.height;
+  if(w<120||h<120)return null;
+  const d=samp.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+  const bg=[],border=Math.max(5,Math.floor(Math.min(w,h)*.075));
+  for(let y=0;y<h;y+=3)for(let x=0;x<w;x+=3){
+   if(x<border||x>w-border||y<border||y>h-border)bg.push(pixel(d,w,x,y));
+  }
+  const ref=[0,1,2].map(j=>median(bg.map(p=>p[j])));
+  const noise=bg.map(p=>dist(p,ref)),noise80=noise.sort((a,b)=>a-b)[Math.floor(noise.length*.80)]||0;
+  if(noise80>51){debug?.push({why:'noise-border',noise80});return null;} // Patterned/noisy backgrounds cannot be segmented safely.
+  const threshold=Math.max(11,noise80*1.6+7);
+  let bits=new Uint8Array(w*h);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   const i=(y*w+x)*4,r=d[i],g=d[i+1],b=d[i+2];bits[y*w+x]=Number(Math.hypot(r-ref[0],g-ref[1],b-ref[2])>threshold);
+  }
+  // Close text holes and disconnected surface areas, then remove specks.
+  const radius=clamp(Math.round(Math.min(w,h)*.018),3,9);
+  bits=morph(morph(bits,w,h,radius,radius,true),w,h,radius,radius,false);
+  bits=morph(morph(bits,w,h,2,2,false),w,h,2,2,true);
+  const seen=new Uint8Array(w*h),queue=new Int32Array(w*h);let candidates=[];
+  for(let i=0;i<bits.length;i++){
+   if(!bits[i]||seen[i])continue;let head=0,tail=1;
+   queue[0]=i;seen[i]=1;let minX=w,minY=h,maxX=0,maxY=0,borderHits=0;
+   const pts=[];
+   while(head<tail){const k=queue[head++],x=k%w,y=(k/w)|0;
+    minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
+    if(x<=2||y<=2||x>=w-3||y>=h-3)borderHits++;
+    if((head%3)===0)pts.push({x,y});
+    for(const n of [k-1,k+1,k-w,k+w]){
+     if(n<0||n>=bits.length||seen[n]||!bits[n]||(Math.abs(n-k)===1&&Math.floor(n/w)!==y))continue;
+     seen[n]=1;queue[tail++]=n;
+    }
+   }
+   const relative=tail/(w*h),boxArea=(maxX-minX+1)*(maxY-minY+1),fill=tail/boxArea;
+   if(relative<.085||relative>.82||fill<.36||borderHits>tail*.013){if(relative>.06)debug?.push({why:'component',relative,fill,borderHits,tail});continue;}
+   if(minX<w*.018||maxX>w*.982||minY<h*.018||maxY>h*.982){debug?.push({why:'box-edge',minX,maxX,minY,maxY,w,h});continue;}
+   // Extract robust physical quadrilateral from the outer component contour.
+   // Extremes (x+y, x-y) are stable for moderate perspective and rotations.
+   const sums=[p=>p.x+p.y,p=>p.x-p.y,p=>p.x+p.y,p=>p.x-p.y];
+   const q=[null,null,null,null],ext=[Infinity,-Infinity,-Infinity,Infinity];
+   for(const p of pts){for(let j=0;j<4;j++){
+    const val=sums[j](p);if((j===0||j===3)?val<ext[j]:val>ext[j]){ext[j]=val;q[j]=p;}
+   }}
+   if(q.some(p=>!p)||new Set(q).size<4){debug?.push({why:'missing-corners'});continue;}
+   const cx=q.reduce((s,p)=>s+p.x,0)/4,cy=q.reduce((s,p)=>s+p.y,0)/4;
+   // Add a small *outward* safety margin. Never inset towards the printed data.
+   const pad=clamp(Math.min(maxX-minX,maxY-minY)*.018,2,6);
+   const expanded=q.map(p=>({x:p.x+(p.x-cx)/Math.max(1,Math.hypot(p.x-cx,p.y-cy))*pad,y:p.y+(p.y-cy)/Math.max(1,Math.hypot(p.x-cx,p.y-cy))*pad}));
+   const normalized=norm(expanded,w,h),ratio=quadRatio(normalized,w,h),area=scan.area(normalized);
+   if(!scan.validQuad(normalized)||area<.08||area>.86||ratio<1.36||ratio>1.94){debug?.push({why:'quad-shape',ratio,area,q:normalized});continue;}
+   if(normalized.some(p=>p.x<.008||p.x>.992||p.y<.008||p.y>.992)){debug?.push({why:'quad-near-boundary'});continue;}
+   const edges=edgeSupport(expanded,d,w,h);
+   if(edges.sidesOk<3||edges.strength<20){debug?.push({why:'edge-support',edges});continue;}
+   const rank=edges.strength*.3+fill*35+(edges.sidesOk===4?12:0);
+   candidates.push({quad:normalized,confidence:clamp(.81+(edges.sidesOk-3)*.065+(fill-.40)*.05,.81,.94),status:'found',cardLikely:ratio>1.43&&ratio<1.84,method:'physical-outer-boundaries',reason:'Bordi fisici esterni riconosciuti con margine di sicurezza',rank,edges});
+  }
+  return candidates.sort((a,b)=>b.rank-a.rank)[0]||null;
+ }
+ function validateLegacy(source,found){
+  if(!found||found.status!=='found'||!scan.validQuad(found.quad))return false;
+  const q=found.quad,w=source.width,h=source.height,coverage=scan.area(q);
+  if(coverage<.10||coverage>.81||q.some(p=>p.x<.012||p.x>.988||p.y<.012||p.y>.988))return false;
+  const ratio=quadRatio(q,w,h);if(ratio<1.35||ratio>1.95)return false;
+  const s=scan.resize(source,480),d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,s.width,s.height).data;
+  const edges=edgeSupport(q.map(p=>({x:p.x*s.width,y:p.y*s.height})),d,s.width,s.height);
+  // Require complete outer borders: typography inside the card is never enough.
+  return edges.sidesOk>=3&&edges.strength>=23;
+ }
+ const oldDetect=scan.detectDocument;
+ scan.detectDocument=(source)=>{
+  const physical=candidateFromBackground(source);
+  if(physical)return physical;
+  // Legacy physical-edge estimators are preserved only if independent edge
+  // evidence confirms that their crop does not lock onto printed text.
+  const old=oldDetect(source);
+  if(validateLegacy(source,old))return {...old,confidence:Math.min(old.confidence,.86),reason:'Bordi confermati, controllo di sicurezza attivo'};
+  return {quad:scan.defaultQuad(),confidence:0,status:'uncertain',reason:'Non riconosco con certezza tutti i bordi: mantengo la foto intera. Premi Correggi per impostare i quattro angoli.'};
+ };
+ window.DocFixGroup1={candidateFromBackground,validateLegacy,edgeSupport,version:'group1-20261029'};
+})();
+</script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+   Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
+(()=>{'use strict';
+const $=id=>document.getElementById(id);const zone=$('dropzone'),picker=$('picker'),cards=$('cards'),workspace=$('workspace'),dl=$('download');
+const LIMIT=45*1048576,MAX_PAGES=40,MAX_FILES=12,MAX_TOTAL=100*1048576;
+let entries=[],sourceFiles=[],pending=[],activeSource=null,sourceBytes=0,busy=false,processing=false,exporting=false,sequence=0,currentURL=null,nextSourceId=1;
+let completedInBatch=0,totalInBatch=0,lastRemoved=null,lastPdfSize=null,dragSource=-1;
+const wait=()=>new Promise(r=>setTimeout(r,0));
+const fmt=n=>n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(2)+' MB';
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+function status(s){$('status').textContent=s}
+function progress(i,total){$('progress-wrap').hidden=false;$('progress-bar').style.width=Math.round(i/Math.max(1,total)*100)+'%'}
+function note(s){const el=$('warnings');el.hidden=false;const p=document.createElement('div');p.textContent=s;el.appendChild(p)}
+function syncActions(){
+ sourceBytes=sourceFiles.reduce((sum,s)=>sum+s.file.size,0);
+ dl.disabled=busy||pending.length>0||entries.length===0;
+ $('queue-count').hidden=!pending.length&&!processing;
+ $('queue-count').textContent=processing?'Elaborazione '+completedInBatch+'/'+Math.max(totalInBatch,1)+' · in attesa: '+pending.length:pending.length+' file in attesa';
+ $('undo-remove').hidden=!lastRemoved;
+ $('sizes').textContent='Originali: '+fmt(sourceBytes)+(lastPdfSize!==null?' · Ultimo PDF: '+fmt(lastPdfSize):' · Il PDF viene creato quando premi Scarica.');
+}
+function reset(){
+ document.body.classList.remove('has-document');sequence++;entries=[];sourceFiles=[];pending=[];activeSource=null;sourceBytes=0;busy=false;processing=false;exporting=false;completedInBatch=0;totalInBatch=0;nextSourceId=1;lastRemoved=null;lastPdfSize=null;
+ cards.replaceChildren();$('warnings').replaceChildren();$('warnings').hidden=true;workspace.hidden=true;$('progress-wrap').hidden=true;dl.disabled=true;$('sizes').textContent='';$('summary').textContent='';$('review-count').textContent='';if(currentURL){URL.revokeObjectURL(currentURL);currentURL=null}picker.value='';zone.hidden=false;syncActions();
+}
+$('reset').onclick=reset;
+const openPicker=()=>picker.click();
+$('add-more').onclick=openPicker;
+zone.onclick=openPicker;zone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPicker()}};
+picker.onchange=()=>{const files=Array.from(picker.files||[]);picker.value='';if(files.length)addFiles(files)};
+// One drop handler on the entire page: dropping a later photo must never navigate
+// away or discard the existing practice. Also supports repeated batches.
+document.addEventListener('dragenter',e=>{if(e.dataTransfer?.types?.includes('Files'))zone.classList.add('dragging')});
+document.addEventListener('dragover',e=>{if(e.dataTransfer?.types?.includes('Files')){e.preventDefault();e.dataTransfer.dropEffect='copy'}});
+document.addEventListener('dragleave',e=>{if(e.target===document.documentElement)zone.classList.remove('dragging')});
+document.addEventListener('drop',e=>{if(e.dataTransfer?.files?.length){e.preventDefault();zone.classList.remove('dragging');addFiles(Array.from(e.dataTransfer.files))}});
+const supported=f=>/\.(pdf|jpe?g|png|webp)$/i.test(f.name)||f.type==='application/pdf'||/^image\/(jpeg|png|webp)$/.test(f.type);
+let libPromise=null;
+function script(url){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=url;s.onload=resolve;s.onerror=()=>reject(new Error('Motore PDF non disponibile: serve Internet al primo utilizzo.'));document.head.appendChild(s)})}
+async function pdfLib(){if(window.PDFLib)return window.PDFLib;if(!libPromise)libPromise=script('./vendor/pdf-lib/pdf-lib.min.js').then(()=>window.PDFLib).catch(e=>{libPromise=null;throw e});return libPromise}
+const canvas=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));return c};
+async function imageCanvas(file,pagesInBatch=1){let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'});}catch(_){bmp=await new Promise((res,rej)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(url);res(img)};img.onerror=()=>{URL.revokeObjectURL(url);rej(Error('Immagine illeggibile'))};img.src=url})}const ratio=window.DocFixGroup3.inputScale(bmp.width,bmp.height,window.DocFixGroup3.pixelBudget(pagesInBatch)),c=canvas(bmp.width*ratio,bmp.height*ratio);c.docfixDownscaled=ratio<.999;const g=c.getContext('2d',{alpha:false});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(bmp,0,0,c.width,c.height);bmp.close?.();return c}
+function rotate(c,deg){const q=((deg%360)+360)%360;if(!q)return c;const n=canvas(q%180?c.height:c.width,q%180?c.width:c.height),g=n.getContext('2d');g.translate(n.width/2,n.height/2);g.rotate(q*Math.PI/180);g.drawImage(c,-c.width/2,-c.height/2);return n}
+function crop(c,b){const out=canvas(c.width*(b.x1-b.x0),c.height*(b.y1-b.y0));out.getContext('2d').drawImage(c,c.width*b.x0,c.height*b.y0,c.width*(b.x1-b.x0),c.height*(b.y1-b.y0),0,0,out.width,out.height);return out}
+function whiteMarginCrop(c){/* Never crop unless the entire margin looks blank; keep 2% guard. */
+ const s=window.DocFixScanner.resize(c,560),w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;let xs=[],ys=[];
+ for(let y=0;y<h;y++){let ink=0;for(let x=0;x<w;x+=2){let i=4*(y*w+x);if((d[i]+d[i+1]+d[i+2])/3<215)ink++}ys[y]=ink/(w/2)}
+ for(let x=0;x<w;x++){let ink=0;for(let y=0;y<h;y+=2){let i=4*(y*w+x);if((d[i]+d[i+1]+d[i+2])/3<215)ink++}xs[x]=ink/(h/2)}
+ let L=0,R=w-1,T=0,B=h-1;while(L<w*.15&&xs[L]<.012)L++;while(R>w*.85&&xs[R]<.012)R--;while(T<h*.15&&ys[T]<.012)T++;while(B>h*.85&&ys[B]<.012)B--;
+ L=clamp(L-8,0,w);R=clamp(R+8,0,w);T=clamp(T-8,0,h);B=clamp(B+8,0,h);
+ const saved=(L+(w-1-R))/w+(T+(h-1-B))/h;if(saved<.085||R-L<w*.70||B-T<h*.70)return null;
+ return {x0:L/w,x1:(R+1)/w,y0:T/h,y1:(B+1)/h};
+}
+function textLines(c){/* Orientation heuristic: only 90/270 distinction. Never guess upside-down. */
+ const s=window.DocFixScanner.resize(c,350),w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,rows=new Float32Array(h),cols=new Float32Array(w);
+ for(let y=0;y<h;y+=2)for(let x=0;x<w;x+=2){const i=(y*w+x)*4,g=(d[i]+d[i+1]+d[i+2])/3;if(g<160){rows[y]++;cols[x]++}}
+ function variance(a){let mean=0,v=0,n=0;for(const x of a){mean+=x;n++}mean/=n;for(const x of a)v+=(x-mean)**2;return v/n/(mean*mean+3)}
+ const rv=variance(rows),cv=variance(cols);return {rv,cv,vertical:cv>rv*1.9&&cv>0.28,uncertain:!(rv>cv*1.6||cv>rv*1.9)};
+}
+// Optical page orientation is genuinely different from merely checking portrait/landscape.
+// OSD is optional, runs on the user's device, and never uploads images. When offline or
+// when the result is uncertain, we show a review warning rather than guessing 180 degrees.
+let tesseractPromise=null,osdUnavailable=false;
+const deadline=(promise,ms)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error('Tempo massimo di riconoscimento superato')),ms))]);
+async function osdWorker(){
+ if(osdUnavailable)throw Error('Riconoscimento orientamento non disponibile');
+ if(!tesseractPromise)tesseractPromise=deadline((async()=>{
+  if(!window.Tesseract)await script('./vendor/tesseract/tesseract.min.js');
+  const worker=await window.Tesseract.createWorker('eng',1,{legacyCore:true,legacyLang:true,workerPath:abs('./vendor/tesseract/worker.min.js'),corePath:abs('./vendor/tesseract-core'),langPath:abs('./vendor/tessdata'),gzip:true});
+  if(osdUnavailable){await worker.terminate?.();throw Error('Riconoscimento non disponibile')}
+  return worker;
+ })(),7000).catch(e=>{osdUnavailable=true;throw e});
+ return tesseractPromise;
+}
+async function inferTextOrientation(source){
+ // Short ID fields, blank pages and graphics cannot be reliably oriented by OSD.
+ if(Math.min(source.width,source.height)<320)return {angle:0,review:true,trustworthy:false};
+ try{
+  const worker=await Promise.race([osdWorker(),new Promise((_,reject)=>setTimeout(()=>reject(Error('Motore OCR troppo lento')),6500))]);const small=window.DocFixScanner.resize(source,1350);
+  const result=await Promise.race([worker.detect(small),new Promise((_,reject)=>setTimeout(()=>reject(Error('Orientamento non determinato')),4500))]);
+  const data=result?.data||{};const conf=Number(data.orientation_confidence)||0;const angle=((360-(Math.round(Number(data.orientation_degrees)||0)/90)*90)%360+360)%360;
+  if(conf>=15&&[0,90,180,270].includes(angle))return {angle,review:false,trustworthy:true};
+  return {angle:0,review:true,trustworthy:false};
+ }catch(_){return {angle:0,review:true,trustworthy:false}}
+}
+
+/* V49.1: Remove the last slivers of patterned desk that can remain around
+ * rounded plastic cards after a four-corner perspective transform. Analyze
+ * the blue material itself; never change printed fields or redraw a card. */
+function trimCardBackground(c,backLike=false){
+ const small=window.DocFixScanner.resize(c,780),w=small.width,h=small.height,im=small.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+ const row=new Float32Array(h),col=new Float32Array(w),dark=new Float32Array(h),x0=Math.floor(w*.18),x1=Math.ceil(w*.82),y0=Math.floor(h*.18),y1=Math.ceil(h*.82);
+ const isBlue=(r,g,b)=>{
+  const hi=Math.max(r,g,b),lo=Math.min(r,g,b),d=hi-lo;
+  if(d<9||hi===0||d*255/hi<16||b-(r+g)*.5<6.0)return false;
+  let hue=0;if(hi===r)hue=60*((g-b)/d+(g<b?6:0));else if(hi===g)hue=60*((b-r)/d+2);else hue=60*((r-g)/d+4);
+  return hue>=148&&hue<=310;
+ };
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
