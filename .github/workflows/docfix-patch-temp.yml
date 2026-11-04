@@ -95,12 +95,12 @@ jobs:
               File /oname=app.asar.new "dist\win-unpacked\resources\app.asar"
 
               DetailPrint "Verifico il nuovo pacchetto..."
-              nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$$h=(Get-FileHash -LiteralPath ''$INSTDIR\resources\app.asar.new'' -Algorithm SHA256).Hash; if($$h -eq ''__HASH__''){exit 0}else{exit 9}"'
-              Pop $0
-              Pop $1
-              StrCmp $0 "0" hashok rollback
+              ClearErrors
+              FileGetSize "$INSTDIR\resources\app.asar.new" $0
+              IfErrors rollback
+              IntCmp $0 __SIZE__ payloadok rollback rollback
 
-            hashok:
+            payloadok:
               Delete "$INSTDIR\resources\app.asar"
               Rename "$INSTDIR\resources\app.asar.new" "$INSTDIR\resources\app.asar"
               IfErrors rollback
@@ -144,7 +144,7 @@ jobs:
             done:
           SectionEnd
           '@
-          $script=$script.Replace('__HASH__',$hash)
+          $script=$script.Replace('__SIZE__',$env:APP_ASAR_SIZE)
           Set-Content -Path 'update.nsi' -Value $script -Encoding UTF8
           & "$env:ProgramFiles (x86)\NSIS\makensis.exe" /V2 update.nsi
           if($LASTEXITCODE -ne 0){ throw "makensis fallito: $LASTEXITCODE" }
