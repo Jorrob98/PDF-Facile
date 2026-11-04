@@ -153,20 +153,20 @@ jobs:
           $u=Get-Item 'DocFix_Aggiornamento_1.3.exe'
           Write-Host "Updater: $($u.Length) bytes"
 
-      - name: Download previous DocFix 1.1 installer
+      - name: Download previous DocFix 1.2 installer
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           New-Item -ItemType Directory -Force old | Out-Null
           gh run download 41830463407 -n DocFix-Setup-Windows-1.2 -D old
-          if(!(Test-Path 'old\DocFix_Setup_1.2.0.exe')){ throw 'Installer 1.1 non trovato' }
+          if(!(Test-Path 'old\DocFix_Setup_1.2.0.exe')){ throw 'Installer 1.2 non trovato' }
 
       - name: Install DocFix 1.2 and keep it running
         shell: pwsh
         run: |
-          $p=Start-Process -FilePath (Resolve-Path 'old\DocFix_Setup_1.1.0.exe') -ArgumentList '/S' -PassThru -Wait
-          if($p.ExitCode -ne 0){ throw "Installazione 1.1 fallita: $($p.ExitCode)" }
+          $p=Start-Process -FilePath (Resolve-Path 'old\DocFix_Setup_1.2.0.exe') -ArgumentList '/S' -PassThru -Wait
+          if($p.ExitCode -ne 0){ throw "Installazione 1.2 fallita: $($p.ExitCode)" }
           $exe=Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'DocFix.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
           if(!$exe){ throw 'DocFix 1.2 installato non trovato' }
           "DOCFIX_EXE=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
