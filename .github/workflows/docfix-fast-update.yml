@@ -1,0 +1,246 @@
+name: Build DocFix Fast Incremental Update
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-fast-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout DocFix source
+        uses: actions/checkout@v4
+        with:
+          ref: docfix-desktop-build
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        working-directory: docfix-build
+        run: npm install --no-audit --no-fund
+
+      - name: Bundle local PDF and OCR engines
+        working-directory: docfix-build
+        run: npm run prepare-vendor
+
+      - name: Restore icon
+        shell: bash
+        working-directory: docfix-build
+        run: |
+          mkdir -p build
+          base64 -d build/icon.b64 > build/icon.png
+
+      - name: Validate 1.4.2 startup fix and package
+        shell: bash
+        working-directory: docfix-build
+        run: |
+          set -euo pipefail
+          node --check main.js
+          node --check preload.js
+          node --check app/stability.js
+          node --check app/group1-safe-crop.js
+          grep -F "win.once('ready-to-show'" main.js
+          grep -F "win.webContents.once('dom-ready'" main.js
+          grep -F "startup-fallback" main.js
+          grep -F "if(show)showWindow('load-complete')" main.js
+          grep -F "1.4.2" package.json
+          test "$(find app/vendor/tesseract-core -name 'tesseract-core*.wasm.js' | wc -l)" -ge 4
+          test -f app/vendor/pdfjs/pdf.min.mjs
+          test -f app/vendor/pdfjs/pdf.worker.min.mjs
+          test -f app/vendor/tesseract/tesseract.min.js
+          test -f app/vendor/tessdata/eng.traineddata.gz
+
+          rm -rf pack verify
+          mkdir -p pack/app pack/build
+          cp main.js preload.js package.json pack/
+          cp -a app/. pack/app/
+          cp build/icon.png pack/build/icon.png
+
+          npx --no-install asar pack pack DocFix-1.4.2-app.asar
+          npx --no-install asar extract DocFix-1.4.2-app.asar verify
+          node --check verify/main.js
+          grep -F "startup-fallback" verify/main.js
+          grep -F "1.4.2" verify/package.json
+          test -f verify/app/vendor/pdfjs/pdf.min.mjs
+          test -f verify/app/vendor/tessdata/eng.traineddata.gz
+
+          size=$(stat -c%s DocFix-1.4.2-app.asar)
+          if [ "$size" -lt 1000000 ]; then echo "app.asar troppo piccolo: $size"; exit 1; fi
+          echo "APP_ASAR_SIZE=$size" >> "$GITHUB_ENV"
+          echo "APP_ASAR_SHA=$(sha256sum DocFix-1.4.2-app.asar | awk '{print $1}')" >> "$GITHUB_ENV"
+
+      - name: Install NSIS
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq nsis
+
+      - name: Build Windows incremental updater
+        shell: bash
+        working-directory: docfix-build
+        run: |
+          cat > update.nsi <<'NSI'
+          Unicode true
+          Name "Aggiornamento DocFix 1.4.2"
+          OutFile "DocFix_Aggiornamento_1.4.exe"
+          RequestExecutionLevel user
+          SetCompressor /SOLID lzma
+          SetCompressorDictSize 64
+          InstallDir "$LOCALAPPDATA\Programs\docfix-desktop"
+          ShowInstDetails nevershow
+          AutoCloseWindow true
+          Page instfiles
+
+          Section "Aggiornamento"
+            IfFileExists "$INSTDIR\DocFix.exe" found tryalternate
+
+            tryalternate:
+              StrCpy $INSTDIR "$LOCALAPPDATA\Programs\DocFix"
+              IfFileExists "$INSTDIR\DocFix.exe" found notfound
+
+            found:
+              DetailPrint "Chiudo DocFix..."
+              nsExec::ExecToStack 'taskkill /IM "DocFix.exe" /F'
+              Pop $0
+              Pop $1
+              Sleep 1400
+
+              Delete "$INSTDIR\resources\app.asar.bak"
+              StrCpy $4 0
+
+            backup_retry:
+              ClearErrors
+              Rename "$INSTDIR\resources\app.asar" "$INSTDIR\resources\app.asar.bak"
+              IfErrors backup_wait backup_ok
+
+            backup_wait:
+              IntOp $4 $4 + 1
+              IntCmp $4 12 backupfail backup_sleep backupfail
+
+            backup_sleep:
+              Sleep 500
+              Goto backup_retry
+
+            backup_ok:
+              SetOutPath "$INSTDIR\resources"
+              File /oname=app.asar.new "DocFix-1.4.2-app.asar"
+
+              ClearErrors
+              FileOpen $3 "$INSTDIR\resources\app.asar.new" r
+              IfErrors rollback
+              FileSeek $3 0 END $0
+              FileClose $3
+              IntCmp $0 __SIZE__ payloadok rollback rollback
+
+            payloadok:
+              StrCpy $4 0
+
+            install_retry:
+              ClearErrors
+              Rename "$INSTDIR\resources\app.asar.new" "$INSTDIR\resources\app.asar"
+              IfErrors install_wait install_ok
+
+            install_wait:
+              IntOp $4 $4 + 1
+              IntCmp $4 12 rollback install_sleep rollback
+
+            install_sleep:
+              Sleep 500
+              Goto install_retry
+
+            install_ok:
+              FileOpen $2 "$INSTDIR\resources\docfix-version.txt" w
+              FileWrite $2 "1.4.2"
+              FileClose $2
+              FileOpen $2 "$INSTDIR\resources\docfix-update-status.txt" w
+              FileWrite $2 "OK 1.4.2"
+              FileClose $2
+              Delete "$INSTDIR\resources\app.asar.bak"
+
+              IfSilent success_silent 0
+              Sleep 700
+              ExecShell "open" "$INSTDIR\DocFix.exe"
+              MessageBox MB_ICONINFORMATION|MB_OK "DocFix è stato aggiornato alla versione 1.4.2.$\r$\n$\r$\nIl programma è stato riaperto."
+            success_silent:
+              SetErrorLevel 0
+              Goto done
+
+            rollback:
+              Delete "$INSTDIR\resources\app.asar.new"
+              Delete "$INSTDIR\resources\app.asar"
+              ClearErrors
+              Rename "$INSTDIR\resources\app.asar.bak" "$INSTDIR\resources\app.asar"
+              IfSilent rollback_silent 0
+              ExecShell "open" "$INSTDIR\DocFix.exe"
+              MessageBox MB_ICONSTOP|MB_OK "Aggiornamento non applicato. DocFix è stato ripristinato."
+            rollback_silent:
+              SetErrorLevel 2
+              Goto done
+
+            backupfail:
+              IfSilent backup_silent 0
+              ExecShell "open" "$INSTDIR\DocFix.exe"
+              MessageBox MB_ICONSTOP|MB_OK "Non riesco ad aggiornare DocFix. La versione precedente non è stata modificata."
+            backup_silent:
+              SetErrorLevel 3
+              Goto done
+
+            notfound:
+              IfSilent notfound_silent 0
+              MessageBox MB_ICONSTOP|MB_OK "DocFix non risulta installato in questo PC."
+            notfound_silent:
+              SetErrorLevel 4
+
+            done:
+          SectionEnd
+          NSI
+          sed -i "s/__SIZE__/$APP_ASAR_SIZE/g" update.nsi
+          makensis -V2 update.nsi
+
+          test -f DocFix_Aggiornamento_1.4.exe
+          size=$(stat -c%s DocFix_Aggiornamento_1.4.exe)
+          if [ "$size" -lt 5000000 ]; then echo "Updater troppo piccolo: $size"; exit 1; fi
+
+          sha=$(sha256sum DocFix_Aggiornamento_1.4.exe | awk '{print $1}')
+          echo "$sha  DocFix_Aggiornamento_1.4.exe" > DocFix_Aggiornamento_1.4.sha256
+          echo "UPDATER_SIZE=$size"
+          echo "UPDATER_SHA=$sha"
+          file DocFix_Aggiornamento_1.4.exe | grep -Ei 'PE32|MS Windows'
+
+      - name: Publish verified 1.4.2 update
+        shell: bash
+        working-directory: docfix-build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag='v1.4.2'
+          title='DocFix Desktop 1.4.2'
+          notes='Corregge il primo avvio: DocFix mostra la finestra già al primo clic e riduce l’attesa percepita. Mantiene la correzione dell’aggiornamento automatico, il ritaglio fine e l’interfaccia migliorata.'
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" DocFix_Aggiornamento_1.4.exe DocFix_Aggiornamento_1.4.sha256 --clobber
+            gh release edit "$tag" --title "$title" --notes "$notes" --latest
+          else
+            gh release create "$tag" DocFix_Aggiornamento_1.4.exe DocFix_Aggiornamento_1.4.sha256 --title "$title" --notes "$notes" --latest
+          fi
+
+          latest=$(gh api repos/Jorrob98/PDF-Facile/releases/latest --jq .tag_name)
+          test "$latest" = "$tag"
+          gh api repos/Jorrob98/PDF-Facile/releases/latest --jq '.assets[].name' | grep -Fx 'DocFix_Aggiornamento_1.4.exe'
+          gh api repos/Jorrob98/PDF-Facile/releases/latest --jq '.assets[].name' | grep -Fx 'DocFix_Aggiornamento_1.4.sha256'
+
+      - name: Upload updater artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DocFix-Aggiornamento-1.4.2-fast
+          path: |
+            docfix-build/DocFix_Aggiornamento_1.4.exe
+            docfix-build/DocFix_Aggiornamento_1.4.sha256
+          if-no-files-found: error
+          retention-days: 7
