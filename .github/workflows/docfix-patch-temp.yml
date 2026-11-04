@@ -68,7 +68,7 @@ jobs:
           RequestExecutionLevel user
           SetCompressor /SOLID lzma
           SetCompressorDictSize 64
-          InstallDir "$LOCALAPPDATA\Programs\DocFix"
+          InstallDir "$LOCALAPPDATA\Programs\docfix-desktop"
           ShowInstDetails nevershow
           AutoCloseWindow false
           Page instfiles
@@ -76,7 +76,10 @@ jobs:
           Var HashResult
 
           Section "Aggiornamento"
-            IfFileExists "$INSTDIR\DocFix.exe" found notfound
+            IfFileExists "$INSTDIR\DocFix.exe" found tryalternate
+            tryalternate:
+              StrCpy $INSTDIR "$LOCALAPPDATA\Programs\DocFix"
+              IfFileExists "$INSTDIR\DocFix.exe" found notfound
 
             found:
               DetailPrint "Chiudo DocFix..."
@@ -110,7 +113,7 @@ jobs:
               FileClose $2
 
               DetailPrint "Aggiorno la versione registrata..."
-              nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$roots=@(''HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall''); foreach($root in $roots){Get-ChildItem $root -ErrorAction SilentlyContinue | %% { $p=Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue; if($p.DisplayName -eq ''DocFix''){Set-ItemProperty $_.PSPath -Name DisplayVersion -Value ''1.2.0'' -ErrorAction SilentlyContinue}}}"'
+              nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$roots=@(''HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall''); foreach($root in $roots){Get-ChildItem $root -ErrorAction SilentlyContinue | %% { $p=Get-ItemProperty $_ .PSPath -ErrorAction SilentlyContinue; if($p.DisplayName -eq ''DocFix''){Set-ItemProperty $_ .PSPath -Name DisplayVersion -Value ''1.2.0'' -ErrorAction SilentlyContinue}}}"'
               Pop $0
               Pop $1
 
