@@ -129,7 +129,9 @@ jobs:
               Goto done
 
             backupfail:
+              IfSilent backup_nomsg 0
               MessageBox MB_ICONSTOP|MB_OK "Non riesco a preparare l'aggiornamento. Chiudi DocFix e riprova."
+            backup_nomsg:
               SetErrorLevel 3
               Goto done
 
