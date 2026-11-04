@@ -13,7 +13,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.1.0',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.2.0',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -126,6 +126,10 @@ async function runSelfTest(){
         const ocr=await worker.recognize(c);await worker.terminate();
         out.ocr=typeof ocr?.data?.text==='string'&&ocr.data.text.length>0;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
+        const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
+        for(const y of [230,620]){mg.fillStyle='#d9eef0';mg.fillRect(130,y,640,360);mg.fillStyle='#1b6380';mg.fillRect(130,y,640,80);mg.fillStyle='#fff';mg.fillRect(170,y+120,560,70);mg.fillStyle='#111';for(let x=190;x<700;x+=12)mg.fillRect(x,y+135,5,40);mg.fillStyle='#222';mg.font='32px Arial';mg.fillText('DOCFIX TEST',190,y+250);}
+        const multi=window.DocFixDesktopDiagnostics?.multiCardCandidates(mc)||[];
+        out.multiCard=multi.length===2&&multi.every(x=>x.status==='found');
         try{await fetch('https://example.com/docfix-network-test',{cache:'no-store'});out.externalBlocked=false;}catch{out.externalBlocked=true;}
         return out;
       })()
