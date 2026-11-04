@@ -1,5 +1,5 @@
 (()=>{'use strict';
- const VERSION='1.3.0';
+ const VERSION='1.4.0';
  function toast(message,kind='error'){
    let box=document.getElementById('docfix-runtime-message');
    if(!box){box=document.createElement('div');box.id='docfix-runtime-message';box.setAttribute('role','alert');document.body.appendChild(box);}
@@ -22,7 +22,37 @@
  .docfix-update-actions{display:flex;gap:10px;justify-content:flex-end}.docfix-update-actions button{border:0;border-radius:12px;padding:11px 15px;font-weight:850}
  .docfix-update-actions .later{background:#edf2f4;color:#496370}.docfix-update-actions .now{background:linear-gradient(135deg,#0b9b8c,#087f79);color:#fff}
  @keyframes docfix-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
- @media(max-width:760px){.top{height:auto!important;gap:10px;flex-wrap:wrap}.desktop-tools{width:100%;justify-content:flex-end}.desktop-ready{display:none}}
+
+ .desktop-version{font-size:11px;font-weight:850;color:#78909d;padding:7px 2px;white-space:nowrap}
+ .docfix-flow{max-width:780px;margin:4px auto 8px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px;background:#ffffffb8;border:1px solid #dce7eb;border-radius:18px;box-shadow:0 12px 40px #14394a0b;backdrop-filter:blur(12px)}
+ .docfix-flow-step{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:#65808f;font-size:12px;font-weight:760}
+ .docfix-flow-step b{display:grid;place-items:center;flex:0 0 27px;height:27px;border-radius:9px;background:#e8f4f2;color:#0a7f75;font-size:12px}
+ .docfix-flow-step strong{display:block;color:#294b5c;font-size:12px}.docfix-flow-step span{display:block;margin-top:2px;font-weight:600;font-size:10px;color:#8aa0ab}
+ .dropzone{border-width:1px!important;position:relative;overflow:hidden;background:linear-gradient(180deg,#ffffff 0%,#fbfdfd 100%)!important}
+ .dropzone:after{content:"";position:absolute;inset:8px;border:2px dashed #bfd6dd;border-radius:18px;pointer-events:none;transition:.18s}
+ .dropzone:is(:hover,:focus-visible,.dragging):after{border-color:#67b9ad}
+ .upload-icon{box-shadow:inset 0 0 0 1px #cfeae4,0 8px 24px #0d7f7514}
+ .choose,.download,.reset,.card-controls button{transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease,background .14s ease}
+ .choose:hover,.download:hover,.reset:hover,.card-controls button:hover{transform:translateY(-1px)}
+ .workspace{padding-top:8px}
+ .result-header{padding:8px 2px 3px}.result-header h2{color:#17384b}
+ .pages{gap:18px}
+ .page-card{border-color:#dbe7eb!important;border-radius:20px!important;box-shadow:0 10px 30px #143b4d0d!important;transition:transform .15s ease,box-shadow .15s ease}
+ .page-card:hover{transform:translateY(-2px);box-shadow:0 16px 38px #143b4d16!important}
+ .page-card.needs-check{border-color:#e9bb68!important;box-shadow:0 10px 30px #b66f1712!important}
+ .preview{background:linear-gradient(135deg,#edf3f5,#f8fafb)!important;border-bottom:1px solid #e3ecef!important}
+ .preview img{border-radius:5px;box-shadow:0 8px 26px #173c4d24!important}
+ .card-info{padding:16px!important}.card-info strong{font-size:13px!important;color:#23495c}
+ .card-controls button{background:#fff!important;border-color:#cddde3!important}.card-controls button:hover{border-color:#83bbb7!important;background:#f6fffd!important}
+ .warnings{border:1px solid #f0d496}
+ .action-bar{position:sticky;bottom:16px;z-index:15;width:max-content;max-width:100%;margin:30px auto 16px!important;padding:9px!important;border:1px solid #d5e2e7;background:#ffffffed;backdrop-filter:blur(16px);border-radius:18px;box-shadow:0 18px 48px #15394a20}
+ .download{min-width:250px!important;background:linear-gradient(135deg,#0c9a8d,#087c78)!important;box-shadow:0 9px 24px #0a817a2b}
+ .reset{background:#f9fbfc!important}
+ .sizes{margin-top:6px}
+ footer{opacity:.82}
+  @media(max-width:760px){.top{height:auto!important;gap:10px;flex-wrap:wrap}.desktop-tools{width:100%;justify-content:flex-end}.desktop-ready{display:none}}
+ @media(max-width:760px){.docfix-flow{grid-template-columns:1fr;margin-inline:4px}.docfix-flow-step span{display:none}.desktop-version{display:none}.action-bar{width:100%!important}.download{min-width:0!important;flex:1}}
+
  `;document.head.appendChild(css);
 
  function updateModal(latest,notes){
@@ -66,10 +96,17 @@
    const top=document.querySelector('.top');
    if(top&&!document.querySelector('.desktop-tools')){
      const tools=document.createElement('div');tools.className='desktop-tools';
+     const version=document.createElement('span');version.className='desktop-version';version.textContent='v'+VERSION;
      const badge=document.createElement('span');badge.className='desktop-ready';badge.innerHTML='<i></i> Offline · pronto';
      const update=document.createElement('button');update.id='docfix-update-button';update.className='docfix-update-button';update.type='button';update.textContent='↻ Aggiorna DocFix';
      update.addEventListener('click',()=>handleUpdate(update));
-     tools.append(badge,update);top.appendChild(tools);
+     tools.append(version,badge,update);top.appendChild(tools);
+   }
+   const intro=document.querySelector('.intro');
+   if(intro&&!document.querySelector('.docfix-flow')){
+     const flow=document.createElement('div');flow.className='docfix-flow';flow.setAttribute('aria-label','Flusso DocFix');
+     flow.innerHTML='<div class="docfix-flow-step"><b>1</b><div><strong>Carica</strong><span>Foto o PDF</span></div></div><div class="docfix-flow-step"><b>2</b><div><strong>Controlla</strong><span>DocFix sistema bordi e verso</span></div></div><div class="docfix-flow-step"><b>3</b><div><strong>Scarica</strong><span>PDF pronto</span></div></div>';
+     intro.insertAdjacentElement('afterend',flow);
    }
  });
  window.DocFixStability=Object.freeze({version:VERSION,toast});
