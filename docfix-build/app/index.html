@@ -1165,6 +1165,7 @@ async function makeImageEntries(file,index,total=1){
  if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
  return [{kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index}];
 }
+window.DocFixDesktopDiagnostics=Object.freeze({multiCardCandidates,warmVerticalTrim,version:'1.2.0'});
 function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
  // The page's existing /Rotate is already applied in pdf.js previews.
  const visible=(best+((pageRotate||0)/90))%4;return {chars,rotate:dominance>=.88&&chars>=45?((4-visible)%4)*90:0,dominance};}
