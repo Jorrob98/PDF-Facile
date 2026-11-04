@@ -219,10 +219,24 @@ async function downloadVerifiedUpdate(){
   return {available:true,current,latest:latest.version,updater};
 }
 function launchVerifiedUpdater(updater){
-  const child=spawn(updater,['/S'],{detached:true,windowsHide:true,stdio:'ignore'});
+  const dir=path.dirname(updater),helper=path.join(dir,'apply-docfix-update.ps1'),exe=process.execPath;
+  const ps=[
+    "$ErrorActionPreference='Stop'",
+    "$u="+JSON.stringify(updater),
+    "$appExe="+JSON.stringify(exe),
+    "$p=Start-Process -FilePath $u -ArgumentList '/S' -PassThru",
+    "$p.WaitForExit()",
+    "if($p.ExitCode -eq 0){",
+    "  Start-Sleep -Milliseconds 1200",
+    "  for($i=0;$i -lt 5;$i++){try{Start-Process -FilePath $appExe;break}catch{Start-Sleep -Milliseconds 800}}",
+    "}",
+    "Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue"
+  ].join("\r\n");
+  fs.writeFileSync(helper,ps,'utf8');
+  const child=spawn('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-File',helper],{detached:true,windowsHide:true,stdio:'ignore'});
   child.unref();
-  log('UPDATE_LAUNCHED_DIRECT',updater);
-  setTimeout(()=>app.quit(),450);
+  log('UPDATE_HELPER_LAUNCHED',updater);
+  setTimeout(()=>app.quit(),500);
   return true;
 }
 
