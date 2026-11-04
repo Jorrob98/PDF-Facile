@@ -1,6 +1,7 @@
 'use strict';
-const {app,BrowserWindow,Menu,shell,session,dialog}=require('electron');
-const http=require('http'),fs=require('fs'),path=require('path');
+const {app,BrowserWindow,Menu,shell,session,dialog,ipcMain}=require('electron');
+const http=require('http'),https=require('https'),fs=require('fs'),path=require('path'),crypto=require('crypto');
+const {spawn}=require('child_process');
 
 let server=null, mainWindow=null, logFile=null, quitting=false;
 const SELF_TEST=process.argv.includes('--self-test');
@@ -13,7 +14,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.2.0',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.3.0',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -78,7 +79,7 @@ async function createWindow({show=true,selfTest=false}={}){
   const win=new BrowserWindow({
     title:'DocFix Desktop',width:1320,height:920,minWidth:960,minHeight:680,center:true,show:false,
     backgroundColor:'#edf3f5',icon:path.join(__dirname,'build','icon.png'),autoHideMenuBar:true,
-    webPreferences:{nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,devTools:!app.isPackaged}
+    webPreferences:{nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,devTools:!app.isPackaged,preload:path.join(__dirname,'preload.js')}
   });
   if(!selfTest)mainWindow=win;
   Menu.setApplicationMenu(null);
@@ -126,6 +127,9 @@ async function runSelfTest(){
         const ocr=await worker.recognize(c);await worker.terminate();
         out.ocr=typeof ocr?.data?.text==='string'&&ocr.data.text.length>0;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
+        out.updaterBridge=!!window.DocFixUpdater;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.3.0':false;
+        out.updaterButton=!!document.querySelector('#docfix-update-button');
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
         for(const y of [230,620]){mg.fillStyle='#d9eef0';mg.fillRect(130,y,640,360);mg.fillStyle='#1b6380';mg.fillRect(130,y,640,80);mg.fillStyle='#fff';mg.fillRect(170,y+120,560,70);mg.fillStyle='#111';for(let x=190;x<700;x+=12)mg.fillRect(x,y+135,5,40);mg.fillStyle='#222';mg.font='32px Arial';mg.fillText('DOCFIX TEST',190,y+250);}
         const multi=window.DocFixDesktopDiagnostics?.multiCardCandidates(mc)||[];
@@ -147,6 +151,87 @@ async function runSelfTest(){
     setTimeout(()=>app.quit(),100);
   }
 }
+
+const UPDATE_API='https://api.github.com/repos/Jorrob98/PDF-Facile/releases/latest';
+
+function versionParts(v){return String(v||'0').replace(/^v/i,'').split('.').map(x=>parseInt(x,10)||0).slice(0,3)}
+function isNewerVersion(candidate,current){
+  const a=versionParts(candidate),b=versionParts(current);
+  for(let i=0;i<3;i++){if((a[i]||0)>(b[i]||0))return true;if((a[i]||0)<(b[i]||0))return false}
+  return false;
+}
+function httpsBuffer(url,headers={},redirects=0){
+  return new Promise((resolve,reject)=>{
+    if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.3','Accept':'application/vnd.github+json',...headers}},res=>{
+      const code=res.statusCode||0;
+      if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1));}
+      if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
+      const chunks=[];let total=0;
+      res.on('data',c=>{chunks.push(c);total+=c.length;if(total>220*1024*1024){req.destroy(new Error('Aggiornamento troppo grande'));}});
+      res.on('end',()=>resolve(Buffer.concat(chunks)));
+    });
+    req.setTimeout(25000,()=>req.destroy(new Error('Timeout connessione aggiornamenti')));
+    req.on('error',reject);
+  });
+}
+async function getLatestUpdate(){
+  const raw=await httpsBuffer(UPDATE_API);
+  const release=JSON.parse(raw.toString('utf8'));
+  const version=String(release.tag_name||'').replace(/^docfix-v/i,'').replace(/^v/i,'');
+  if(!/^\d+\.\d+\.\d+$/.test(version))throw new Error('Versione aggiornamento non valida');
+  const short=version.split('.').slice(0,2).join('.');
+  const exeName='DocFix_Aggiornamento_'+short+'.exe';
+  const shaName='DocFix_Aggiornamento_'+short+'.sha256';
+  const exe=(release.assets||[]).find(a=>a.name===exeName);
+  const sha=(release.assets||[]).find(a=>a.name===shaName);
+  if(!exe||!sha)throw new Error('Pacchetto aggiornamento incompleto');
+  return {version,short,exeName,shaName,exeUrl:exe.browser_download_url,shaUrl:sha.browser_download_url,size:Number(exe.size)||0,notes:String(release.body||'')};
+}
+async function checkForUpdates(){
+  const current=app.getVersion();
+  const latest=await getLatestUpdate();
+  return {current,latest:latest.version,available:isNewerVersion(latest.version,current),notes:latest.notes};
+}
+async function downloadVerifiedUpdate(){
+  const latest=await getLatestUpdate();
+  const current=app.getVersion();
+  if(!isNewerVersion(latest.version,current))return {available:false,current,latest:latest.version};
+  log('UPDATE_DOWNLOAD_START',current,'->',latest.version);
+  const [exe,shaRaw]=await Promise.all([httpsBuffer(latest.exeUrl,{'Accept':'application/octet-stream'}),httpsBuffer(latest.shaUrl,{'Accept':'text/plain'})]);
+  if(latest.size&&exe.length!==latest.size)throw new Error('Dimensione aggiornamento non valida');
+  const expected=(shaRaw.toString('utf8').match(/[a-fA-F0-9]{64}/)||[])[0]?.toLowerCase();
+  if(!expected)throw new Error('Firma SHA-256 aggiornamento mancante');
+  const actual=crypto.createHash('sha256').update(exe).digest('hex');
+  if(actual!==expected)throw new Error('Verifica SHA-256 aggiornamento fallita');
+  const dir=path.join(app.getPath('userData'),'updates');fs.mkdirSync(dir,{recursive:true});
+  const updater=path.join(dir,latest.exeName);fs.writeFileSync(updater,exe);
+  log('UPDATE_VERIFIED',latest.version,actual,exe.length);
+  return {available:true,current,latest:latest.version,updater};
+}
+function launchVerifiedUpdater(updater){
+  const dir=path.dirname(updater),helper=path.join(dir,'apply-docfix-update.ps1'),exe=process.execPath;
+  const ps=[
+    "$ErrorActionPreference='Stop'",
+    "$u="+JSON.stringify(updater),
+    "$appExe="+JSON.stringify(exe),
+    "Start-Sleep -Milliseconds 900",
+    "$p=Start-Process -FilePath $u -ArgumentList '/S' -PassThru -Wait",
+    "if($p.ExitCode -eq 0){Start-Sleep -Milliseconds 900;Start-Process -FilePath $appExe}",
+    "Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue"
+  ].join("\r\n");
+  fs.writeFileSync(helper,ps,'utf8');
+  const child=spawn('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-File',helper],{detached:true,windowsHide:true,stdio:'ignore'});
+  child.unref();
+  log('UPDATE_LAUNCHED',updater);
+  setTimeout(()=>app.quit(),350);
+  return true;
+}
+
+ipcMain.handle('docfix:update:version',()=>app.getVersion());
+ipcMain.handle('docfix:update:check',async()=>{try{return {ok:true,...await checkForUpdates()}}catch(e){log('UPDATE_CHECK_FAIL',e);return {ok:false,error:e.message||String(e)}}});
+ipcMain.handle('docfix:update:install',async()=>{try{const r=await downloadVerifiedUpdate();if(!r.available)return {ok:true,...r};launchVerifiedUpdater(r.updater);return {ok:true,...r,launching:true};}catch(e){log('UPDATE_INSTALL_FAIL',e);return {ok:false,error:e.message||String(e)}}});
+
 function fatalStartup(err){
   log('FATAL_STARTUP',err);
   try{dialog.showErrorBox('DocFix non può avviarsi','Si è verificato un problema nei componenti del programma. Reinstalla DocFix.\n\nDettaglio: '+(err?.message||err));}catch{}
