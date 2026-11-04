@@ -14,7 +14,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.4.1',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.4.2',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -73,6 +73,7 @@ function applyOfflinePolicy(port){
   });
 }
 async function createWindow({show=true,selfTest=false}={}){
+  const launchStarted=Date.now();
   validateBundle();
   const port=await startLocalServer();
   applyOfflinePolicy(port);
@@ -83,13 +84,25 @@ async function createWindow({show=true,selfTest=false}={}){
   });
   if(!selfTest)mainWindow=win;
   Menu.setApplicationMenu(null);
+  let windowShown=false;
+  const showWindow=(reason)=>{
+    if(!show||windowShown||win.isDestroyed())return;
+    windowShown=true;
+    try{win.show();win.focus();}catch{}
+    log('WINDOW_SHOWN',reason,(Date.now()-launchStarted)+'ms');
+  };
+  if(show){
+    win.once('ready-to-show',()=>showWindow('ready-to-show'));
+    win.webContents.once('dom-ready',()=>showWindow('dom-ready'));
+    setTimeout(()=>showWindow('startup-fallback'),900);
+  }
   win.webContents.on('console-message',(_e,level,message)=>{if(level>=2)log('RENDERER',level,message);});
   win.webContents.on('render-process-gone',(_e,details)=>log('RENDER_GONE',JSON.stringify(details)));
   win.webContents.setWindowOpenHandler(({url})=>{if(/^https?:\/\//i.test(url)&&!selfTest)shell.openExternal(url);return {action:'deny'};});
   win.webContents.on('will-navigate',(e,url)=>{if(!url.startsWith('http://127.0.0.1:'+port+'/')){log('NAV_BLOCKED',url);e.preventDefault();}});
   await win.loadURL('http://127.0.0.1:'+port+'/index.html');
-  log('WINDOW_LOADED');
-  if(show)win.once('ready-to-show',()=>{win.show();log('WINDOW_SHOWN');});
+  log('WINDOW_LOADED',(Date.now()-launchStarted)+'ms');
+  if(show)showWindow('load-complete');
   if(!selfTest){
     win.on('unresponsive',async()=>{
       log('WINDOW_UNRESPONSIVE');
@@ -128,7 +141,7 @@ async function runSelfTest(){
         out.ocr=typeof ocr?.data?.text==='string'&&ocr.data.text.length>0;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.4.1':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.4.2':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
         for(const y of [230,620]){mg.fillStyle='#d9eef0';mg.fillRect(130,y,640,360);mg.fillStyle='#1b6380';mg.fillRect(130,y,640,80);mg.fillStyle='#fff';mg.fillRect(170,y+120,560,70);mg.fillStyle='#111';for(let x=190;x<700;x+=12)mg.fillRect(x,y+135,5,40);mg.fillStyle='#222';mg.font='32px Arial';mg.fillText('DOCFIX TEST',190,y+250);}
@@ -172,7 +185,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.4.1','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.4.2','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
