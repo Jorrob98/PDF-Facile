@@ -113,8 +113,8 @@ jobs:
               FileClose $2
 
               DetailPrint "Aggiornamento completato."
-              Exec '"$INSTDIR\DocFix.exe"'
               IfSilent success_nomsg 0
+              Exec '"$INSTDIR\DocFix.exe"'
               MessageBox MB_ICONINFORMATION|MB_OK "DocFix è stato aggiornato alla versione 1.2.$\r$\n$\r$\nIl programma verrà riaperto automaticamente."
             success_nomsg:
               Goto done
