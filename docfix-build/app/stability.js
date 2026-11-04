@@ -1,5 +1,5 @@
 (()=>{'use strict';
- const VERSION='1.4.0';
+ const VERSION='1.4.1';
  function toast(message,kind='error'){
    let box=document.getElementById('docfix-runtime-message');
    if(!box){box=document.createElement('div');box.id='docfix-runtime-message';box.setAttribute('role','alert');document.body.appendChild(box);}
@@ -84,9 +84,9 @@
      const install=await window.DocFixUpdater.install();
      if(!install?.ok)throw Error(install?.error||'Installazione aggiornamento non riuscita');
      if(!install.available){toast('DocFix è già aggiornato.','ok');return}
-     button.textContent='Riavvio DocFix…';
+     button.textContent='Applico aggiornamento…';
    }catch(e){console.error(e);toast('Aggiornamento non riuscito: '+(e?.message||e),'error')}
-   finally{if(document.body.isConnected&&button.textContent!=='Riavvio DocFix…'){button.disabled=false;if(!button.classList.contains('available'))button.textContent=old;}}
+   finally{if(document.body.isConnected&&button.textContent!=='Applico aggiornamento…'){button.disabled=false;if(!button.classList.contains('available'))button.textContent=old;}}
  }
  window.addEventListener('error',e=>{console.error('DocFix runtime error',e.error||e.message);toast('DocFix ha rilevato un problema inatteso. La pratica resta aperta: prova di nuovo oppure avvia un nuovo documento.');});
  window.addEventListener('unhandledrejection',e=>{console.error('DocFix async error',e.reason);toast('Un’operazione non è riuscita. I file originali non sono stati modificati.');});
