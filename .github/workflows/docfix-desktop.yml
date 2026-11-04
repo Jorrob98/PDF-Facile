@@ -3,6 +3,8 @@ name: Build DocFix Desktop
 on:
   push:
     branches: [docfix-desktop-build]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
