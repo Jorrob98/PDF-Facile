@@ -53,13 +53,13 @@ body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,tr
 .download{min-width:240px;background:linear-gradient(135deg,#0b9b8c,#087f79);box-shadow:0 8px 24px #0a887f2c}
 .editor-overlay{backdrop-filter:blur(8px)}
 @media(max-width:800px){.shell{padding-inline:18px}.top{position:static}.action-bar{width:100%}}
-</style><title>DocFix Desktop</title><link rel="icon" href="./icon-192.png" type="image/png"><meta name="docfix-build" content="desktop-1.4.2-fast-start-20261104"></head><body>
+</style><title>DocFix Desktop</title><link rel="icon" href="./icon-192.png" type="image/png"><meta name="docfix-build" content="desktop-1.5.0-fast-ux-20261104"></head><body>
 <div class="shell"><header class="top"><a class="brand" href="./"><span class="logo">▣</span><span>Doc<span>Fix</span><small>by Jorrob</small></span></a><span class="safe"><span>●</span> Tutto sul tuo PC</span></header>
 <main><section class="intro"><div class="eyebrow">DOCUMENTI PRONTI IN POCHI PASSAGGI</div><h1>Carica le foto.<br><em>Scarica il PDF.</em></h1><p>Libretto, patente, carta d’identità e PDF: correggo orientamento e bordi, preservo la qualità e preparo il documento pronto da usare.</p></section>
-<section id="dropzone" role="button" tabindex="0" aria-label="Carica foto o PDF" class="dropzone"><span class="upload-icon">↥</span><h2>Trascina qui i documenti</h2><p>Oppure selezionali dal dispositivo</p><div class="choose">+ Aggiungi foto o PDF</div><small>JPG, PNG, WebP, PDF · più file insieme</small></section><input hidden id="picker" type="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp" multiple>
+<section id="dropzone" role="button" tabindex="0" aria-label="Carica foto o PDF" class="dropzone"><span class="upload-icon">↥</span><h2>Trascina qui i documenti</h2><p>Oppure selezionali dal dispositivo</p><div class="choose">+ Aggiungi foto o PDF</div><small>JPG, PNG, WebP, PDF · più file insieme · Ctrl+O per aprire · Ctrl+V per incollare una foto</small></section><input hidden id="picker" type="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp" multiple>
 <section id="workspace" class="workspace" hidden><div class="result-header"><div><div class="eyebrow">RISULTATO</div><h2>Le tue pagine</h2></div><span id="summary" class="pill"></span></div><p id="status" role="status" class="status" aria-live="polite"></p><div id="progress-wrap" class="progress-wrap" hidden><div id="progress-bar" class="progress-bar"></div></div><div class="review-row"><span>Controlla le anteprime; usa le frecce per scegliere l’ordine delle pagine.</span><strong id="review-count"></strong></div><div class="batch-toolbar"><button type="button" id="add-more" class="add-more">＋ Aggiungi altre foto o PDF</button><span id="queue-count" role="status" aria-live="polite" hidden></span><button type="button" id="undo-remove" class="undo-remove" hidden>↶ Annulla eliminazione</button></div><div id="cards" class="pages"></div><div id="warnings" class="warnings" hidden></div><div class="quality-choice"><label for="pdf-quality">Qualità del PDF</label><select id="pdf-quality" aria-label="Qualità del PDF"><option value="high" selected>Alta qualità · consigliata</option><option value="compact">PDF più leggero</option></select><small>Alta qualità preserva maggiormente scritte e dettagli; foto già sfocate non possono essere recuperate.</small></div><div class="layout-choice"><label for="pdf-layout">Impaginazione</label><select id="pdf-layout" aria-label="Impaginazione PDF"><option value="document" selected>Forma originale del documento</option><option value="a4">A4 per stampare · documento intero centrato</option></select><small>Il PDF rispetta sempre le proporzioni e non taglia i bordi. L’opzione A4 aggiunge margini bianchi per la stampa.</small></div><div class="action-bar"><button type="button" id="download" disabled class="download">↓ Scarica PDF pronto</button><button type="button" id="reset" class="reset">+ Nuovo documento</button></div><p id="sizes" class="sizes"></p></section>
 <div class="bottom"><div class="bottom-icon">♧</div><div><strong>I documenti restano sul tuo dispositivo</strong><span>Nessun file personale viene inviato ai nostri server. PDF e OCR funzionano con i componenti installati localmente insieme a DocFix Desktop.</span></div></div></main>
-<footer>DocFix Desktop · Versione 1.4.2 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
+<footer>DocFix Desktop · Versione 1.5 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
 <div id="editor" class="editor-overlay" hidden><div class="editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-title"><div class="editor-head"><div><span class="eyebrow">CORREZIONE</span><h2 id="edit-title">Pagina</h2></div><button type="button" id="edit-close" aria-label="Chiudi">×</button></div><p>Sposta i quattro punti se il bordo è sbagliato. Qui trovi solo ciò che serve.</p><div class="editor-frame"><img id="editor-image" alt="Documento da correggere"><div id="corners" class="corners"><svg class="quad" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon id="frame-poly" points=""/></svg></div></div><div class="editor-actions"><button type="button" id="edit-left">↶ Sinistra 90°</button><button type="button" id="edit-rotate">↷ Destra 90°</button><button type="button" id="edit-flip">↻ Capovolgi 180°</button><button type="button" id="edit-full">Usa pagina completa</button><button type="button" id="edit-cancel">Annulla</button><button type="button" id="edit-apply" class="confirm">✓ Applica ritaglio</button></div></div></div>
 <script src="./group3-quality.js"></script><script src="./group5-export.js"></script><script>/* DocFix 37 — single, hardened PDF.js engine for every PDF operation. */
 'use strict';
@@ -834,6 +834,19 @@ const openPicker=()=>picker.click();
 $('add-more').onclick=openPicker;
 zone.onclick=openPicker;zone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPicker()}};
 picker.onchange=()=>{const files=Array.from(picker.files||[]);picker.value='';if(files.length)addFiles(files)};
+document.addEventListener('keydown',e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='o'&&!e.altKey){e.preventDefault();openPicker();}
+ if(e.key==='Escape'&&!$('editor').hidden){e.preventDefault();closeCorrection();}
+});
+document.addEventListener('paste',e=>{
+ const items=Array.from(e.clipboardData?.items||[]);
+ const images=items.filter(i=>i.kind==='file'&&/^image\//.test(i.type)).map(i=>i.getAsFile()).filter(Boolean);
+ if(!images.length)return;
+ e.preventDefault();
+ const stamp=new Date().toISOString().replace(/[:.]/g,'-');
+ const files=images.map((f,i)=>new File([f],`Immagine-incollata-${stamp}-${i+1}.${(f.type.split('/')[1]||'png').replace('jpeg','jpg')}`,{type:f.type||'image/png'}));
+ addFiles(files);status(files.length===1?'Immagine incollata dagli Appunti.':'Immagini incollate dagli Appunti.');
+});
 // One drop handler on the entire page: dropping a later photo must never navigate
 // away or discard the existing practice. Also supports repeated batches.
 document.addEventListener('dragenter',e=>{if(e.dataTransfer?.types?.includes('Files'))zone.classList.add('dragging')});
@@ -842,7 +855,7 @@ document.addEventListener('dragleave',e=>{if(e.target===document.documentElement
 document.addEventListener('drop',e=>{if(e.dataTransfer?.files?.length){e.preventDefault();zone.classList.remove('dragging');addFiles(Array.from(e.dataTransfer.files))}});
 const supported=f=>/\.(pdf|jpe?g|png|webp)$/i.test(f.name)||f.type==='application/pdf'||/^image\/(jpeg|png|webp)$/.test(f.type);
 let libPromise=null;
-function script(url){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=url;s.onload=resolve;s.onerror=()=>reject(new Error('Motore PDF non disponibile: serve Internet al primo utilizzo.'));document.head.appendChild(s)})}
+function script(url){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=url;s.onload=resolve;s.onerror=()=>reject(new Error('Componente PDF locale non disponibile.'));document.head.appendChild(s)})}
 async function pdfLib(){if(window.PDFLib)return window.PDFLib;if(!libPromise)libPromise=script('./vendor/pdf-lib/pdf-lib.min.js').then(()=>window.PDFLib).catch(e=>{libPromise=null;throw e});return libPromise}
 const canvas=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));return c};
 async function imageCanvas(file,pagesInBatch=1){let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'});}catch(_){bmp=await new Promise((res,rej)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(url);res(img)};img.onerror=()=>{URL.revokeObjectURL(url);rej(Error('Immagine illeggibile'))};img.src=url})}const ratio=window.DocFixGroup3.inputScale(bmp.width,bmp.height,window.DocFixGroup3.pixelBudget(pagesInBatch)),c=canvas(bmp.width*ratio,bmp.height*ratio);c.docfixDownscaled=ratio<.999;const g=c.getContext('2d',{alpha:false});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(bmp,0,0,c.width,c.height);bmp.close?.();return c}
@@ -869,7 +882,7 @@ function textLines(c){/* Orientation heuristic: only 90/270 distinction. Never g
 let tesseractPromise=null,osdUnavailable=false;
 const deadline=(promise,ms)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error('Tempo massimo di riconoscimento superato')),ms))]);
 async function osdWorker(){
- if(osdUnavailable)throw Error('Riconoscimento orientamento non disponibile');
+ if(osdUnavailable)throw Error('Riconoscimento orientamento locale non disponibile');
  if(!tesseractPromise)tesseractPromise=deadline((async()=>{
   if(!window.Tesseract)await script('./vendor/tesseract/tesseract.min.js');
   const worker=await window.Tesseract.createWorker('eng',1,{legacyCore:true,legacyLang:true,workerPath:abs('./vendor/tesseract/worker.min.js'),corePath:abs('./vendor/tesseract-core/'),langPath:abs('./vendor/tessdata/'),gzip:true});
