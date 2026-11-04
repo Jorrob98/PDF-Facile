@@ -73,8 +73,6 @@ jobs:
           AutoCloseWindow false
           Page instfiles
 
-          Var HashResult
-
           Section "Aggiornamento"
             IfFileExists "$INSTDIR\DocFix.exe" found tryalternate
             tryalternate:
@@ -97,7 +95,7 @@ jobs:
               File /oname=app.asar.new "dist\win-unpacked\resources\app.asar"
 
               DetailPrint "Verifico il nuovo pacchetto..."
-              nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$h=(Get-FileHash -LiteralPath ''$INSTDIR\resources\app.asar.new'' -Algorithm SHA256).Hash; if($h -eq ''__HASH__''){exit 0}else{exit 9}"'
+              nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$$h=(Get-FileHash -LiteralPath ''$INSTDIR\resources\app.asar.new'' -Algorithm SHA256).Hash; if($$h -eq ''__HASH__''){exit 0}else{exit 9}"'
               Pop $0
               Pop $1
               StrCmp $0 "0" hashok rollback
@@ -111,11 +109,6 @@ jobs:
               FileOpen $2 "$INSTDIR\resources\docfix-version.txt" w
               FileWrite $2 "1.2.0"
               FileClose $2
-
-              DetailPrint "Aggiorno la versione registrata..."
-              nsExec::ExecToStack 'powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$roots=@(''HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall''); foreach($root in $roots){Get-ChildItem $root -ErrorAction SilentlyContinue | %% { $p=Get-ItemProperty $_ .PSPath -ErrorAction SilentlyContinue; if($p.DisplayName -eq ''DocFix''){Set-ItemProperty $_ .PSPath -Name DisplayVersion -Value ''1.2.0'' -ErrorAction SilentlyContinue}}}"'
-              Pop $0
-              Pop $1
 
               DetailPrint "Aggiornamento completato."
               Exec '"$INSTDIR\DocFix.exe"'
