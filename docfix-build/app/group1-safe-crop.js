@@ -32,6 +32,56 @@
   }
   return {sidesOk,sample,strength:sample.reduce((s,p)=>s+p.mean,0)/4};
  }
+
+ function lineIntersection(a,b,c,d){
+  const x1=a.x,y1=a.y,x2=b.x,y2=b.y,x3=c.x,y3=c.y,x4=d.x,y4=d.y;
+  const den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);if(Math.abs(den)<1e-6)return null;
+  const px=((x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4))/den;
+  const py=((x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4))/den;
+  return {x:px,y:py};
+ }
+ function sideContrast(data,w,h,a,b,nx,ny,off,gap){
+  const vals=[];let supported=0;
+  for(let j=0;j<17;j++){
+   const t=.08+.84*j/16,x=a.x+(b.x-a.x)*t+nx*off,y=a.y+(b.y-a.y)*t+ny*off;
+   const p1=pixel(data,w,x-nx*gap,y-ny*gap),p2=pixel(data,w,x+nx*gap,y+ny*gap),v=dist(p1,p2);
+   vals.push(v);if(v>14)supported++;
+  }
+  vals.sort((a,b)=>a-b);
+  const trimmed=vals.slice(3,14),mean=trimmed.reduce((s,v)=>s+v,0)/Math.max(1,trimmed.length);
+  return {mean,supported};
+ }
+ function refineQuad(source,q){
+  if(!q||!scan.validQuad(q))return {quad:q,refined:false,gain:0};
+  const samp=scan.resize(source,700),w=samp.width,h=samp.height,d=samp.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+  const px=q.map(p=>({x:p.x*w,y:p.y*h})),range=Math.round(clamp(Math.min(w,h)*.018,4,12)),gap=clamp(Math.min(w,h)*.005,2,4);
+  const shifted=[],offsets=[];let baseTotal=0,bestTotal=0;
+  for(let i=0;i<4;i++){
+   const a=px[i],b=px[(i+1)%4],dx=b.x-a.x,dy=b.y-a.y,L=Math.max(1,Math.hypot(dx,dy)),nx=dy/L,ny=-dx/L;
+   const base=sideContrast(d,w,h,a,b,nx,ny,0,gap);baseTotal+=base.mean;
+   let best={off:0,score:base.mean,raw:base.mean,supported:base.supported};
+   for(let off=-range;off<=range;off++){
+    const r=sideContrast(d,w,h,a,b,nx,ny,off,gap);
+    const score=r.mean-Math.abs(off)*.32+(r.supported>=9?2:0);
+    if(r.supported>=7&&score>best.score){best={off,score,raw:r.mean,supported:r.supported};}
+   }
+   const use=Math.abs(best.off)<=range&&best.raw>=base.mean+1.2&&best.supported>=7?best.off:0;
+   offsets.push(use);bestTotal+=use===0?base.mean:best.raw;
+   shifted.push([{x:a.x+nx*use,y:a.y+ny*use},{x:b.x+nx*use,y:b.y+ny*use}]);
+  }
+  const corners=[
+   lineIntersection(...shifted[3],...shifted[0]),
+   lineIntersection(...shifted[0],...shifted[1]),
+   lineIntersection(...shifted[1],...shifted[2]),
+   lineIntersection(...shifted[2],...shifted[3])
+  ];
+  if(corners.some(p=>!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)))return {quad:q,refined:false,gain:0};
+  const nq=corners.map(p=>({x:p.x/w,y:p.y/h})),oldArea=scan.area(q),newArea=scan.area(nq),ratio=quadRatio(nq,w,h);
+  if(!scan.validQuad(nq)||newArea<oldArea*.84||newArea>oldArea*1.17||ratio<1.34||ratio>1.97||nq.some(p=>p.x<.004||p.x>.996||p.y<.004||p.y>.996))return {quad:q,refined:false,gain:0};
+  const before=edgeSupport(px,d,w,h),after=edgeSupport(corners,d,w,h),gain=after.strength-before.strength;
+  const changed=offsets.some(v=>v!==0)&&after.sidesOk>=before.sidesOk&&gain>=.8;
+  return changed?{quad:nq,refined:true,gain,offsets,before,after}:{quad:q,refined:false,gain:0,offsets,before,after};
+ }
  function candidateFromBackground(source){
   const samp=scan.resize(source,480),w=samp.width,h=samp.height;
   if(w<120||h<120)return null;
@@ -72,13 +122,13 @@
    const cx=q.reduce((s,p)=>s+p.x,0)/4,cy=q.reduce((s,p)=>s+p.y,0)/4;
    const pad=clamp(Math.min(maxX-minX,maxY-minY)*.018,2,6);
    const expanded=q.map(p=>({x:p.x+(p.x-cx)/Math.max(1,Math.hypot(p.x-cx,p.y-cy))*pad,y:p.y+(p.y-cy)/Math.max(1,Math.hypot(p.x-cx,p.y-cy))*pad}));
-   const normalized=norm(expanded,w,h),ratio=quadRatio(normalized,w,h),area=scan.area(normalized);
+   const preliminary=norm(expanded,w,h),fine=refineQuad(source,preliminary),normalized=fine.quad,ratio=quadRatio(normalized,w,h),area=scan.area(normalized);
    if(!scan.validQuad(normalized)||area<.08||area>.86||ratio<1.36||ratio>1.94){debug?.push({why:'quad-shape',ratio,area,q:normalized});continue;}
    if(normalized.some(p=>p.x<.008||p.x>.992||p.y<.008||p.y>.992)){debug?.push({why:'quad-near-boundary'});continue;}
-   const edges=edgeSupport(expanded,d,w,h);
+   const edgePixels=normalized.map(p=>({x:p.x*w,y:p.y*h})),edges=edgeSupport(edgePixels,d,w,h);
    if(edges.sidesOk<3||edges.strength<20){debug?.push({why:'edge-support',edges});continue;}
-   const rank=edges.strength*.3+fill*35+(edges.sidesOk===4?12:0);
-   candidates.push({quad:normalized,confidence:clamp(.81+(edges.sidesOk-3)*.065+(fill-.40)*.05,.81,.94),status:'found',cardLikely:ratio>1.43&&ratio<1.84,method:'physical-outer-boundaries',reason:'Bordi fisici esterni riconosciuti con margine di sicurezza',rank,edges});
+   const rank=edges.strength*.3+fill*35+(edges.sidesOk===4?12:0)+(fine.refined?Math.min(6,fine.gain):0);
+   candidates.push({quad:normalized,confidence:clamp(.81+(edges.sidesOk-3)*.065+(fill-.40)*.05+(fine.refined?.015:0),.81,.95),status:'found',cardLikely:ratio>1.43&&ratio<1.84,method:fine.refined?'physical-outer-boundaries-fine':'physical-outer-boundaries',reason:fine.refined?'Bordi fisici agganciati e rifiniti con precisione':'Bordi fisici esterni riconosciuti con margine di sicurezza',rank,edges,fine});
   }
   return candidates.sort((a,b)=>b.rank-a.rank)[0]||null;
  }
@@ -95,9 +145,9 @@
  scan.detectDocument=(source)=>{
   const physical=candidateFromBackground(source);
   if(physical)return physical;
-  const old=oldDetect(source);
-  if(validateLegacy(source,old))return {...old,confidence:Math.min(old.confidence,.86),reason:'Bordi confermati, controllo di sicurezza attivo'};
+  const old=oldDetect(source),fine=old?.status==='found'&&scan.validQuad(old.quad)?refineQuad(source,old.quad):null,safe=fine?.refined?{...old,quad:fine.quad}:old;
+  if(validateLegacy(source,safe))return {...safe,confidence:Math.min((safe.confidence||.8)+(fine?.refined?.02:0),.88),reason:fine?.refined?'Bordi confermati e rifiniti, controllo di sicurezza attivo':'Bordi confermati, controllo di sicurezza attivo'};
   return {quad:scan.defaultQuad(),confidence:0,status:'uncertain',reason:'Non riconosco con certezza tutti i bordi: mantengo la foto intera. Premi Correggi per impostare i quattro angoli.'};
  };
- window.DocFixGroup1={candidateFromBackground,validateLegacy,edgeSupport,version:'group1-20261029'};
+ window.DocFixGroup1={candidateFromBackground,validateLegacy,edgeSupport,refineQuad,version:'group1-fine-20261104'};
 })();
