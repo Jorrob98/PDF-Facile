@@ -1,0 +1,92 @@
+name: Build DocFix Desktop
+
+on:
+  push:
+    branches: [docfix-desktop-build]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: docfix-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Restore application icon
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force build | Out-Null
+          $b64=(Get-Content build\icon.b64 -Raw).Trim()
+          [IO.File]::WriteAllBytes('build\icon.png',[Convert]::FromBase64String($b64))
+
+      - name: Install build dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Bundle PDF and OCR libraries locally
+        run: npm run prepare-vendor
+
+      - name: Static anti-regression checks
+        shell: pwsh
+        run: |
+          node --check main.js
+          node --check prepare-vendor.js
+          node --check app\group1-safe-crop.js
+          node --check app\group2-orientation.js
+          node --check app\group3-quality.js
+          node --check app\group5-export.js
+          if (Select-String -Path app\index.html -Pattern 'cdnjs|cdn.jsdelivr|unpkg.com' -Quiet) { throw 'Riferimento CDN trovato' }
+          if (Select-String -Path app\index.html -Pattern 'serviceWorker|manifest.webmanifest|beforeinstallprompt' -Quiet) { throw 'Residuo PWA trovato' }
+          $required=@(
+            'app\vendor\pdfjs\pdf.min.mjs',
+            'app\vendor\pdfjs\pdf.worker.min.mjs',
+            'app\vendor\pdf-lib\pdf-lib.min.js',
+            'app\vendor\tesseract\tesseract.min.js',
+            'app\vendor\tesseract\worker.min.js',
+            'app\vendor\tessdata\eng.traineddata.gz'
+          )
+          foreach($f in $required){ if(!(Test-Path $f)){ throw "Manca $f" } }
+          $cores=(Get-ChildItem app\vendor\tesseract-core\tesseract-core*.wasm.js -ErrorAction SilentlyContinue)
+          if($cores.Count -lt 4){ throw "Core Tesseract incompleti: $($cores.Count)" }
+          Write-Host "Controlli statici superati"
+
+      - name: Build Windows installer
+        run: npm run dist
+
+      - name: Smoke test unpacked Windows app
+        shell: pwsh
+        run: |
+          $exe='dist\win-unpacked\DocFix.exe'
+          if(!(Test-Path $exe)){ throw 'DocFix.exe unpacked non trovato' }
+          $p=Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 10
+          if($p.HasExited){ throw "DocFix si e chiuso durante il test. ExitCode=$($p.ExitCode)" }
+          Stop-Process -Id $p.Id -Force
+          Write-Host 'Avvio desktop superato'
+
+      - name: Verify final installer
+        shell: pwsh
+        run: |
+          $f=Get-Item 'dist\DocFix_Setup_1.0.0.exe'
+          if($f.Length -lt 50000000){ throw "Installer sospettosamente piccolo: $($f.Length)" }
+          $hash=(Get-FileHash $f.FullName -Algorithm SHA256).Hash
+          Write-Host "Installer: $($f.Length) bytes"
+          Write-Host "SHA256: $hash"
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: DocFix-Setup-Windows
+          path: docfix-build/dist/DocFix_Setup_1.0.0.exe
+          if-no-files-found: error
+          retention-days: 7
