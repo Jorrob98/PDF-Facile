@@ -12,7 +12,7 @@ jobs:
   build-update:
     runs-on: windows-latest
     steps:
-      - name: Checkout DocFix 1.3 source
+      - name: Checkout DocFix 1.4 source
         uses: actions/checkout@v4
         with:
           ref: docfix-desktop-build
@@ -36,7 +36,7 @@ jobs:
           npm install --no-audit --no-fund
           npm run prepare-vendor
 
-      - name: Build unpacked DocFix 1.3
+      - name: Build unpacked DocFix 1.4
         working-directory: docfix-build
         run: npx electron-builder --win dir --x64 --publish never
 
@@ -63,8 +63,8 @@ jobs:
           $hash=$env:APP_ASAR_SHA
           $script=@'
           Unicode true
-          Name "Aggiornamento DocFix 1.3"
-          OutFile "DocFix_Aggiornamento_1.3.exe"
+          Name "Aggiornamento DocFix 1.4"
+          OutFile "DocFix_Aggiornamento_1.4.exe"
           RequestExecutionLevel user
           SetCompressor /SOLID lzma
           SetCompressorDictSize 64
@@ -109,13 +109,13 @@ jobs:
               Delete "$INSTDIR\resources\app.asar.bak"
 
               FileOpen $2 "$INSTDIR\resources\docfix-version.txt" w
-              FileWrite $2 "1.3.0"
+              FileWrite $2 "1.4.0"
               FileClose $2
 
               DetailPrint "Aggiornamento completato."
               IfSilent success_nomsg 0
               Exec '"$INSTDIR\DocFix.exe"'
-              MessageBox MB_ICONINFORMATION|MB_OK "DocFix è stato aggiornato alla versione 1.3.$\r$\n$\r$\nIl programma verrà riaperto automaticamente."
+              MessageBox MB_ICONINFORMATION|MB_OK "DocFix è stato aggiornato alla versione 1.4.$\r$\n$\r$\nIl programma verrà riaperto automaticamente."
             success_nomsg:
               Goto done
 
@@ -150,46 +150,46 @@ jobs:
           Set-Content -Path 'update.nsi' -Value $script -Encoding UTF8
           & "$env:ProgramFiles (x86)\NSIS\makensis.exe" /V2 update.nsi
           if($LASTEXITCODE -ne 0){ throw "makensis fallito: $LASTEXITCODE" }
-          $u=Get-Item 'DocFix_Aggiornamento_1.3.exe'
+          $u=Get-Item 'DocFix_Aggiornamento_1.4.exe'
           Write-Host "Updater: $($u.Length) bytes"
 
-      - name: Download previous DocFix 1.2 installer
+      - name: Download previous DocFix 1.3 installer
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           New-Item -ItemType Directory -Force old | Out-Null
-          gh run download 41830463407 -n DocFix-Setup-Windows-1.2 -D old
-          if(!(Test-Path 'old\DocFix_Setup_1.2.0.exe')){ throw 'Installer 1.2 non trovato' }
+          gh run download 41840071677 -n DocFix-Setup-Windows-1.3 -D old
+          if(!(Test-Path 'old\DocFix_Setup_1.3.0.exe')){ throw 'Installer 1.3 non trovato' }
 
-      - name: Install DocFix 1.2 and keep it running
+      - name: Install DocFix 1.3 and keep it running
         shell: pwsh
         run: |
-          $p=Start-Process -FilePath (Resolve-Path 'old\DocFix_Setup_1.2.0.exe') -ArgumentList '/S' -PassThru -Wait
-          if($p.ExitCode -ne 0){ throw "Installazione 1.2 fallita: $($p.ExitCode)" }
+          $p=Start-Process -FilePath (Resolve-Path 'old\DocFix_Setup_1.3.0.exe') -ArgumentList '/S' -PassThru -Wait
+          if($p.ExitCode -ne 0){ throw "Installazione 1.3 fallita: $($p.ExitCode)" }
           $exe=Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Filter 'DocFix.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
-          if(!$exe){ throw 'DocFix 1.2 installato non trovato' }
+          if(!$exe){ throw 'DocFix 1.3 installato non trovato' }
           "DOCFIX_EXE=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "DOCFIX_DIR=$($exe.Directory.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           $app=Start-Process -FilePath $exe.FullName -PassThru
           Start-Sleep -Seconds 7
-          if($app.HasExited){ throw 'DocFix 1.2 non si è aperto prima del test aggiornamento' }
-          Write-Host "DocFix 1.2 avviato: PID $($app.Id)"
+          if($app.HasExited){ throw 'DocFix 1.3 non si è aperto prima del test aggiornamento' }
+          Write-Host "DocFix 1.3 avviato: PID $($app.Id)"
 
       - name: Apply incremental update while DocFix is running
         shell: pwsh
         working-directory: docfix-build
         run: |
-          $u=(Resolve-Path 'DocFix_Aggiornamento_1.3.exe').Path
+          $u=(Resolve-Path 'DocFix_Aggiornamento_1.4.exe').Path
           $p=Start-Process -FilePath $u -ArgumentList '/S' -PassThru -Wait
           if($p.ExitCode -ne 0){ throw "Updater fallito: exit $($p.ExitCode)" }
           Start-Sleep -Seconds 4
           $installed=Join-Path $env:DOCFIX_DIR 'resources\app.asar'
           $hash=(Get-FileHash $installed -Algorithm SHA256).Hash
           if($hash -ne $env:APP_ASAR_SHA){ throw "Hash app.asar installato errato: $hash" }
-          Write-Host 'Payload 1.3 applicato correttamente'
+          Write-Host 'Payload 1.4 applicato correttamente'
 
-      - name: Validate updated DocFix 1.3
+      - name: Validate updated DocFix 1.4
         shell: pwsh
         run: |
           Get-Process DocFix -ErrorAction SilentlyContinue | Stop-Process -Force
@@ -200,13 +200,13 @@ jobs:
           Start-Sleep -Seconds 7
           if($normal.HasExited){ throw 'DocFix aggiornato non si apre normalmente' }
           Stop-Process -Id $normal.Id -Force
-          Write-Host 'Aggiornamento 1.2 -> 1.3 e apertura finale superati'
+          Write-Host 'Aggiornamento 1.3 -> 1.4 e apertura finale superati'
 
       - name: Compare updater size with full installer
         shell: pwsh
         working-directory: docfix-build
         run: |
-          $u=Get-Item 'DocFix_Aggiornamento_1.3.exe'
+          $u=Get-Item 'DocFix_Aggiornamento_1.4.exe'
           $full=137471977
           if($u.Length -ge $full){ throw "Updater non è più piccolo dell'installer completo: $($u.Length)" }
           $hash=(Get-FileHash $u.FullName -Algorithm SHA256).Hash
@@ -221,17 +221,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $exe='DocFix_Aggiornamento_1.3.exe'
+          $exe='DocFix_Aggiornamento_1.4.exe'
           $hash=(Get-FileHash $exe -Algorithm SHA256).Hash.ToLower()
-          "$hash  $exe" | Set-Content -Path 'DocFix_Aggiornamento_1.3.sha256' -Encoding ascii
-          $tag='v1.3.0'
-          $notes="Aggiunge il pulsante Aggiorna DocFix direttamente nel programma. Mantiene il ritaglio multi-tessera della 1.2 e il funzionamento offline."
+          "$hash  $exe" | Set-Content -Path 'DocFix_Aggiornamento_1.4.sha256' -Encoding ascii
+          $tag='v1.4.0'
+          $notes="Migliora il ritaglio con aggancio fine ai bordi reali, rifinisce anche le foto con due tessere e aggiorna l'interfaccia Desktop senza aggiungere passaggi."
           gh release view $tag *> $null
           if($LASTEXITCODE -eq 0){
-            gh release upload $tag $exe 'DocFix_Aggiornamento_1.3.sha256' --clobber
-            gh release edit $tag --title 'DocFix Desktop 1.3' --notes $notes --latest
+            gh release upload $tag $exe 'DocFix_Aggiornamento_1.4.sha256' --clobber
+            gh release edit $tag --title 'DocFix Desktop 1.4' --notes $notes --latest
           } else {
-            gh release create $tag $exe 'DocFix_Aggiornamento_1.3.sha256' --title 'DocFix Desktop 1.3' --notes $notes --latest
+            gh release create $tag $exe 'DocFix_Aggiornamento_1.4.sha256' --title 'DocFix Desktop 1.4' --notes $notes --latest
           }
 
       - name: Verify public update channel
@@ -240,16 +240,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $r=gh api repos/Jorrob98/PDF-Facile/releases/latest | ConvertFrom-Json
-          if($r.tag_name -ne 'v1.3.0'){ throw "Release latest errata: $($r.tag_name)" }
+          if($r.tag_name -ne 'v1.4.0'){ throw "Release latest errata: $($r.tag_name)" }
           $names=@($r.assets.name)
-          if($names -notcontains 'DocFix_Aggiornamento_1.3.exe'){ throw 'EXE update non pubblicato' }
-          if($names -notcontains 'DocFix_Aggiornamento_1.3.sha256'){ throw 'SHA update non pubblicato' }
-          Write-Host 'Canale aggiornamenti 1.3 verificato'
+          if($names -notcontains 'DocFix_Aggiornamento_1.4.exe'){ throw 'EXE update non pubblicato' }
+          if($names -notcontains 'DocFix_Aggiornamento_1.4.sha256'){ throw 'SHA update non pubblicato' }
+          Write-Host 'Canale aggiornamenti 1.4 verificato'
 
       - name: Upload incremental updater
         uses: actions/upload-artifact@v4
         with:
-          name: DocFix-Aggiornamento-1.3
-          path: docfix-build/DocFix_Aggiornamento_1.3.exe
+          name: DocFix-Aggiornamento-1.4
+          path: docfix-build/DocFix_Aggiornamento_1.4.exe
           if-no-files-found: error
           retention-days: 7
