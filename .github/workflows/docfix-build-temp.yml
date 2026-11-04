@@ -85,7 +85,7 @@ jobs:
         shell: pwsh
         working-directory: docfix-build
         run: |
-          $installer=(Resolve-Path 'dist\DocFix_Setup_1.4.1.exe').Path
+          $installer=(Resolve-Path 'dist\DocFix_Setup_1.4.2.exe').Path
           $p=Start-Process -FilePath $installer -ArgumentList '/S' -PassThru -Wait
           if($p.ExitCode -ne 0){ throw "Installazione fallita: exit $($p.ExitCode)" }
           Start-Sleep -Seconds 3
@@ -102,17 +102,31 @@ jobs:
           if($p.ExitCode -ne 0){ throw "Self-test installato fallito: exit $($p.ExitCode)" }
           Write-Host 'Self-test installato superato'
 
-      - name: First and second normal startup
+      - name: First-click visibility and second startup
         shell: pwsh
         run: |
-          for($i=1;$i -le 2;$i++){
-            $p=Start-Process -FilePath $env:DOCFIX_EXE -PassThru
-            Start-Sleep -Seconds 8
-            if($p.HasExited){ throw "Avvio normale $i fallito: exit $($p.ExitCode)" }
-            Get-Process DocFix -ErrorAction SilentlyContinue | Stop-Process -Force
-            Start-Sleep -Seconds 2
-            Write-Host "Avvio normale $i superato"
-          }
+          Get-Process DocFix -ErrorAction SilentlyContinue | Stop-Process -Force
+          Start-Sleep -Seconds 2
+          $p=Start-Process -FilePath $env:DOCFIX_EXE -PassThru
+          Start-Sleep -Seconds 4
+          if($p.HasExited){ throw "Primo avvio fallito: exit $($p.ExitCode)" }
+          $log=Get-ChildItem "$env:APPDATA" -Recurse -Filter 'docfix.log' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if(!$log){ throw 'Log DocFix non trovato dopo il primo clic' }
+          $tail=(Get-Content $log.FullName -Tail 80) -join "\n"
+          if($tail -notmatch 'WINDOW_SHOWN'){ throw 'La finestra non risulta mostrata al primo avvio' }
+          $matches=[regex]::Matches($tail,'WINDOW_SHOWN\s+\S+\s+(\d+)ms')
+          if($matches.Count -lt 1){ throw 'Tempo di apertura non registrato' }
+          $ms=[int]$matches[$matches.Count-1].Groups[1].Value
+          if($ms -gt 1500){ throw "Finestra mostrata troppo lentamente: $ms ms" }
+          Write-Host "Primo clic: finestra mostrata in $ms ms"
+          Get-Process DocFix -ErrorAction SilentlyContinue | Stop-Process -Force
+          Start-Sleep -Seconds 2
+
+          $p2=Start-Process -FilePath $env:DOCFIX_EXE -PassThru
+          Start-Sleep -Seconds 4
+          if($p2.HasExited){ throw "Secondo avvio fallito: exit $($p2.ExitCode)" }
+          Get-Process DocFix -ErrorAction SilentlyContinue | Stop-Process -Force
+          Write-Host 'Secondo avvio superato'
 
       - name: Check shortcuts and uninstall
         shell: pwsh
@@ -132,7 +146,7 @@ jobs:
         shell: pwsh
         working-directory: docfix-build
         run: |
-          $f=Get-Item 'dist\DocFix_Setup_1.4.1.exe'
+          $f=Get-Item 'dist\DocFix_Setup_1.4.2.exe'
           if($f.Length -lt 100000000){ throw "Installer troppo piccolo: $($f.Length)" }
           $hash=(Get-FileHash $f.FullName -Algorithm SHA256).Hash
           Write-Host "SIZE=$($f.Length)"
@@ -141,7 +155,7 @@ jobs:
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DocFix-Setup-Windows-1.4.1
-          path: docfix-build/dist/DocFix_Setup_1.4.1.exe
+          name: DocFix-Setup-Windows-1.4.2
+          path: docfix-build/dist/DocFix_Setup_1.4.2.exe
           if-no-files-found: error
           retention-days: 7
