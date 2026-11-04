@@ -3,7 +3,7 @@ const {app,BrowserWindow,Menu,shell,session,dialog,ipcMain}=require('electron');
 const http=require('http'),https=require('https'),fs=require('fs'),path=require('path'),crypto=require('crypto');
 const {spawn}=require('child_process');
 
-let server=null, mainWindow=null, logFile=null, quitting=false;
+let server=null, mainWindow=null, logFile=null, quitting=false, pendingSecondInstance=false;
 const SELF_TEST=process.argv.includes('--self-test');
 const root=path.join(__dirname,'app');
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.wasm':'application/wasm','.gz':'application/gzip','.pdf':'application/pdf'};
@@ -14,7 +14,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.4.2',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.5.0',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -22,22 +22,36 @@ function log(...parts){
   try{if(logFile)fs.appendFileSync(logFile,line);}catch{}
   console.log(line.trim());
 }
-function requiredFiles(){
+function requiredStartupFiles(){
+  return ['index.html','group1-safe-crop.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js'];
+}
+function requiredEngineFiles(){
   return [
-    'index.html','group1-safe-crop.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js',
     'vendor/pdfjs/pdf.min.mjs','vendor/pdfjs/pdf.worker.min.mjs','vendor/pdf-lib/pdf-lib.min.js',
     'vendor/tesseract/tesseract.min.js','vendor/tesseract/worker.min.js','vendor/tessdata/eng.traineddata.gz'
   ];
 }
-function validateBundle(){
-  const missing=requiredFiles().filter(rel=>!fs.existsSync(path.join(root,...rel.split('/'))));
+function validateStartupBundle(){
+  const missing=requiredStartupFiles().filter(rel=>!fs.existsSync(path.join(root,...rel.split('/'))));
+  if(missing.length)throw new Error('Componenti base DocFix mancanti: '+missing.join(', '));
+  log('STARTUP_BUNDLE_OK');
+}
+function validateEngineBundle({throwOnError=true}={}){
+  const missing=requiredEngineFiles().filter(rel=>!fs.existsSync(path.join(root,...rel.split('/'))));
   const coreDir=path.join(root,'vendor','tesseract-core');
   let cores=[];
   try{cores=fs.readdirSync(coreDir).filter(f=>/^tesseract-core.*\.wasm\.js$/.test(f));}catch{}
   if(cores.length<4)missing.push('vendor/tesseract-core (core WASM)');
-  if(missing.length)throw new Error('Componenti DocFix mancanti: '+missing.join(', '));
-  log('BUNDLE_OK','cores='+cores.length);
+  if(missing.length){
+    const err=new Error('Componenti PDF/OCR mancanti: '+missing.join(', '));
+    log('ENGINE_BUNDLE_FAIL',err.message);
+    if(throwOnError)throw err;
+    return false;
+  }
+  log('ENGINE_BUNDLE_OK','cores='+cores.length);
+  return true;
 }
+function validateBundle(){validateStartupBundle();validateEngineBundle({throwOnError:true});}
 function startLocalServer(){
   if(server?.listening)return Promise.resolve(server.address().port);
   return new Promise((resolve,reject)=>{
@@ -50,15 +64,26 @@ function startLocalServer(){
         fs.stat(requested,(err,st)=>{
           if(err||!st.isFile()){res.writeHead(404);return res.end('Not found');}
           res.setHeader('Content-Type',mime[path.extname(requested).toLowerCase()]||'application/octet-stream');
-          res.setHeader('Cache-Control','no-store');
+          const rel=path.relative(base,requested).split(path.sep).join('/');
+          res.setHeader('Cache-Control',rel.startsWith('vendor/')?'public, max-age=31536000, immutable':'no-cache');
           res.setHeader('Cross-Origin-Opener-Policy','same-origin');
           res.setHeader('X-Content-Type-Options','nosniff');
           fs.createReadStream(requested).on('error',e=>{log('READ_ERROR',e);if(!res.headersSent)res.writeHead(500);res.end();}).pipe(res);
         });
       }catch(e){log('SERVER_ERROR',e);res.writeHead(500);res.end('DocFix startup error');}
     });
-    server.once('error',reject);
-    server.listen(0,'127.0.0.1',()=>{const p=server.address().port;log('SERVER_READY',p);resolve(p);});
+    const listen=(port)=>{
+      server.once('error',err=>{
+        if(err?.code==='EADDRINUSE'&&port!==0){
+          log('SERVER_PORT_BUSY',port,'fallback=ephemeral');
+          try{server.close();}catch{}
+          server.removeAllListeners('error');
+          server.listen(0,'127.0.0.1',()=>{const p=server.address().port;log('SERVER_READY',p);resolve(p);});
+        }else reject(err);
+      });
+      server.listen(port,'127.0.0.1',()=>{const p=server.address().port;log('SERVER_READY',p);resolve(p);});
+    };
+    listen(18654);
   });
 }
 function applyOfflinePolicy(port){
@@ -74,7 +99,7 @@ function applyOfflinePolicy(port){
 }
 async function createWindow({show=true,selfTest=false}={}){
   const launchStarted=Date.now();
-  validateBundle();
+  if(selfTest)validateBundle(); else validateStartupBundle();
   const port=await startLocalServer();
   applyOfflinePolicy(port);
   const win=new BrowserWindow({
@@ -94,7 +119,7 @@ async function createWindow({show=true,selfTest=false}={}){
   if(show){
     win.once('ready-to-show',()=>showWindow('ready-to-show'));
     win.webContents.once('dom-ready',()=>showWindow('dom-ready'));
-    setTimeout(()=>showWindow('startup-fallback'),900);
+    setTimeout(()=>showWindow('startup-fallback'),300);
   }
   win.webContents.on('console-message',(_e,level,message)=>{if(level>=2)log('RENDERER',level,message);});
   win.webContents.on('render-process-gone',(_e,details)=>log('RENDER_GONE',JSON.stringify(details)));
@@ -104,12 +129,14 @@ async function createWindow({show=true,selfTest=false}={}){
   log('WINDOW_LOADED',(Date.now()-launchStarted)+'ms');
   if(show)showWindow('load-complete');
   if(!selfTest){
+    setTimeout(()=>{try{validateEngineBundle({throwOnError:false});}catch(e){log('ENGINE_BACKGROUND_CHECK_FAIL',e)}},700);
     win.on('unresponsive',async()=>{
       log('WINDOW_UNRESPONSIVE');
       const {response}=await dialog.showMessageBox(win,{type:'warning',title:'DocFix non risponde',message:'DocFix sta impiegando troppo tempo.',detail:'Puoi ricaricare il programma senza cancellare i file originali sul PC.',buttons:['Ricarica DocFix','Chiudi'],defaultId:0,cancelId:1});
       if(response===0)win.reload(); else win.close();
     });
   }
+  if(!selfTest&&pendingSecondInstance){pendingSecondInstance=false;showWindow('pending-second-instance');try{win.focus();win.moveTop?.();}catch{}}
   return {win,port};
 }
 async function runSelfTest(){
@@ -141,7 +168,7 @@ async function runSelfTest(){
         out.ocr=typeof ocr?.data?.text==='string'&&ocr.data.text.length>0;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.4.2':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.5.0':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
         for(const y of [230,620]){mg.fillStyle='#d9eef0';mg.fillRect(130,y,640,360);mg.fillStyle='#1b6380';mg.fillRect(130,y,640,80);mg.fillStyle='#fff';mg.fillRect(170,y+120,560,70);mg.fillStyle='#111';for(let x=190;x<700;x+=12)mg.fillRect(x,y+135,5,40);mg.fillStyle='#222';mg.font='32px Arial';mg.fillText('DOCFIX TEST',190,y+250);}
@@ -185,7 +212,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.4.2','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.5','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
@@ -268,8 +295,18 @@ process.on('unhandledRejection',e=>log('UNHANDLED_REJECTION',e));
 
 const gotLock=app.requestSingleInstanceLock();
 if(!gotLock){app.quit();}else{
-  app.on('second-instance',()=>{if(mainWindow){if(mainWindow.isMinimized())mainWindow.restore();mainWindow.show();mainWindow.focus();log('SECOND_INSTANCE_FOCUSED');}});
+  app.on('second-instance',()=>{
+    if(mainWindow&&!mainWindow.isDestroyed()){
+      if(mainWindow.isMinimized())mainWindow.restore();
+      mainWindow.show();mainWindow.focus();mainWindow.moveTop?.();
+      log('SECOND_INSTANCE_FOCUSED');
+    }else{
+      pendingSecondInstance=true;
+      log('SECOND_INSTANCE_PENDING');
+    }
+  });
   app.whenReady().then(async()=>{
+    app.setAppUserModelId?.('it.jorrob.docfix');
     initLog();
     try{if(SELF_TEST)await runSelfTest();else await createWindow({show:true,selfTest:false});}
     catch(e){fatalStartup(e);}
