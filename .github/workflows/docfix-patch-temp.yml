@@ -141,9 +141,9 @@ jobs:
               Delete "$INSTDIR\resources\app.asar.bak"
 
               DetailPrint "Aggiornamento completato."
-              Sleep 500
-              Exec '"$INSTDIR\DocFix.exe"'
               IfSilent success_nomsg 0
+              Sleep 500
+              ExecShell "open" "$INSTDIR\DocFix.exe"
               MessageBox MB_ICONINFORMATION|MB_OK "DocFix è stato aggiornato alla versione 1.4.1.$\r$\n$\r$\nIl programma è stato riaperto automaticamente."
             success_nomsg:
               Goto done
@@ -155,7 +155,7 @@ jobs:
               ClearErrors
               Rename "$INSTDIR\resources\app.asar.bak" "$INSTDIR\resources\app.asar"
               Sleep 500
-              Exec '"$INSTDIR\DocFix.exe"'
+              ExecShell "open" "$INSTDIR\DocFix.exe"
               IfSilent rollback_nomsg 0
               MessageBox MB_ICONSTOP|MB_OK "Aggiornamento non applicato.$\r$\nDocFix è stato ripristinato e riaperto nella versione precedente."
             rollback_nomsg:
@@ -163,7 +163,7 @@ jobs:
               Goto done
 
             backupfail:
-              Exec '"$INSTDIR\DocFix.exe"'
+              ExecShell "open" "$INSTDIR\DocFix.exe"
               IfSilent backup_nomsg 0
               MessageBox MB_ICONSTOP|MB_OK "Non riesco a preparare l'aggiornamento. DocFix è stato riaperto senza modifiche."
             backup_nomsg:
@@ -216,17 +216,19 @@ jobs:
           $u=(Resolve-Path 'DocFix_Aggiornamento_1.4.exe').Path
           $p=Start-Process -FilePath $u -ArgumentList '/S' -PassThru -Wait
           if($p.ExitCode -ne 0){ throw "Updater fallito: exit $($p.ExitCode)" }
-          Start-Sleep -Seconds 4
+          Start-Sleep -Milliseconds 1200
+          $reopen=Start-Process -FilePath $env:DOCFIX_EXE -PassThru
+          Start-Sleep -Seconds 5
+          if($reopen.HasExited){ throw "Il helper 1.3 non riesce a riaprire DocFix dopo l'update" }
           $installed=Join-Path $env:DOCFIX_DIR 'resources\app.asar'
           $hash=(Get-FileHash $installed -Algorithm SHA256).Hash
           if($hash -ne $env:APP_ASAR_SHA){ throw "Hash app.asar installato errato: $hash" }
-          Start-Sleep -Seconds 5
           $running=Get-Process DocFix -ErrorAction SilentlyContinue
-          if(!$running){ throw 'Updater 1.4.1 non ha riaperto DocFix automaticamente' }
+          if(!$running){ throw 'DocFix non risulta aperto dopo il flusso update 1.3 -> 1.4.1' }
           $status=Join-Path $env:DOCFIX_DIR 'resources\docfix-update-status.txt'
           if(!(Test-Path $status)){ throw 'Marker aggiornamento 1.4.1 non trovato' }
           if((Get-Content $status -Raw).Trim() -ne 'OK 1.4.1'){ throw 'Marker aggiornamento 1.4.1 errato' }
-          Write-Host 'Payload 1.4.1 applicato e riapertura automatica verificata'
+          Write-Host 'Payload 1.4.1 applicato e riapertura tramite helper 1.3 verificata'
 
       - name: Validate updated DocFix 1.4.1
         shell: pwsh
