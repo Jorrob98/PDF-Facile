@@ -1,43 +1,27 @@
 {
-  "name": "docfix-desktop",
-  "version": "1.0.0",
-  "description": "DocFix Desktop by Jorrob",
-  "author": "Jorrob",
-  "main": "main.js",
-  "private": true,
-  "scripts": {
-    "prepare-vendor": "node prepare-vendor.js",
-    "dist": "electron-builder --win nsis --x64 --publish never"
+  "name":"docfix-desktop",
+  "version":"1.1.0",
+  "description":"DocFix Desktop by Jorrob",
+  "author":"Jorrob",
+  "main":"main.js",
+  "private":true,
+  "scripts":{"prepare-vendor":"node prepare-vendor.js","dist":"electron-builder --win nsis --x64 --publish never"},
+  "devDependencies":{
+    "electron":"45.2.2",
+    "electron-builder":"26.18.0",
+    "pdfjs-dist":"4.10.38",
+    "pdf-lib":"1.17.1",
+    "tesseract.js":"6.0.1",
+    "tesseract.js-core":"6.0.0",
+    "@tesseract.js-data/eng":"1.0.0"
   },
-  "devDependencies": {
-    "electron": "45.2.2",
-    "electron-builder": "26.18.0",
-    "pdfjs-dist": "4.10.38",
-    "pdf-lib": "1.17.1",
-    "tesseract.js": "6.0.1",
-    "tesseract.js-core": "6.0.0",
-    "@tesseract.js-data/eng": "1.0.0"
-  },
-  "build": {
-    "appId": "it.jorrob.docfix",
-    "productName": "DocFix",
-    "asar": true,
-    "files": ["main.js", "app/**/*", "build/icon.png"],
-    "directories": {"output": "dist", "buildResources": "build"},
-    "win": {
-      "target": [{"target": "nsis", "arch": ["x64"]}],
-      "icon": "build/icon.png",
-      "artifactName": "DocFix_Setup_1.0.0.exe"
-    },
-    "nsis": {
-      "oneClick": true,
-      "perMachine": false,
-      "allowElevation": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "DocFix",
-      "runAfterFinish": true,
-      "deleteAppDataOnUninstall": false
-    }
+  "build":{
+    "appId":"it.jorrob.docfix",
+    "productName":"DocFix",
+    "asar":true,
+    "files":["main.js","app/**/*","build/icon.png"],
+    "directories":{"output":"dist","buildResources":"build"},
+    "win":{"target":[{"target":"nsis","arch":["x64"]}],"icon":"build/icon.png","artifactName":"DocFix_Setup_1.1.0.exe"},
+    "nsis":{"oneClick":true,"perMachine":false,"allowElevation":true,"createDesktopShortcut":true,"createStartMenuShortcut":true,"shortcutName":"DocFix","runAfterFinish":false,"deleteAppDataOnUninstall":false}
   }
 }
