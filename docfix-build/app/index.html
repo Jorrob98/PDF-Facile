@@ -32,15 +32,34 @@
 .top{min-height:86px;height:auto;gap:12px;flex-wrap:wrap;padding-block:12px}.install-actions{display:flex;align-items:center;gap:8px}.install-actions button{border-radius:12px;min-height:44px;padding:10px 14px;font-size:13px;font-weight:800}.install-app{background:#103e58;color:white;border:1px solid #103e58}.update-app{background:white;color:#234a61;border:1px solid #c8d9e1}.install-help{max-width:1054px;margin:10px auto 0;padding:14px 18px;border:1px solid #b5d6da;background:#eefafa;color:#204f5c;border-radius:12px;font-size:14px;line-height:1.55}.choose,.download,.reset,.add-more,.undo-remove{min-height:48px}.page-card button{min-height:42px}.dropzone:focus-visible,button:focus-visible{outline:3px solid #13a69b;outline-offset:3px}.dropzone{margin-top:20px}.intro{padding-top:30px}.intro h1{font-size:clamp(34px,4.5vw,56px)}.bottom{margin-bottom:22px}
 @media(max-width:600px){.top{justify-content:center}.brand{margin-right:auto}.install-actions{width:100%;justify-content:stretch}.install-actions button{flex:1}.intro{padding-top:22px}.intro h1{font-size:35px}.pages{grid-template-columns:1fr}.preview{height:230px}.preview img{max-height:205px}.card-info small{min-height:0}.install-help{margin-inline:14px}.dropzone{margin-top:14px}}
 
-/* DocFix Desktop 1.0 — professional desktop skin */
-:root{--navy:#10364c;--teal:#0b9789;--bg:#edf3f5;--line:#d5e2e7}html{background:var(--bg)}body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,transparent 32%),radial-gradient(circle at 100% 10%,#dbeaf1 0,transparent 34%),linear-gradient(180deg,#f9fbfc,#edf3f5 58%,#e8eff2)}.shell{max-width:1220px;padding-inline:34px}.top{position:sticky;top:0;z-index:20;margin:0 -10px;padding:14px 10px;background:#f9fbfbdc;backdrop-filter:blur(18px);box-shadow:0 10px 30px #15374809}.logo{width:50px;height:50px;border-radius:15px;background:linear-gradient(145deg,#113d56,#0a897f);box-shadow:0 10px 24px #0d5a5f2d}.safe{background:#fff;border-radius:14px;box-shadow:0 5px 18px #153a4a0b}.intro{padding:54px 16px 16px}.intro .eyebrow{display:inline-flex;padding:7px 12px;border-radius:999px;background:#e3f5f1}.intro h1{font-size:clamp(45px,5.4vw,68px);letter-spacing:-3px;color:#102f43}.dropzone{max-width:820px;padding:48px 30px;border:1px solid #cfe0e5;background:linear-gradient(180deg,#fff,#fbfdfd);box-shadow:0 24px 70px #153b4b12;position:relative}.dropzone:before{content:"";position:absolute;inset:9px;border:2px dashed #bad5dc;border-radius:17px;pointer-events:none}.dropzone:is(:hover,:focus-visible,.dragging){transform:translateY(-2px);border-color:#7bc5ba}.choose{position:relative;background:linear-gradient(135deg,#123f59,#0b7472);box-shadow:0 10px 25px #0b59672a}.workspace{max-width:1030px}.page-card{border-radius:20px;box-shadow:0 10px 30px #173b4c0d;transition:.15s}.page-card:hover{transform:translateY(-2px);box-shadow:0 15px 35px #173b4c15}.quality-choice,.layout-choice{background:#ffffffde;box-shadow:0 5px 20px #153b4b09}.action-bar{position:sticky;bottom:16px;z-index:12;width:max-content;max-width:100%;margin:28px auto 15px;padding:9px;border:1px solid var(--line);background:#ffffffeb;backdrop-filter:blur(14px);border-radius:18px;box-shadow:0 18px 50px #14394a1c}.download{min-width:240px;background:linear-gradient(135deg,#0b9b8c,#087f79);box-shadow:0 8px 24px #0a887f2c}.editor-overlay{backdrop-filter:blur(8px)}@media(max-width:800px){.shell{padding-inline:18px}.top{position:static}.action-bar{width:100%}}
-</style><title>DocFix Desktop</title><link rel="icon" href="./icon-192.png" type="image/png"><meta name="docfix-build" content="desktop-1.0.0-20261104"></head><body>
-<div class="shell"><header class="top"><a class="brand" href="./"><span class="logo">▣</span><span>Doc<span>Fix</span><small>by Jorrob</small></span></a><span class="safe"><span>●</span> Tutto sul tuo dispositivo</span></header>
+/* DocFix Desktop 1.1 — professional desktop UI */
+:root{--df-navy:#10364c;--df-teal:#0b9789;--df-bg:#edf3f5;--df-line:#d5e2e7}
+html{background:var(--df-bg)}
+body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,transparent 32%),radial-gradient(circle at 100% 10%,#dbeaf1 0,transparent 34%),linear-gradient(180deg,#f9fbfc,#edf3f5 58%,#e8eff2)}
+.shell{max-width:1220px;padding-inline:34px}
+.top{position:sticky;top:0;z-index:20;margin:0 -10px;padding:14px 10px;background:#f9fbfbe8;backdrop-filter:blur(18px);box-shadow:0 10px 30px #15374809}
+.logo{width:50px;height:50px;border-radius:15px;background:linear-gradient(145deg,#113d56,#0a897f);box-shadow:0 10px 24px #0d5a5f2d}
+.safe{background:#fff;border-radius:14px;box-shadow:0 5px 18px #153a4a0b}
+.intro{padding:54px 16px 16px}.intro .eyebrow{display:inline-flex;padding:7px 12px;border-radius:999px;background:#e3f5f1}
+.intro h1{font-size:clamp(45px,5.4vw,68px);letter-spacing:-3px;color:#102f43}
+.dropzone{max-width:820px;padding:48px 30px;border:1px solid #cfe0e5;background:linear-gradient(180deg,#fff,#fbfdfd);box-shadow:0 24px 70px #153b4b12;position:relative}
+.dropzone:before{content:"";position:absolute;inset:9px;border:2px dashed #bad5dc;border-radius:17px;pointer-events:none}
+.dropzone:is(:hover,:focus-visible,.dragging){transform:translateY(-2px);border-color:#7bc5ba}
+.choose{position:relative;background:linear-gradient(135deg,#123f59,#0b7472);box-shadow:0 10px 25px #0b59672a}
+.workspace{max-width:1030px}.page-card{border-radius:20px;box-shadow:0 10px 30px #173b4c0d;transition:.15s}
+.page-card:hover{transform:translateY(-2px);box-shadow:0 15px 35px #173b4c15}
+.quality-choice,.layout-choice{background:#ffffffde;box-shadow:0 5px 20px #153b4b09}
+.action-bar{position:sticky;bottom:16px;z-index:12;width:max-content;max-width:100%;margin:28px auto 15px;padding:9px;border:1px solid var(--df-line);background:#ffffffeb;backdrop-filter:blur(14px);border-radius:18px;box-shadow:0 18px 50px #14394a1c}
+.download{min-width:240px;background:linear-gradient(135deg,#0b9b8c,#087f79);box-shadow:0 8px 24px #0a887f2c}
+.editor-overlay{backdrop-filter:blur(8px)}
+@media(max-width:800px){.shell{padding-inline:18px}.top{position:static}.action-bar{width:100%}}
+</style><title>DocFix Desktop</title><link rel="icon" href="./icon-192.png" type="image/png"><meta name="docfix-build" content="desktop-1.1.0-stable-20261104"></head><body>
+<div class="shell"><header class="top"><a class="brand" href="./"><span class="logo">▣</span><span>Doc<span>Fix</span><small>by Jorrob</small></span></a><span class="safe"><span>●</span> Tutto sul tuo PC</span></header>
 <main><section class="intro"><div class="eyebrow">DOCUMENTI PRONTI IN POCHI PASSAGGI</div><h1>Carica le foto.<br><em>Scarica il PDF.</em></h1><p>Libretto, patente, carta d’identità e PDF: correggo orientamento e bordi, preservo la qualità e preparo il documento pronto da usare.</p></section>
 <section id="dropzone" role="button" tabindex="0" aria-label="Carica foto o PDF" class="dropzone"><span class="upload-icon">↥</span><h2>Trascina qui i documenti</h2><p>Oppure selezionali dal dispositivo</p><div class="choose">+ Aggiungi foto o PDF</div><small>JPG, PNG, WebP, PDF · più file insieme</small></section><input hidden id="picker" type="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp" multiple>
 <section id="workspace" class="workspace" hidden><div class="result-header"><div><div class="eyebrow">RISULTATO</div><h2>Le tue pagine</h2></div><span id="summary" class="pill"></span></div><p id="status" role="status" class="status" aria-live="polite"></p><div id="progress-wrap" class="progress-wrap" hidden><div id="progress-bar" class="progress-bar"></div></div><div class="review-row"><span>Controlla le anteprime; usa le frecce per scegliere l’ordine delle pagine.</span><strong id="review-count"></strong></div><div class="batch-toolbar"><button type="button" id="add-more" class="add-more">＋ Aggiungi altre foto o PDF</button><span id="queue-count" role="status" aria-live="polite" hidden></span><button type="button" id="undo-remove" class="undo-remove" hidden>↶ Annulla eliminazione</button></div><div id="cards" class="pages"></div><div id="warnings" class="warnings" hidden></div><div class="quality-choice"><label for="pdf-quality">Qualità del PDF</label><select id="pdf-quality" aria-label="Qualità del PDF"><option value="high" selected>Alta qualità · consigliata</option><option value="compact">PDF più leggero</option></select><small>Alta qualità preserva maggiormente scritte e dettagli; foto già sfocate non possono essere recuperate.</small></div><div class="layout-choice"><label for="pdf-layout">Impaginazione</label><select id="pdf-layout" aria-label="Impaginazione PDF"><option value="document" selected>Forma originale del documento</option><option value="a4">A4 per stampare · documento intero centrato</option></select><small>Il PDF rispetta sempre le proporzioni e non taglia i bordi. L’opzione A4 aggiunge margini bianchi per la stampa.</small></div><div class="action-bar"><button type="button" id="download" disabled class="download">↓ Scarica PDF pronto</button><button type="button" id="reset" class="reset">+ Nuovo documento</button></div><p id="sizes" class="sizes"></p></section>
 <div class="bottom"><div class="bottom-icon">♧</div><div><strong>I documenti restano sul tuo dispositivo</strong><span>Nessun file personale viene inviato ai nostri server. PDF e OCR funzionano con i componenti installati localmente insieme a DocFix Desktop.</span></div></div></main>
-<footer>DocFix Desktop · Versione 1.0 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
+<footer>DocFix Desktop · Versione 1.1 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
 <div id="editor" class="editor-overlay" hidden><div class="editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-title"><div class="editor-head"><div><span class="eyebrow">CORREZIONE</span><h2 id="edit-title">Pagina</h2></div><button type="button" id="edit-close" aria-label="Chiudi">×</button></div><p>Sposta i quattro punti se il bordo è sbagliato. Qui trovi solo ciò che serve.</p><div class="editor-frame"><img id="editor-image" alt="Documento da correggere"><div id="corners" class="corners"><svg class="quad" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon id="frame-poly" points=""/></svg></div></div><div class="editor-actions"><button type="button" id="edit-left">↶ Sinistra 90°</button><button type="button" id="edit-rotate">↷ Destra 90°</button><button type="button" id="edit-flip">↻ Capovolgi 180°</button><button type="button" id="edit-full">Usa pagina completa</button><button type="button" id="edit-cancel">Annulla</button><button type="button" id="edit-apply" class="confirm">✓ Applica ritaglio</button></div></div></div>
 <script src="./group3-quality.js"></script><script src="./group5-export.js"></script><script>/* DocFix 37 — single, hardened PDF.js engine for every PDF operation. */
 'use strict';
@@ -970,7 +989,7 @@ async function osdWorker(){
  if(osdUnavailable)throw Error('Riconoscimento orientamento non disponibile');
  if(!tesseractPromise)tesseractPromise=deadline((async()=>{
   if(!window.Tesseract)await script('./vendor/tesseract/tesseract.min.js');
-  const worker=await window.Tesseract.createWorker('eng',1,{legacyCore:true,legacyLang:true,workerPath:abs('./vendor/tesseract/worker.min.js'),corePath:abs('./vendor/tesseract-core'),langPath:abs('./vendor/tessdata'),gzip:true});
+  const worker=await window.Tesseract.createWorker('eng',1,{legacyCore:true,legacyLang:true,workerPath:abs('./vendor/tesseract/worker.min.js'),corePath:abs('./vendor/tesseract-core/'),langPath:abs('./vendor/tessdata/'),gzip:true});
   if(osdUnavailable){await worker.terminate?.();throw Error('Riconoscimento non disponibile')}
   return worker;
  })(),7000).catch(e=>{osdUnavailable=true;throw e});
@@ -1001,3 +1020,326 @@ function trimCardBackground(c,backLike=false){
   return hue>=148&&hue<=310;
  };
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const k=(y*w+x)*4;if(x>=w*.11&&x<w*.90&&(im[k]*.299+im[k+1]*.587+im[k+2]*.114)<78)dark[y]++;
+  if(!isBlue(im[k],im[k+1],im[k+2]))continue;
+  if(x>=x0&&x<x1)row[y]++;
+  if(y>=y0&&y<y1)col[x]++;
+ }
+ for(let y=0;y<h;y++)row[y]/=(x1-x0);
+ for(let x=0;x<w;x++)col[x]/=(y1-y0);
+ const search=(arr,threshold,lo,hi,reverse=false)=>{
+  const run=4;
+  if(!reverse){for(let p=lo;p+run<=hi;p++){let n=0;for(let k=0;k<run;k++)n+=(arr[p+k]>threshold);if(n===run)return p;}}
+  else{for(let p=hi-1;p-run+1>=lo;p--){let n=0;for(let k=0;k<run;k++)n+=(arr[p-k]>threshold);if(n===run)return p;}}
+  return null;
+ };
+ const top=search(row,.26,0,Math.floor(h*.12)),bottom=search(row,.19,Math.ceil(h*.87),h,true);
+ if(top===null||bottom===null||top>h*.084||bottom<h*.90)return c;
+ const left=search(col,.32,0,Math.floor(w*.10)),right=search(col,.30,Math.floor(w*.90),w,true);
+ const isBack=backLike||(left!==null&&left>w*.028);
+ let t=Math.min(h*.075,top+(isBack?Math.round(h*.009):2));
+ let b=Math.min(h,bottom+2);
+ if(isBack){let last=0;for(let yy=Math.round(h*.78);yy<h;yy++)if(dark[yy]/(w*.79)>.035)last=yy;
+  if(last>h*.84)b=Math.min(h,Math.max(b,last+Math.round(h*.025)));else b=Math.min(h,bottom+Math.round(h*.030));}
+ let l=left!==null?left+2:Math.round(w*.018);
+ let r=right!==null&&right>w*.965?Math.min(w,right+2):w-Math.round(w*.016);
+ if(isBack)r=Math.min(r,l+1.665*(b-t));
+ if(b-t<h*.79||r-l<w*.76)return c;
+ // Exact sampling on the full-resolution canvas; keeps source detail intact.
+ const x=Math.max(0,Math.round(l/w*c.width)),y=Math.max(0,Math.round(t/h*c.height));
+ const xe=Math.min(c.width,Math.round(r/w*c.width)),ye=Math.min(c.height,Math.round(b/h*c.height));
+ const out=canvas(xe-x,ye-y),g=out.getContext('2d',{alpha:false});
+ // Rounded security-card corners should contain white page, not patterned desk.
+ // The clip only affects ~3% near the physical corner, never text or MRZ.
+ g.fillStyle='#fff';g.fillRect(0,0,out.width,out.height);
+ const radius=Math.min(out.width,out.height)*.042;
+ g.beginPath();g.roundRect(0,0,out.width,out.height,radius);g.clip();
+ g.drawImage(c,x,y,out.width,out.height,0,0,out.width,out.height);
+ return out;
+}
+function photoNormalize(original){
+ const scan=window.DocFixScanner;let processed=original,confidence=0,how='Foto completa',review=false,cardLikely=false,sourceQuad=null,precise=false,backLike=false;
+ // Single photo = one document. Multi-contour analysis can confuse a card with a
+ // shadow or with the inner printed area and crop off the actual edges.
+ const found=scan.detectDocument(original),area=found.status==='found'?scan.area(found.quad):0;
+ // Quality guard: a pre-cropped ID image has the physical card's aspect ratio.
+ // Reject an inner-frame crop that would silently throw away >14% of its pixels.
+ const photoShape=Math.max(original.width,original.height)/Math.max(1,Math.min(original.width,original.height));
+ const tightCard=photoShape>=1.50&&photoShape<=1.73;
+ const unsafeInnerCrop=tightCard&&area<.86;
+ if(found.status==='found'&&found.confidence>=.79&&area>.09&&area<.88&&!unsafeInnerCrop&&scan.validQuad(found.quad)){
+  processed=scan.process(original,{crop:true,quad:found.quad,rotation:0,filter:'original',strength:0},4200);
+  confidence=found.confidence;sourceQuad=found.quad.map(p=>({...p}));precise=found.method==='precise-color';backLike=found.cardBackLike===true;how=precise?'Tessera ritagliata senza sfondo':'Bordi del documento ritagliati';
+  const pts=found.quad.map(pt=>({x:pt.x*original.width,y:pt.y*original.height}));
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),ww=(dist(pts[0],pts[1])+dist(pts[2],pts[3]))/2,hh=(dist(pts[1],pts[2])+dist(pts[3],pts[0]))/2;
+  const shape=Math.max(ww,hh)/Math.max(1,Math.min(ww,hh));cardLikely=found.cardLikely===true||(shape>=1.43&&shape<=1.94);
+ }else{
+  // Group 1 safety fallback: no inferred crop if the outer contour is not proven.
+  processed=original;review=true;how=unsafeInnerCrop?'Foto già in proporzioni tessera · nessun taglio interno':'Foto conservata · controlla i 4 bordi';
+ }
+ return {processed,confidence,how,review,cardLikely,sourceQuad,precise,backLike};
+}
+// The same normalization path is used by photos and scanned PDF pages.
+// Never skip 180-degree detection for ID cards: landscape proportions tell us
+// nothing about which side is up (particularly on the reverse with MRZ).
+async function normalizeRaster(original){
+ const before=window.DocFixGroup2.recognizeMRZOrientation(original);
+ const norm=photoNormalize(original);let processed=norm.processed,rotation=0;
+ // G2: aspect ratio never determines if 90° or 270° is correct.
+ // If an automatic crop hides an otherwise detectable MRZ, keep all source
+ // pixels rather than pretending to have recognized the physical card edge.
+ let mrz=window.DocFixGroup2.recognizeMRZOrientation(processed);
+ let preservedSource=false;
+ if(before.trustworthy&&!mrz.trustworthy&&processed!==original){
+  processed=original;mrz=before;preservedSource=true;
+ }
+ if(mrz.trustworthy){rotation=mrz.angle;processed=rotate(processed,rotation);}
+ // G1: never trim again after a perspective crop: that deletes MRZ and card edges.
+ const osd=mrz.trustworthy?{angle:0,review:false,trustworthy:true}:await inferTextOrientation(processed);
+ if(!mrz.trustworthy&&osd.trustworthy&&osd.angle){processed=rotate(processed,osd.angle);rotation=(rotation+osd.angle)%360;}
+ const geometryReview=norm.review||preservedSource;
+ const orientationReview=!mrz.trustworthy&&!osd.trustworthy&&(norm.cardLikely||textLines(processed).vertical);
+ const review=geometryReview||orientationReview;
+ const method=mrz.trustworthy?'Verso verificato dalla zona MRZ':osd.trustworthy?'Verso verificato dal testo':'Orientamento non confermato';
+ const cropNote=preservedSource?'Ritaglio non sicuro: foto integra · verifica i bordi':norm.how;
+ const how=cropNote+' · '+method+(review?' · Verifica consigliata':'');
+ return {processed,rotation,review,geometryReview,orientationReview,cropped:norm.processed!==original&&!preservedSource,sourceQuad:preservedSource?null:norm.sourceQuad,how};
+}
+async function makeImageEntry(file,index,total=1){
+ const original=await imageCanvas(file,total),fixed=await normalizeRaster(original);
+ if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
+ return {kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index};
+}
+function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
+ // The page's existing /Rotate is already applied in pdf.js previews.
+ const visible=(best+((pageRotate||0)/90))%4;return {chars,rotate:dominance>=.88&&chars>=45?((4-visible)%4)*90:0,dominance};}
+async function renderPdfPage(page,scale,pageCount=1){const v0=page.getViewport({scale:1});const limit=Math.min(3600,Math.round(Math.sqrt(48_000_000/Math.max(1,pageCount))*1.3));const s=Math.min(scale,limit/Math.max(v0.width,v0.height)),v=page.getViewport({scale:s});const out=canvas(v.width,v.height),g=out.getContext('2d',{alpha:false});g.fillStyle='#fff';g.fillRect(0,0,out.width,out.height);await page.render({canvasContext:g,viewport:v}).promise;return out}
+async function makePdfEntries(file,idx,token){if(window.DocFixPDFGuard)await window.DocFixPDFGuard.editable(file,'ottimizzare il documento');const data=await file.arrayBuffer();const engine=await deadline(window.DocFixPdfEngine.load(),12000);const job=await deadline(engine.getDocument({data:data.slice(0)}).promise,20000);try{if(job.numPages>MAX_PAGES)throw Error('Il PDF ha troppe pagine (limite '+MAX_PAGES+').');const results=[];for(let i=1;i<=job.numPages;i++){if(token!==sequence)throw Error('Operazione interrotta');status('Sistema il PDF: pagina '+i+' di '+job.numPages+'…');const p=await job.getPage(i),items=(await p.getTextContent()).items,orient=textRotation(items,p.rotate),raw=await renderPdfPage(p,3.0,job.numPages);let processed=raw,review=false,how='',rotation=orient.rotate;
+ if(orient.chars>=45){processed=rotate(raw,rotation);review=orient.dominance<.88;how=review?'Orientamento del testo da verificare':rotation?'Testo orientato automaticamente':'Testo già orientato';// Keep searchable vector text and original formatting.
+ const box=(rotation===0&&(p.rotate||0)%360===0)?whiteMarginCrop(raw):null;
+ if(box){processed=crop(processed,box);how+=' · Margini bianchi ridotti'}
+ results.push({kind:'vector',original:raw,processed,rotation,review,how,cropped:false,vectorCrop:box,source:file.name,title:file.name+' · pagina '+i,sourceBytes:data,sourcePageIndex:i-1,sourceIndex:idx});
+ }else{
+ // Scanned PDFs must use exactly the same crop, perspective and rotation
+ // pipeline as a standalone image. Prior versions rotated the page while
+ // reusing quadrilateral coordinates from the unrotated raster.
+ const fixed=await normalizeRaster(raw);
+ results.push({kind:'raster',original:raw,...fixed,source:file.name,title:file.name+' · pagina '+i,sourceIndex:idx});
+ }
+ if(i%3===0)await wait();}
+ return results}finally{await job.destroy?.()}}
+function thumb(c){const s=window.DocFixScanner.resize(c,650);return s.toDataURL('image/jpeg',.90)}
+function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
+ const item=document.createElement('article');item.className='page-card'+(e.review?' needs-check':'');
+ const pv=document.createElement('button');pv.type='button';pv.className='preview';pv.onclick=()=>openCorrection(i);pv.title='Apri pagina '+(i+1)+' per controllarla';
+ const img=document.createElement('img');img.src=thumb(e.processed);img.alt='Anteprima pagina '+(i+1);
+ const tag=document.createElement('span');tag.className='tag'+(e.review?' warning':'');tag.textContent=e.review?'Verifica consigliata':'Elaborata';
+ const count=document.createElement('span');count.className='page-number';count.textContent='Pagina '+(i+1);pv.append(img,tag,count);
+ const info=document.createElement('div');info.className='card-info';const name=document.createElement('strong');name.textContent=e.title;name.title=e.title;
+ const desc=document.createElement('small');desc.textContent=e.how;
+ const controls=document.createElement('div');controls.className='card-controls';const fix=document.createElement('button');fix.type='button';fix.textContent='✎ Correggi';fix.onclick=()=>openCorrection(i);
+ const turnL=document.createElement('button');turnL.type='button';turnL.textContent='↶ 90°';turnL.setAttribute('aria-label','Ruota la pagina '+(i+1)+' a sinistra');turnL.onclick=()=>turnEntry(i,270);
+  const turnR=document.createElement('button');turnR.type='button';turnR.textContent='↷ 90°';turnR.setAttribute('aria-label','Ruota la pagina '+(i+1)+' a destra');turnR.onclick=()=>turnEntry(i,90);
+  const flip=document.createElement('button');flip.type='button';flip.textContent='↻ 180°';flip.setAttribute('aria-label','Capovolgi pagina '+(i+1));flip.onclick=()=>turnEntry(i,180);
+  controls.append(turnL,turnR,flip,fix);
+  const order=document.createElement('div');order.className='card-order';
+  const up=document.createElement('button');up.type='button';up.textContent='↑ Prima';up.title='Sposta pagina '+(i+1)+' verso l’inizio';up.disabled=busy||i===0;up.onclick=()=>moveEntry(i,i-1);
+  const down=document.createElement('button');down.type='button';down.textContent='↓ Dopo';down.title='Sposta pagina '+(i+1)+' verso la fine';down.disabled=busy||i===entries.length-1;down.onclick=()=>moveEntry(i,i+1);
+  const del=document.createElement('button');del.type='button';del.className='delete-page';del.textContent='✕ Elimina';del.setAttribute('aria-label','Elimina pagina '+(i+1));del.disabled=busy;del.onclick=()=>removeEntry(i);
+  for(const b of [fix,turnL,turnR,flip])b.disabled=busy;
+  order.append(up,down,del);info.append(name,desc,controls,order);item.append(pv,info);cards.append(item);
+  // Desktop drag reorder. Buttons above stay usable on touch devices and with keyboards.
+  item.draggable=!busy;item.addEventListener('dragstart',ev=>{if(busy){ev.preventDefault();return}dragSource=i;item.classList.add('drag-sort');ev.dataTransfer.effectAllowed='move';ev.dataTransfer.setData('text/plain',String(i))});
+  item.addEventListener('dragover',ev=>{if(dragSource>=0&&!busy)ev.preventDefault()});
+  item.addEventListener('drop',ev=>{if(dragSource>=0&&!busy){ev.preventDefault();moveEntry(dragSource,i)}dragSource=-1});
+  item.addEventListener('dragend',()=>{dragSource=-1;item.classList.remove('drag-sort')});
+ });$('summary').textContent=entries.length+' '+(entries.length===1?'pagina':'pagine')+(pending.length?' · '+pending.length+' in attesa':'');$('review-count').textContent=entries.filter(e=>e.review).length?entries.filter(e=>e.review).length+' da verificare':'Anteprima pronta';syncActions();}
+function moveEntry(from,to){if(busy||from===to||from<0||to<0||from>=entries.length||to>=entries.length)return;
+ const [item]=entries.splice(from,1);entries.splice(to,0,item);lastPdfSize=null;repaint();status('Ordine delle pagine aggiornato: il PDF seguirà questo ordine.');}
+function discardUnusedSource(id){if(id===activeSource||pending.some(x=>x.id===id)||entries.some(e=>e.sourceIndex===id))return;sourceFiles=sourceFiles.filter(s=>s.id!==id)}
+function removeEntry(index){if(busy||index<0||index>=entries.length)return;
+ const [entry]=entries.splice(index,1),source=sourceFiles.find(s=>s.id===entry.sourceIndex);
+ lastRemoved={entry,index,source};discardUnusedSource(entry.sourceIndex);lastPdfSize=null;repaint();status('Pagina eliminata. Puoi annullare la rimozione.');}
+function undoRemove(){if(busy||!lastRemoved)return;const {entry,index,source}=lastRemoved;
+ if(!sourceFiles.some(s=>s.id===source.id)){
+  if(sourceFiles.length>=MAX_FILES||sourceFiles.reduce((a,s)=>a+s.file.size,0)+source.file.size>MAX_TOTAL){note('Impossibile annullare: limite massimo di file raggiunto.');return;}
+  sourceFiles.push(source);
+ }
+ if(entries.length>=MAX_PAGES){note('Impossibile annullare: massimo 40 pagine.');return;}
+ entries.splice(Math.min(index,entries.length),0,entry);lastRemoved=null;lastPdfSize=null;repaint();status('Pagina ripristinata.');}
+$('undo-remove').onclick=undoRemove;
+// The *only* editing panel, hidden until someone explicitly requests it.
+let editIndex=-1,editRotation=0,editQuad=null,editSource=null;
+// Rotate a selection with the photo, preserving its four physical corners.
+// Previously pressing Rotate reset every point to a default box and could
+// silently replace a good automatic crop with a cut-off document.
+function rotatedQuad(points,deg){
+ const q=((deg%360)+360)%360;
+ if(q===0)return points.map(p=>({...p}));
+ const turn=(p)=>q===90?{x:1-p.y,y:p.x}:q===180?{x:1-p.x,y:1-p.y}:{x:p.y,y:1-p.x};
+ const list=points.map(turn);
+ return (q===90?[list[3],list[0],list[1],list[2]]:q===180?[list[2],list[3],list[0],list[1]]:[list[1],list[2],list[3],list[0]]);
+}
+function turnEntry(index,angle){
+ if(busy)return;
+ const e=entries[index],turn=window.DocFixGroup2.normalizedAngle(angle);
+ e.processed=rotate(e.processed,turn);e.rotation=(e.rotation+turn)%360;
+ e.orientationReview=false;e.review=Boolean(e.geometryReview);
+ lastPdfSize=null;e.how=(e.how||'Documento').replace(/ · (Verso verificato dalla zona MRZ|Verso verificato dal testo|Orientamento non confermato)/g,'').replace(/ · Verso corretto manualmente/g,'').replace(/ · Verifica consigliata/g,'')+' · Verso corretto manualmente'+(e.geometryReview?' · Verifica i bordi':'');
+ repaint();
+}
+function openCorrection(index){
+ if(busy)return;
+ editIndex=index;const e=entries[index];editRotation=e.rotation||0;editSource=rotate(e.original,editRotation);
+ if(e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))editQuad=rotatedQuad(e.sourceQuad,editRotation);
+ else{
+  editQuad=window.DocFixScanner.defaultQuad();const found=window.DocFixScanner.detectDocument(editSource);
+  if(found.status==='found'&&found.confidence>=.79)editQuad=found.quad.map(p=>({...p}));
+ }
+ $('edit-title').textContent='Pagina '+(index+1);$('editor').hidden=false;updateEditor();document.body.classList.add('dialog-open');
+}
+function closeCorrection(){$('editor').hidden=true;document.body.classList.remove('dialog-open');editIndex=-1;}
+$('edit-close').onclick=closeCorrection;$('edit-cancel').onclick=closeCorrection;
+$('editor').onclick=e=>{if(e.target===$('editor'))closeCorrection()};
+function updateEditor(){const img=$('editor-image');img.src=thumb(editSource);const handles=$('corners');handles.querySelectorAll('.corner').forEach(el=>el.remove());for(const [i,p] of editQuad.entries()){
+  const handle=document.createElement('button');handle.type='button';handle.className='corner';handle.style.left=(p.x*100)+'%';handle.style.top=(p.y*100)+'%';handle.setAttribute('aria-label','Angolo '+(i+1));
+  handle.onpointerdown=ev=>{ev.preventDefault();handle.setPointerCapture(ev.pointerId);};
+  handle.onpointermove=ev=>{if(!handle.hasPointerCapture(ev.pointerId))return;const r=handles.getBoundingClientRect();p.x=clamp((ev.clientX-r.left)/r.width,.005,.995);p.y=clamp((ev.clientY-r.top)/r.height,.005,.995);handle.style.left=(p.x*100)+'%';handle.style.top=(p.y*100)+'%';drawFrame()};handles.append(handle)
+ }drawFrame();}
+function drawFrame(){const poly=$('frame-poly');poly.setAttribute('points',editQuad.map(p=>(p.x*100)+','+(p.y*100)).join(' '));}
+function editorTurn(delta){if(editIndex<0)return;editRotation=(editRotation+delta+360)%360;editQuad=rotatedQuad(editQuad,delta);editSource=rotate(entries[editIndex].original,editRotation);updateEditor()}
+$('edit-rotate').onclick=()=>editorTurn(90);
+$('edit-left').onclick=()=>editorTurn(270);
+$('edit-flip').onclick=()=>editorTurn(180);
+$('edit-full').onclick=()=>{if(editIndex<0)return;const e=entries[editIndex];e.rotation=editRotation;e.processed=editSource;e.cropped=false;e.sourceQuad=null;e.vectorCrop=null;e.geometryReview=false;e.orientationReview=false;e.review=false;e.how='Pagina completa · Verso confermato';lastPdfSize=null;closeCorrection();repaint()};
+$('edit-apply').onclick=()=>{if(editIndex<0)return;if(!window.DocFixScanner.validQuad(editQuad)){alert('Gli angoli si incrociano. Riprova.');return}
+ const e=entries[editIndex];e.rotation=editRotation;e.processed=window.DocFixScanner.process(editSource,{crop:true,quad:editQuad,rotation:0,filter:'original',strength:0},4200);e.cropped=true;e.geometryReview=false;e.orientationReview=false;e.review=false;e.sourceQuad=rotatedQuad(editQuad,(360-editRotation)%360);e.how='Ritaglio verificato';lastPdfSize=null;closeCorrection();repaint()};
+function addFiles(files){
+ const incoming=Array.from(files||[]);if(!incoming.length)return;
+ workspace.hidden=false;document.body.classList.add('has-document');zone.hidden=false;
+ let added=0,rejected=0;
+ for(const f of incoming){
+  if(!supported(f)){note('«'+f.name+'»: formato non supportato (usa JPG, PNG, WebP, PDF).');rejected++;continue}
+  if(f.size>LIMIT){note('«'+f.name+'»: oltre il limite di 45 MB.');rejected++;continue}
+  if(sourceFiles.length>=MAX_FILES){note('«'+f.name+'»: limite di 12 file raggiunto. Elimina prima una pagina o avvia una nuova pratica.');rejected++;continue}
+  if(sourceFiles.reduce((n,s)=>n+s.file.size,0)+f.size>MAX_TOTAL){note('«'+f.name+'»: limite totale di 100 MB raggiunto.');rejected++;continue}
+  if(entries.length+pending.length>=MAX_PAGES){note('«'+f.name+'»: limite di 40 pagine raggiunto.');rejected++;continue}
+  const item={file:f,id:nextSourceId++};sourceFiles.push(item);pending.push(item);added++;
+ }
+ if(added){lastPdfSize=null;dl.disabled=true;if(processing)totalInBatch+=added;status(added+' '+(added===1?'file aggiunto':'file aggiunti')+' alla coda. Puoi aggiungere altre foto; il PDF aspetta tutti i file.');}
+ else if(rejected)status('Nessun nuovo file aggiunto. Controlla gli avvisi.');
+ repaint();syncActions();
+ if(!processing&&!exporting&&pending.length)void drainPending();
+}
+async function drainPending(){
+ if(processing||exporting||!pending.length)return;
+ const token=sequence;processing=true;busy=true;completedInBatch=0;totalInBatch=pending.length;dl.disabled=true;
+ $('progress-wrap').hidden=false;progress(0,totalInBatch);repaint();
+ try{
+  while(token===sequence&&pending.length){
+   const item=pending.shift(),f=item.file;activeSource=item.id;
+   try{
+    // The source id is global across all selections: two different PDFs
+    // must never share the same pdf-lib copy-source cache key.
+    const batch=(/\.pdf$/i.test(f.name)||f.type==='application/pdf')
+      ?await makePdfEntries(f,item.id,token)
+      :[await makeImageEntry(f,item.id,Math.max(1,entries.length+pending.length+1))];
+    if(token!==sequence)return;
+    if(entries.length+batch.length>MAX_PAGES)throw Error('Limite di 40 pagine raggiunto; questo file non è stato aggiunto.');
+    entries.push(...batch);
+   }catch(err){
+    if(token!==sequence)return;
+    note('«'+f.name+'»: '+String(err?.message||err));
+    sourceFiles=sourceFiles.filter(s=>s.id!==item.id);
+   }finally{if(token===sequence){activeSource=null;completedInBatch++;progress(completedInBatch,totalInBatch);repaint();await wait()}}
+  }
+ }finally{
+  if(token===sequence){
+   processing=false;busy=false;activeSource=null;$('progress-wrap').hidden=true;
+   if(entries.length){status(entries.some(e=>e.review)?'Tutte le foto elaborate. Controlla le pagine evidenziate prima del PDF.':'Tutte le foto caricate. Controlla l’ordine e scarica il PDF.');}
+   else status('Nessuna pagina disponibile. Aggiungi foto o controlla gli avvisi.');
+   repaint();
+   // Late batches added while leaving the processing loop are processed too.
+   if(pending.length)void drainPending();
+  }
+ }
+}
+async function jpegBytes(c){return window.DocFixGroup3.encodeJPEG(c,$('pdf-quality').value)}
+// Gruppo 5: keep one offline raster encoder for all raster pages and A4 print layout.
+// When vector preservation is unavailable offline, export from the previews
+// with an explicit note instead of abandoning the practice.
+const exportLayout=()=>$('pdf-layout').value==='a4'?'a4':'document';
+function downloadBlob(blob){
+ window.DocFixGroup5.validate(blob,entries.length);
+ if(currentURL)URL.revokeObjectURL(currentURL);
+ currentURL=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=currentURL;
+ a.download=window.DocFixGroup5.filename(entries);
+ document.body.appendChild(a);a.click();a.remove();
+ lastPdfSize=blob.size;syncActions();
+}
+async function exportRasterOffline(){
+ return window.DocFixGroup5.create(entries,{
+  encodeJPEG:jpegBytes,mode:exportLayout(),onProgress:progress,yieldFn:wait
+ });
+}
+async function exportPdf(){
+ if(busy||pending.length||!entries.length)return;
+ exporting=true;busy=true;dl.disabled=true;
+ status('Preparo il PDF, senza tagliare i bordi…');
+ $('progress-wrap').hidden=false;progress(0,entries.length);
+ try{
+  let blob;
+  const containsVector=entries.some(e=>e.kind==='vector'&&!e.cropped);
+  // A4 always uses the same containing placement, including vector previews.
+  // This is displayed as an image-based print copy, not a searchable original.
+  if(!containsVector||exportLayout()==='a4'){
+   blob=await exportRasterOffline();
+   if(containsVector)note('Impaginazione A4: le pagine PDF importate sono state inserite come immagini, quindi il loro testo non è selezionabile.');
+  }else{
+   try{
+    const lib=await deadline(pdfLib(),9000);
+    const doc=await lib.PDFDocument.create(),loaded=new Map();let i=0;
+    for(const e of entries){
+     if(e.kind==='vector'&&!e.cropped){
+      const key=e.sourceIndex;let source=loaded.get(key);
+      if(!source){source=await lib.PDFDocument.load(e.sourceBytes,{ignoreEncryption:false});loaded.set(key,source)}
+      const pages=await doc.copyPages(source,[e.sourcePageIndex]);const page=doc.addPage(pages[0]);
+      const old=page.getRotation().angle||0;page.setRotation(lib.degrees((old+e.rotation)%360));
+      if(e.vectorCrop&&old===0&&e.rotation===0){
+       const b=e.vectorCrop,r=page.getSize(),x=r.width*b.x0,y=r.height*(1-b.y1);
+       page.setCropBox(x,y,r.width*(b.x1-b.x0),r.height*(b.y1-b.y0));
+       // MediaBox may intentionally exceed CropBox; viewers honor CropBox.
+      }
+     }else{
+      const jpg=await doc.embedJpg(await jpegBytes(e.processed));
+      const b=window.DocFixGroup5.layout(jpg.width,jpg.height,'document');
+      const page=doc.addPage([b.pageW,b.pageH]);page.drawImage(jpg,{x:b.x,y:b.y,width:b.w,height:b.h});
+     }
+     progress(++i,entries.length);if(i%2===0)await wait();
+    }
+    const bytes=await doc.save({useObjectStreams:true});
+    blob=new Blob([bytes],{type:'application/pdf'});
+    window.DocFixGroup5.validate(blob,entries.length);
+   }catch(err){
+    // PDF-lib is an optional external dependency in this historic v49 build.
+    // Fail safe: user's pages still download, but selectable vector text is lost.
+    note('Motore PDF vettoriale non disponibile: creo una copia fotografica senza perdere le pagine. Il testo di PDF importati non sarà selezionabile.');
+    blob=await exportRasterOffline();
+   }
+  }
+  downloadBlob(blob);
+  status('PDF pronto e scaricato · '+entries.length+' '+(entries.length===1?'pagina':'pagine')+' · '+fmt(blob.size)+'.');
+ }catch(e){
+  const message=String(e?.message||e);
+  status('PDF non scaricato: '+message);
+  note('Foto e correzioni restano qui. Puoi riprovare o scegliere «PDF più leggero».');
+ }finally{
+  exporting=false;busy=false;$('progress-wrap').hidden=true;repaint();
+  if(pending.length)void drainPending();
+ }
+}
+dl.onclick=exportPdf;
+
+})();
+</script><script src="./stability.js"></script></body></html>
