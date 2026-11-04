@@ -96,8 +96,10 @@ jobs:
 
               DetailPrint "Verifico il nuovo pacchetto..."
               ClearErrors
-              FileGetSize "$INSTDIR\resources\app.asar.new" $0
+              FileOpen $3 "$INSTDIR\resources\app.asar.new" r
               IfErrors rollback
+              FileSeek $3 0 END $0
+              FileClose $3
               IntCmp $0 __SIZE__ payloadok rollback rollback
 
             payloadok:
