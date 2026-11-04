@@ -116,7 +116,9 @@ jobs:
 
               DetailPrint "Aggiornamento completato."
               Exec '"$INSTDIR\DocFix.exe"'
+              IfSilent success_nomsg 0
               MessageBox MB_ICONINFORMATION|MB_OK "DocFix è stato aggiornato alla versione 1.2.$\r$\n$\r$\nIl programma verrà riaperto automaticamente."
+            success_nomsg:
               Goto done
 
             rollback:
@@ -124,7 +126,9 @@ jobs:
               Delete "$INSTDIR\resources\app.asar.new"
               Delete "$INSTDIR\resources\app.asar"
               Rename "$INSTDIR\resources\app.asar.bak" "$INSTDIR\resources\app.asar"
+              IfSilent rollback_nomsg 0
               MessageBox MB_ICONSTOP|MB_OK "Aggiornamento non applicato.$\r$\nDocFix è stato ripristinato alla versione precedente."
+            rollback_nomsg:
               SetErrorLevel 2
               Goto done
 
@@ -136,7 +140,9 @@ jobs:
               Goto done
 
             notfound:
+              IfSilent notfound_nomsg 0
               MessageBox MB_ICONSTOP|MB_OK "DocFix non risulta installato in questo PC.$\r$\nInstalla prima DocFix Desktop 1.1 o superiore."
+            notfound_nomsg:
               SetErrorLevel 4
 
             done:
