@@ -1,5 +1,5 @@
 (()=>{'use strict';
- const VERSION='1.6.0';
+ const VERSION='1.6.1';
  function toast(message,kind='error'){
    let box=document.getElementById('docfix-runtime-message');
    if(!box){box=document.createElement('div');box.id='docfix-runtime-message';box.setAttribute('role','alert');document.body.appendChild(box);}
@@ -21,6 +21,13 @@
  .docfix-update-card h3{margin:0 0 9px;font-size:24px;color:#12384e}.docfix-update-card p{margin:0 0 20px;color:#607887;line-height:1.55}
  .docfix-update-actions{display:flex;gap:10px;justify-content:flex-end}.docfix-update-actions button{border:0;border-radius:12px;padding:11px 15px;font-weight:850}
  .docfix-update-actions .later{background:#edf2f4;color:#496370}.docfix-update-actions .now{background:linear-gradient(135deg,#0b9b8c,#087f79);color:#fff}
+ .docfix-update-progress{margin:18px 0 4px}.docfix-update-progress[hidden]{display:none}
+ .docfix-update-progress-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:9px}
+ .docfix-update-progress-head strong{font-size:14px;color:#244b5d}.docfix-update-progress-head b{font-size:28px;line-height:1;color:#0b8d82}
+ .docfix-update-track{height:12px;border-radius:999px;overflow:hidden;background:#e7eff2;box-shadow:inset 0 1px 3px #15394a18}
+ .docfix-update-fill{height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#0d9d8f,#48b9a9);transition:width .18s ease}
+ .docfix-update-meta{display:flex;justify-content:space-between;gap:14px;margin-top:9px;font-size:12px;color:#78909c}
+ .docfix-update-meta span:last-child{text-align:right}
  @keyframes docfix-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
  .desktop-version{font-size:11px;font-weight:850;color:#78909d;padding:7px 2px;white-space:nowrap}
@@ -62,6 +69,11 @@
      wrap.innerHTML=`<div class="docfix-update-card" role="dialog" aria-modal="true" aria-label="Aggiornamento DocFix">
        <h3>DocFix ${latest} è disponibile</h3>
        <p>${shortNotes?shortNotes.replace(/[<>&]/g,''): 'Scarico solo il piccolo aggiornamento e riavvio DocFix automaticamente.'}</p>
+       <div class="docfix-update-progress" hidden>
+         <div class="docfix-update-progress-head"><strong>Preparazione…</strong><b>0%</b></div>
+         <div class="docfix-update-track"><div class="docfix-update-fill"></div></div>
+         <div class="docfix-update-meta"><span></span><span></span></div>
+       </div>
        <div class="docfix-update-actions"><button class="later" type="button">Più tardi</button><button class="now" type="button">Aggiorna ora</button></div>
      </div>`;
      const done=v=>{wrap.remove();resolve(v)};
@@ -69,6 +81,34 @@
      wrap.addEventListener('click',e=>{if(e.target===wrap)done(false)});
      document.body.appendChild(wrap);wrap.querySelector('.now').focus();
    });
+ }
+ function fmtBytes(n){
+   n=Number(n)||0;if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(n<10240?1:0)+' KB';return (n/1048576).toFixed(n<10485760?1:0)+' MB';
+ }
+ function fmtEta(sec){
+   if(sec==null||!Number.isFinite(Number(sec)))return '';
+   sec=Math.max(0,Math.round(Number(sec)));if(sec<=2)return 'pochi secondi';if(sec<60)return 'circa '+sec+' sec';
+   const m=Math.floor(sec/60),s=sec%60;return 'circa '+m+' min'+(s?(' '+s+' sec'):'');
+ }
+ function progressView(latest){
+   const wrap=document.querySelector('.docfix-update-modal');if(!wrap)return null;
+   const box=wrap.querySelector('.docfix-update-progress'),title=box?.querySelector('strong'),pct=box?.querySelector('b'),fill=box?.querySelector('.docfix-update-fill'),meta=box?.querySelector('.docfix-update-meta');
+   if(!box||!title||!pct||!fill||!meta)return null;
+   box.hidden=false;
+   wrap.querySelector('.docfix-update-actions')?.setAttribute('hidden','');
+   return {
+     update(p={}){
+       const value=Math.max(0,Math.min(99,Math.round(Number(p.percent)||0)));
+       pct.textContent=value+'%';fill.style.width=value+'%';title.textContent=p.message||('Aggiorno DocFix '+latest+'…');
+       const details=p.downloaded&&p.total?fmtBytes(p.downloaded)+' / '+fmtBytes(p.total):(p.total?fmtBytes(p.total):'');
+       const eta=fmtEta(p.etaSeconds);
+       meta.children[0].textContent=details;meta.children[1].textContent=eta;
+     },
+     error(message){
+       title.textContent='Aggiornamento non riuscito';pct.textContent='—';fill.style.width='0%';meta.children[0].textContent=String(message||'');meta.children[1].textContent='';
+       wrap.querySelector('.docfix-update-actions')?.removeAttribute('hidden');
+     }
+   };
  }
  async function handleUpdate(button){
    if(!window.DocFixUpdater){toast('Aggiornamenti automatici non disponibili in questa versione.','error');return}
@@ -80,13 +120,20 @@
      button.classList.add('available');button.textContent='Aggiorna alla '+r.latest;
      const yes=await updateModal(r.latest,r.notes);
      if(!yes)return;
-     button.disabled=true;button.textContent='Scarico aggiornamento…';toast('Sto scaricando e verificando DocFix '+r.latest+'…','ok');
-     const install=await window.DocFixUpdater.install();
-     if(!install?.ok)throw Error(install?.error||'Installazione aggiornamento non riuscita');
-     if(!install.available){toast('DocFix è già aggiornato.','ok');return}
-     button.textContent='Applico aggiornamento…';
-   }catch(e){console.error(e);toast('Aggiornamento non riuscito: '+(e?.message||e),'error')}
-   finally{if(document.body.isConnected&&button.textContent!=='Applico aggiornamento…'){button.disabled=false;if(!button.classList.contains('available'))button.textContent=old;}}
+     button.disabled=true;button.textContent='Aggiornamento 0%';
+     const view=progressView(r.latest);
+     let unsubscribe=()=>{};
+     if(window.DocFixUpdater.onProgress)unsubscribe=window.DocFixUpdater.onProgress(p=>{view?.update(p);if(p?.percent)button.textContent='Aggiornamento '+Math.min(99,Math.round(p.percent))+'%'});
+     try{
+       view?.update({percent:1,message:'Avvio aggiornamento…'});
+       const install=await window.DocFixUpdater.install();
+       if(!install?.ok)throw Error(install?.error||'Installazione aggiornamento non riuscita');
+       if(!install.available){toast('DocFix è già aggiornato.','ok');return}
+       view?.update({percent:99,message:'Installazione in corso · riavvio automatico',etaSeconds:4});
+       button.textContent='Riavvio DocFix…';
+     }finally{setTimeout(()=>{try{unsubscribe()}catch{}},10000)}
+   }catch(e){console.error(e);progressView()?.error(e?.message||e);toast('Aggiornamento non riuscito: '+(e?.message||e),'error')}
+   finally{if(document.body.isConnected&&button.textContent!=='Riavvio DocFix…'){button.disabled=false;if(!button.classList.contains('available'))button.textContent=old;}}
  }
  window.addEventListener('error',e=>{console.error('DocFix runtime error',e.error||e.message);toast('DocFix ha rilevato un problema inatteso. La pratica resta aperta: prova di nuovo oppure avvia un nuovo documento.');});
  window.addEventListener('unhandledrejection',e=>{console.error('DocFix async error',e.reason);toast('Un’operazione non è riuscita. I file originali non sono stati modificati.');});
