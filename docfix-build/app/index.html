@@ -1090,8 +1090,28 @@ function stackedCardCandidatesByGap(original){
  const bottomActivity=medianRange(Math.min(h-1,gap.end+Math.round(h*.06)),Math.round(h*.94));
  const gapActivity=gap.avg;
  if(topActivity<Math.max(22,gapActivity*1.45)||bottomActivity<Math.max(22,gapActivity*1.45))return [];
- const rect=(y0,y1)=>({quad:[{x:0,y:y0},{x:1,y:y0},{x:1,y:y1},{x:0,y:y1}],confidence:.84,status:'found',method:'stacked-gap',box:{x:0,y:y0,width:1,height:y1-y0}});
- return [rect(0,topEnd/h),rect(bottomStart/h,1)];
+ const gapSamples=[[],[],[]];
+ for(let y=gap.start;y<=gap.end;y+=2)for(let x=0;x<w;x+=2){const k=(y*w+x)*4;gapSamples[0].push(d[k]);gapSamples[1].push(d[k+1]);gapSamples[2].push(d[k+2]);}
+ const med=v=>{v.sort((a,b)=>a-b);return v[v.length>>1]||0},ref=gapSamples.map(med),noise=[];
+ for(let y=gap.start;y<=gap.end;y+=3)for(let x=0;x<w;x+=3){const k=(y*w+x)*4;noise.push(Math.hypot(d[k]-ref[0],d[k+1]-ref[1],d[k+2]-ref[2]));}
+ noise.sort((a,b)=>a-b);const colorThreshold=Math.max(44,(noise[Math.floor(noise.length*.85)]||20)*1.7);
+ const xBounds=(ay0,ay1)=>{
+  const frac=new Float32Array(w),step=2,total=Math.max(1,Math.ceil((ay1-ay0)/step));
+  for(let x=0;x<w;x++){let active=0;for(let y=ay0;y<ay1;y+=step){const k=(y*w+x)*4;if(Math.hypot(d[k]-ref[0],d[k+1]-ref[1],d[k+2]-ref[2])>colorThreshold)active++;}frac[x]=active/total;}
+  const sm=new Float32Array(w),rr=4;for(let x=0;x<w;x++){let sum=0,n=0;for(let k=-rr;k<=rr;k++){sum+=frac[Math.max(0,Math.min(w-1,x+k))];n++}sm[x]=sum/n}
+  const run=4,find=(reverse=false)=>{
+   if(!reverse){for(let x=0;x<=w-run;x++){let ok=0;for(let k=0;k<run;k++)ok+=sm[x+k]>.30;if(ok===run)return x;}}
+   else{for(let x=w-1;x-run+1>=0;x--){let ok=0;for(let k=0;k<run;k++)ok+=sm[x-k]>.30;if(ok===run)return x;}}
+   return null;
+  };
+  let l=find(false),r=find(true);if(l===null||r===null||r-l<w*.72)return {x0:0,x1:1};
+  const p=Math.max(2,Math.round(w*.006));l=Math.max(0,l-p);r=Math.min(w-1,r+p);
+  if(l<w*.018)l=0;if(r>w*.982)r=w-1;
+  return {x0:l/w,x1:(r+1)/w};
+ };
+ const topX=xBounds(0,topEnd),bottomX=xBounds(bottomStart,h);
+ const rect=(x0,y0,x1,y1)=>({quad:[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}],confidence:.86,status:'found',method:'stacked-gap-color',box:{x:x0,y:y0,width:x1-x0,height:y1-y0}});
+ return [rect(topX.x0,0,topX.x1,topEnd/h),rect(bottomX.x0,bottomStart/h,bottomX.x1,1)];
 }
 function multiCardCandidates(original){
  const scan=window.DocFixScanner,raw=(scan.detectAll?.(original)||[]).filter(c=>c?.status==='found'&&c.confidence>=.70&&scan.validQuad(c.quad));
