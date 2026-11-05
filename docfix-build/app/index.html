@@ -1072,10 +1072,33 @@ function warmVerticalTrim(canvas,ref){
  return {y0:a/h,y1:(b+1)/h,used:a>1||b<h-2};
 }
 function verticalTrimQuad(q,t0,t1){const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});return [lerp(q[0],q[3],t0),lerp(q[1],q[2],t0),lerp(q[1],q[2],t1),lerp(q[0],q[3],t1)]}
-async function normalizeKnownCard(original,sourceQuad,label,confidence){
- const scan=window.DocFixScanner,fine=window.DocFixGroup1?.refineQuad?.(original,sourceQuad),baseQuad=fine?.refined?fine.quad:sourceQuad;
- const rough=scan.process(original,{crop:true,quad:baseQuad,rotation:0,filter:'original',strength:0},4200),ref=warmBackgroundReference(original),trim=warmVerticalTrim(rough,ref);
- const quad=trim.used?verticalTrimQuad(baseQuad,trim.y0,trim.y1):baseQuad.map(p=>({...p}));
+function expandQuadSafe(q,pad=.025){
+ const cx=q.reduce((s,p)=>s+p.x,0)/4,cy=q.reduce((s,p)=>s+p.y,0)/4;
+ return q.map(p=>({x:Math.max(0,Math.min(1,cx+(p.x-cx)*(1+pad*2))),y:Math.max(0,Math.min(1,cy+(p.y-cy)*(1+pad*2)))}));
+}
+function multiCropHealthy(canvas){
+ if(!canvas||canvas.width<240||canvas.height<140)return false;
+ const r=Math.max(canvas.width,canvas.height)/Math.max(1,Math.min(canvas.width,canvas.height));
+ if(r<1.22||r>2.05)return false;
+ try{
+  const s=window.DocFixScanner.resize(canvas,320),g=s.getContext('2d',{willReadFrequently:true}),d=g.getImageData(0,0,s.width,s.height).data;
+  let sum=0,sum2=0,n=0,dark=0,light=0;
+  for(let i=0;i<d.length;i+=16){const y=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];sum+=y;sum2+=y*y;n++;dark+=y<45;light+=y>245}
+  const mean=sum/Math.max(1,n),variance=sum2/Math.max(1,n)-mean*mean;
+  s.width=s.height=1;
+  return variance>180&&dark/Math.max(1,n)<.88&&light/Math.max(1,n)<.96;
+ }catch{return true}
+}
+async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSafe=false}={}){
+ const scan=window.DocFixScanner;
+ const fine=multiSafe?null:window.DocFixGroup1?.refineQuad?.(original,sourceQuad);
+ const baseQuad=multiSafe?expandQuadSafe(sourceQuad,.028):(fine?.refined?fine.quad:sourceQuad);
+ let quad=baseQuad.map(p=>({...p}));
+ if(!multiSafe){
+  const rough=scan.process(original,{crop:true,quad:baseQuad,rotation:0,filter:'original',strength:0},4200),ref=warmBackgroundReference(original),trim=warmVerticalTrim(rough,ref);
+  quad=trim.used?verticalTrimQuad(baseQuad,trim.y0,trim.y1):baseQuad.map(p=>({...p}));
+  rough.width=rough.height=1;
+ }
  let processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200),rotation=0;
  const mrz=window.DocFixGroup2.recognizeMRZOrientation(processed),osd=mrz.trustworthy?{angle:0,review:false,trustworthy:true}:await inferTextOrientation(processed);
  if(mrz.trustworthy&&mrz.angle){rotation=mrz.angle;processed=rotate(processed,rotation)}
@@ -1084,20 +1107,32 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence){
  const geometryReview=confidence<.78,quality=qualityAudit(processed,quad),qualityReview=quality.review,review=geometryReview||orientationReview||qualityReview;
  const method=mrz.trustworthy?'Verso verificato dalla zona MRZ':osd.trustworthy?'Verso verificato dal testo':'Orientamento non confermato';
  const qualityNote=quality.issues.length?' · '+quality.issues.join(' · '):'';
- return {processed,rotation,review,geometryReview,orientationReview,qualityReview,qualityIssues:quality.issues,qualityMetrics:quality.metrics,cropped:true,sourceQuad:quad,how:label+(fine?.refined?' · bordi rifiniti':'')+' · '+method+qualityNote+(review?' · Verifica consigliata':'')};
+ return {processed,rotation,review,geometryReview,orientationReview,qualityReview,qualityIssues:quality.issues,qualityMetrics:quality.metrics,cropped:true,sourceQuad:quad,how:label+(multiSafe?' · margine di sicurezza':fine?.refined?' · bordi rifiniti':'')+' · '+method+qualityNote+(review?' · Verifica consigliata':'')};
 }
 async function makeImageEntries(file,index,total=1){
  const original=await imageCanvas(file,total),multi=multiCardCandidates(original);
  if(multi.length===2){
   const out=[];
-  for(let i=0;i<multi.length;i++){const fixed=await normalizeKnownCard(original,multi[i].quad,'2 tessere rilevate · tessera '+(i+1)+' ritagliata',multi[i].confidence);if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),sourceIndex:index})}
+  for(let i=0;i<multi.length;i++){
+   const fixed=await normalizeKnownCard(original,multi[i].quad,'2 tessere rilevate · tessera '+(i+1),multi[i].confidence,{multiSafe:true});
+   if(!multiCropHealthy(fixed.processed)){
+    for(const e of out){try{e.processed.width=e.processed.height=1}catch{}}
+    const fallback=await normalizeRaster(original);
+    fallback.review=true;fallback.geometryReview=true;
+    fallback.how='2 documenti possibili · ritaglio automatico annullato per sicurezza · Foto completa conservata';
+    if(original.docfixDownscaled)fallback.how+=' · Foto ridotta per evitare blocchi di memoria';
+    return [{kind:'raster',original,...fallback,source:file.name,title:file.name+' · foto completa',sourceIndex:index}];
+   }
+   if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
+   out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),sourceIndex:index});
+  }
   return out;
  }
  const fixed=await normalizeRaster(original);
  if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
  return [{kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index}];
 }
-window.DocFixDesktopDiagnostics=Object.freeze({multiCardCandidates,warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.8.2'});
+window.DocFixDesktopDiagnostics=Object.freeze({multiCardCandidates,warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.8.3'});
 function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
  // The page's existing /Rotate is already applied in pdf.js previews.
  const visible=(best+((pageRotate||0)/90))%4;return {chars,rotate:dominance>=.88&&chars>=45?((4-visible)%4)*90:0,dominance};}
