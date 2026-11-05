@@ -1106,7 +1106,7 @@ async function makePdfEntries(file,idx,token){if(window.DocFixPDFGuard)await win
  if(orient.chars>=45){processed=rotate(raw,rotation);review=orient.dominance<.88;how=review?'Orientamento del testo da verificare':rotation?'Testo orientato automaticamente':'Testo già orientato';// Keep searchable vector text and original formatting.
  const box=(rotation===0&&(p.rotate||0)%360===0)?whiteMarginCrop(raw):null;
  if(box){processed=crop(processed,box);how+=' · Margini bianchi ridotti'}
- results.push({kind:'vector',original:raw,processed,rotation,review,how,cropped:false,vectorCrop:box,source:file.name,title:file.name+' · pagina '+i,sourceBytes:data,sourcePageIndex:i-1,sourceIndex:idx});
+ results.push({kind:'vector',original:raw,processed,rotation,review,how,cropped:false,vectorCrop:box,embeddedText:items.map(x=>x.str||'').join(' ').replace(/\s+/g,' ').trim(),source:file.name,title:file.name+' · pagina '+i,sourceBytes:data,sourcePageIndex:i-1,sourceIndex:idx});
  }else{
  // Scanned PDFs must use exactly the same crop, perspective and rotation
  // pipeline as a standalone image. Prior versions rotated the page while
@@ -1156,7 +1156,7 @@ function undoRemove(){if(busy||!lastRemoved)return;const {entry,index,source}=la
  if(entries.length>=MAX_PAGES){note('Impossibile annullare: massimo 40 pagine.');return;}
  entries.splice(Math.min(index,entries.length),0,entry);lastRemoved=null;lastPdfSize=null;repaint();status('Pagina ripristinata.');}
 $('undo-remove').onclick=undoRemove;
-window.DocFixOcrHost=Object.freeze({entries:()=>entries.slice(),indexOf:e=>entries.indexOf(e),repaint:()=>repaint()});
+window.DocFixOcrHost=Object.freeze({entries:()=>entries.slice(),indexOf:e=>entries.indexOf(e),repaint:()=>repaint(),isBusy:()=>busy||processing||exporting});
 // The *only* editing panel, hidden until someone explicitly requests it.
 let editIndex=-1,editRotation=0,editQuad=null,editSource=null;
 // Rotate a selection with the photo, preserving its four physical corners.
