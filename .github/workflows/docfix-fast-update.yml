@@ -116,7 +116,7 @@ jobs:
           grep -F "update.hidden=true" verify/app/stability.js
           grep -F "Aggiornamento disponibile" verify/app/stability.js
           grep -F "updaterHiddenWhenNoUpdate" verify/main.js
-          grep -F "Aggiornamento 0%" verify/app/stability.js
+          grep -F "openUpdateProgress" verify/app/stability.js
           grep -F "1.8.2" verify/package.json
           test -f verify/app/vendor/pdfjs/pdf.min.mjs
           test -f verify/app/vendor/tessdata/eng.traineddata.gz
