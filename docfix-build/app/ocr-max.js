@@ -87,6 +87,47 @@ function signals(text){
  const mrz=String(text||'').toUpperCase().split(/\r?\n/).map(x=>x.replace(/\s/g,'')).filter(x=>/^[A-Z0-9<]{28,44}$/.test(x));
  return {cfs:[...new Set(cfs)],vins:[...new Set(vins)],plates:[...new Set(plates)],dates:[...new Set(dates)],mrz:[...new Set(mrz)]};
 }
+function labeledFields(text){
+ const lines=String(text||'').split(/\r?\n/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean);
+ const specs=[
+  ['Cognome',/^(?:COGNOME(?:\s*\/\s*SURNAME)?|SURNAME)\b[:\s.\-]*/i],
+  ['Nome',/^(?:NOME(?:\s*\/\s*(?:NAME|GIVEN NAMES?))?|GIVEN NAMES?|NAME)\b[:\s.\-]*/i],
+  ['Luogo e data di nascita',/^(?:LUOGO\s+E\s+DATA\s+DI\s+NASCITA|PLACE\s+AND\s+DATE\s+OF\s+BIRTH)\b[:\s.\-]*/i],
+  ['Data di nascita',/^(?:DATA\s+DI\s+NASCITA|DATE\s+OF\s+BIRTH|BIRTH\s+DATE)\b[:\s.\-]*/i],
+  ['Luogo di nascita',/^(?:LUOGO\s+DI\s+NASCITA|PLACE\s+OF\s+BIRTH)\b[:\s.\-]*/i],
+  ['Sesso',/^(?:SESSO|SEX)\b[:\s.\-]*/i],
+  ['Indirizzo',/^(?:INDIRIZZO(?:\s+DI\s+RESIDENZA)?|RESIDENZA|ADDRESS|RESIDENCE)\b[:\s.\-]*/i],
+  ['Codice fiscale',/^(?:CODICE\s+FISCALE|FISCAL\s+CODE)\b[:\s.\-]*/i],
+  ['Numero documento',/^(?:NUMERO\s+(?:DEL\s+)?DOCUMENTO|DOCUMENT\s+(?:NO|NUMBER)|NUMERO\s+PATENTE|DRIVING\s+LICEN[CS]E\s+(?:NO|NUMBER))\b[:\s.\-]*/i],
+  ['Data rilascio',/^(?:DATA\s+(?:DI\s+)?RILASCIO|ISSUE\s+DATE|DATE\s+OF\s+ISSUE)\b[:\s.\-]*/i],
+  ['Scadenza',/^(?:SCADENZA|DATA\s+DI\s+SCADENZA|EXPIRY|EXPIRATION|DATE\s+OF\s+EXPIRY)\b[:\s.\-]*/i]
+ ];
+ const looksLabel=line=>specs.some(([,re])=>re.test(line));
+ const out=[];
+ for(let i=0;i<lines.length;i++)for(const [name,re] of specs){
+  if(!re.test(lines[i]))continue;
+  let value=lines[i].replace(re,'').trim();
+  if(value.length<1){
+   for(let j=i+1;j<Math.min(lines.length,i+3);j++){
+    if(looksLabel(lines[j]))break;
+    if(lines[j].length>=1){value=lines[j];break}
+   }
+  }
+  value=value.replace(/^[/:;,.\-\s]+/,'').trim();
+  if(!value||value.length>100)continue;
+  out.push({name,value,confidence:.68,source:'ocr-label'});
+ }
+ const seen=new Set();return out.filter(f=>{const k=f.name.toLowerCase()+'|'+f.value.toUpperCase();if(seen.has(k))return false;seen.add(k);return true});
+}
+function mergeDisplayFields(primary=[],fallback=[]){
+ const map=new Map();
+ for(const f of [...primary,...fallback]){
+  if(!f?.name||!f?.value)continue;
+  const key=String(f.name).toLowerCase()+'|'+String(f.value).toUpperCase();
+  const old=map.get(key);if(!old||(Number(f.confidence)||0)>(Number(old.confidence)||0))map.set(key,f);
+ }
+ return [...map.values()].sort((a,b)=>(b.confidence||0)-(a.confidence||0));
+}
 function localScore(r){
  const conf=clamp((Number(r.confidence)||0)/100,0,1),tokens=normalizeTokens(r.text),sig=signals(r.text);
  const validated=sig.cfs.length+sig.vins.length+sig.plates.length+sig.dates.length+sig.mrz.length;
@@ -186,7 +227,7 @@ async function analyzeEntry(entry,force=false){
    score:clamp(Number(final.score)||Number(final.confidence)||0,0,1),
    provider:final.provider||'tesseract',
    signals:final.signals||signals(final.text),
-   structuredFields:final.structuredFields||[],
+   structuredFields:mergeDisplayFields(final.structuredFields||[],labeledFields(final.text)),
    candidates,errors,
    localPasses:local.results.map(x=>({name:x.name,confidence:x.confidence,score:x.score}))
   };
