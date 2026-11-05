@@ -1,5 +1,5 @@
 (()=>{'use strict';
- const VERSION='1.8.0';
+ const VERSION='1.8.1';
  function toast(message,kind='error'){
    let box=document.getElementById('docfix-runtime-message');
    if(!box){box=document.createElement('div');box.id='docfix-runtime-message';box.setAttribute('role','alert');document.body.appendChild(box);}
