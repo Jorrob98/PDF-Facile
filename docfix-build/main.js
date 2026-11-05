@@ -15,7 +15,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.8.0',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.8.1',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -29,7 +29,7 @@ function requiredStartupFiles(){
 function requiredEngineFiles(){
   return [
     'vendor/pdfjs/pdf.min.mjs','vendor/pdfjs/pdf.worker.min.mjs','vendor/pdf-lib/pdf-lib.min.js',
-    'vendor/tesseract/tesseract.min.js','vendor/tesseract/worker.min.js','vendor/tessdata/eng.traineddata.gz','vendor/tessdata/ita.traineddata.gz','vendor/tessdata/ita.traineddata.gz'
+    'vendor/tesseract/tesseract.min.js','vendor/tesseract/worker.min.js','vendor/tessdata/eng.traineddata.gz','vendor/tessdata/ita.traineddata.gz'
   ];
 }
 function validateStartupBundle(){
@@ -164,17 +164,15 @@ async function runSelfTest(){
         if(!window.PDFLib){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='./vendor/pdf-lib/pdf-lib.min.js';s.onload=resolve;s.onerror=reject;document.head.appendChild(s);});}
         out.pdflib=!!window.PDFLib?.PDFDocument;
         const abs=p=>new URL(p,location.href).toString();
-        const worker=await Tesseract.createWorker('eng',1,{legacyCore:true,legacyLang:true,workerPath:abs('./vendor/tesseract/worker.min.js'),corePath:abs('./vendor/tesseract-core/'),langPath:abs('./vendor/tessdata'),gzip:true});
+        const worker=await Tesseract.createWorker(['ita','eng'],1,{legacyCore:true,legacyLang:true,workerPath:abs('./vendor/tesseract/worker.min.js'),corePath:abs('./vendor/tesseract-core/'),langPath:abs('./vendor/tessdata'),gzip:true});
         const ocr=await worker.recognize(c);await worker.terminate();
         out.ocr=typeof ocr?.data?.text==='string'&&ocr.data.text.length>0;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
-        out.ocrBridge=!!window.DocFixOCRCloud;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.8.0':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.8.1':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
-        out.ocrModule=window.DocFixOCRMax?.version==='1.8.0';
-        out.ocrModule=window.DocFixOCRMax?.version==='1.8.0';
+        out.ocrModule=window.DocFixOCRMax?.version==='1.8.1';
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
         for(const y of [230,620]){mg.fillStyle='#d9eef0';mg.fillRect(130,y,640,360);mg.fillStyle='#1b6380';mg.fillRect(130,y,640,80);mg.fillStyle='#fff';mg.fillRect(170,y+120,560,70);mg.fillStyle='#111';for(let x=190;x<700;x+=12)mg.fillRect(x,y+135,5,40);mg.fillStyle='#222';mg.font='32px Arial';mg.fillText('DOCFIX TEST',190,y+250);}
         const multi=window.DocFixDesktopDiagnostics?.multiCardCandidates(mc)||[];
@@ -221,7 +219,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.8.0','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.8.1','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
@@ -288,7 +286,7 @@ async function downloadVerifiedUpdate(sender){
   return {available:true,current,latest:latest.version,updater};
 }
 function launchVerifiedUpdater(updater){
-  // 1.8.0: launch the verified NSIS updater directly.
+  // 1.8.1: launch the verified NSIS updater directly.
   // The previous PowerShell relay could be blocked by Windows policy/AV and
   // DocFix could report "installazione pronta" without ever applying it.
   const child=spawn(updater,['/S'],{
