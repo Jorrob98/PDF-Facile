@@ -1214,7 +1214,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
  return [{kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false}];
 }
 window.DocFixDesktopDiagnostics=Object.freeze({
- multiCardCandidates,stackedCardCandidatesByGap,regroupTwoFileFourCards,warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
+ multiCardCandidates,stackedCardCandidatesByGap,pairedFourCards,regroupTwoFileFourCards,warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
  safeMultiCropPreview:(original,candidate)=>window.DocFixScanner.process(original,{crop:true,quad:expandQuadSafe(candidate.quad,.028),rotation:0,filter:'original',strength:0},2200),
  orderedIncoming,reverseFileOrder,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.8.7'
 });
@@ -1355,13 +1355,16 @@ function addFiles(files){
  repaint();syncActions();
  if(!processing&&!exporting&&pending.length)void drainPending();
 }
-function regroupTwoFileFourCards(batchId){
- if(batchId==null)return false;
- const group=entries.filter(e=>e.loadBatch===batchId);
- if(group.length!==4||!group.every(e=>e.twoUp&&e.splitCount===2&&e.batchSize===2))return false;
+function pairedFourCards(group){
+ if(group.length!==4||!group.every(e=>e.twoUp&&e.splitCount===2&&e.batchSize===2))return [];
  const by=(pos,slot)=>group.find(e=>e.batchPos===pos&&e.splitSlot===slot);
  const ordered=[by(0,0),by(1,0),by(0,1),by(1,1)];
- if(ordered.some(x=>!x))return false;
+ return ordered.some(x=>!x)?[]:ordered;
+}
+function regroupTwoFileFourCards(batchId){
+ if(batchId==null)return false;
+ const group=entries.filter(e=>e.loadBatch===batchId),ordered=pairedFourCards(group);
+ if(ordered.length!==4)return false;
  const slots=[];entries.forEach((e,i)=>{if(e.loadBatch===batchId)slots.push(i)});
  if(slots.length!==4)return false;
  const labels=['Codice fiscale · fronte','Codice fiscale · retro','Carta identità · fronte','Carta identità · retro'];
