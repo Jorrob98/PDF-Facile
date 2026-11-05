@@ -2,6 +2,7 @@
 const {app,BrowserWindow,Menu,shell,session,dialog,ipcMain}=require('electron');
 const http=require('http'),https=require('https'),fs=require('fs'),path=require('path'),crypto=require('crypto');
 const {spawn}=require('child_process');
+const {registerOcrHandlers}=require('./ocr-cloud-main');
 
 let server=null, mainWindow=null, logFile=null, quitting=false, pendingSecondInstance=false;
 const SELF_TEST=process.argv.includes('--self-test');
@@ -14,7 +15,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.7.2',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.8.0',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -168,7 +169,7 @@ async function runSelfTest(){
         out.ocr=typeof ocr?.data?.text==='string'&&ocr.data.text.length>0;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.7.2':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.8.0':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
         for(const y of [230,620]){mg.fillStyle='#d9eef0';mg.fillRect(130,y,640,360);mg.fillStyle='#1b6380';mg.fillRect(130,y,640,80);mg.fillStyle='#fff';mg.fillRect(170,y+120,560,70);mg.fillStyle='#111';for(let x=190;x<700;x+=12)mg.fillRect(x,y+135,5,40);mg.fillStyle='#222';mg.font='32px Arial';mg.fillText('DOCFIX TEST',190,y+250);}
@@ -216,7 +217,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.7.2','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.8.0','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
@@ -283,7 +284,7 @@ async function downloadVerifiedUpdate(sender){
   return {available:true,current,latest:latest.version,updater};
 }
 function launchVerifiedUpdater(updater){
-  // 1.7.2: launch the verified NSIS updater directly.
+  // 1.8.0: launch the verified NSIS updater directly.
   // The previous PowerShell relay could be blocked by Windows policy/AV and
   // DocFix could report "installazione pronta" without ever applying it.
   const child=spawn(updater,['/S'],{
@@ -341,6 +342,7 @@ if(!gotLock){app.quit();}else{
   app.whenReady().then(async()=>{
     app.setAppUserModelId?.('it.jorrob.docfix');
     initLog();
+    registerOcrHandlers({ipcMain,app,log});
     try{if(SELF_TEST)await runSelfTest();else await createWindow({show:true,selfTest:false});}
     catch(e){fatalStartup(e);}
   });
