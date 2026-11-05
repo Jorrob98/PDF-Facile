@@ -60,7 +60,7 @@ function registerOcrHandlers({ipcMain,app,log}){
     return new Promise((resolve,reject)=>{
       const u=new URL(url),payload=body==null?null:Buffer.from(JSON.stringify(body),'utf8');
       const req=https.request(u,{method,headers:{
-        'User-Agent':'DocFix-OCR-MAX/1.8.0',
+        'User-Agent':'DocFix-OCR-MAX/1.8.1',
         'Accept':'application/json',
         ...(payload?{'Content-Type':'application/json','Content-Length':String(payload.length)}:{}),
         ...headers
@@ -114,16 +114,17 @@ function registerOcrHandlers({ipcMain,app,log}){
     return {provider:'google',text,confidence:meta.confidence,words:meta.words};
   }
 
-  async function azureRead(image,cfg){
+  async function azureAnalyze(image,cfg,modelId){
     const endpoint=cfg.azure.endpoint.replace(/\/+$/,'');
     const key=dec(cfg.azure.keyEnc);
-    const startUrl=endpoint+'/documentintelligence/documentModels/prebuilt-read:analyze?api-version=2024-11-30&locale=it-IT';
+    const locale=modelId==='prebuilt-read'?'&locale=it-IT':'';
+    const startUrl=endpoint+'/documentintelligence/documentModels/'+encodeURIComponent(modelId)+':analyze?api-version=2024-11-30'+locale;
     const start=await jsonRequest(startUrl,{method:'POST',headers:{'Ocp-Apim-Subscription-Key':key},body:{base64Source:image},timeout:35000});
     const op=start.headers['operation-location'];
     if(!op)throw new Error('Azure non ha restituito Operation-Location.');
     let last=null;
-    for(let i=0;i<38;i++){
-      await new Promise(r=>setTimeout(r,i<4?450:700));
+    for(let i=0;i<42;i++){
+      await new Promise(r=>setTimeout(r,i<4?450:750));
       const r=await jsonRequest(op,{headers:{'Ocp-Apim-Subscription-Key':key},timeout:20000});
       last=r.data;
       const state=String(last?.status||'').toLowerCase();
@@ -131,13 +132,41 @@ function registerOcrHandlers({ipcMain,app,log}){
       if(state==='failed'||state==='canceled')throw new Error(last?.error?.message||'Azure OCR non riuscito');
     }
     if(String(last?.status||'').toLowerCase()!=='succeeded')throw new Error('Azure OCR non ha terminato in tempo.');
-    const ar=last.analyzeResult||{},words=[],confs=[];
+    return last.analyzeResult||{};
+  }
+  function azureWords(ar){
+    const words=[],confs=[];
     for(const page of ar.pages||[])for(const word of page.words||[]){
       const confidence=Number(word.confidence);
       words.push({text:String(word.content||''),confidence:Number.isFinite(confidence)?confidence:null,polygon:word.polygon||null});
       if(Number.isFinite(confidence))confs.push(confidence);
     }
-    return {provider:'azure',text:String(ar.content||'').trim(),confidence:average(confs),words};
+    return {words,confidence:average(confs)};
+  }
+  function primitiveFieldValue(field){
+    if(!field||typeof field!=='object')return '';
+    if(typeof field.content==='string'&&field.content.trim())return field.content.trim();
+    for(const key of ['valueString','valueDate','valueTime','valueCountryRegion','valuePhoneNumber','valueNumber','valueInteger']){
+      if(field[key]!==undefined&&field[key]!==null&&String(field[key]).trim())return String(field[key]).trim();
+    }
+    return '';
+  }
+  function structuredAzureFields(ar){
+    const out=[];
+    for(const doc of ar.documents||[])for(const [name,field] of Object.entries(doc.fields||{})){
+      const value=primitiveFieldValue(field);if(!value)continue;
+      const confidence=Number(field.confidence);
+      out.push({name,value,confidence:Number.isFinite(confidence)?confidence:null});
+    }
+    return out.sort((a,b)=>(b.confidence||0)-(a.confidence||0));
+  }
+  async function azureRead(image,cfg){
+    const ar=await azureAnalyze(image,cfg,'prebuilt-read'),meta=azureWords(ar);
+    return {provider:'azure',text:String(ar.content||'').trim(),confidence:meta.confidence,words:meta.words,structuredFields:[]};
+  }
+  async function azureIdDocument(image,cfg){
+    const ar=await azureAnalyze(image,cfg,'prebuilt-idDocument'),meta=azureWords(ar);
+    return {provider:'azure-id',text:String(ar.content||'').trim(),confidence:meta.confidence,words:meta.words,structuredFields:structuredAzureFields(ar)};
   }
 
   const normalizeTokens=text=>String(text||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').match(/[A-Z0-9]{2,}/g)||[];
@@ -180,6 +209,19 @@ function registerOcrHandlers({ipcMain,app,log}){
     for(const k of Object.keys(out))out[k]=[...new Set(out[k])];
     return out;
   }
+  function identityHint(text){
+    const s=String(text||'').toUpperCase();
+    return /CARTA.{0,12}IDENTIT|IDENTITY.{0,8}CARD|PATENTE.{0,10}GUIDA|DRIVING.{0,8}LICEN|REPUBBLICA\s+ITALIANA|[IP]<ITA/.test(s)
+      || validatedSignals(s).mrz.length>0;
+  }
+  function mergeStructured(candidates){
+    const seen=new Map();
+    for(const c of candidates)for(const f of c.structuredFields||[]){
+      const key=String(f.name||'').toLowerCase()+'|'+String(f.value||'').toUpperCase();
+      const old=seen.get(key);if(!old||(Number(f.confidence)||0)>(Number(old.confidence)||0))seen.set(key,f);
+    }
+    return [...seen.values()].sort((a,b)=>(b.confidence||0)-(a.confidence||0));
+  }
 
   async function recognize(input={}){
     const cfg=readConfig(),image=validateImageBase64(input.imageBase64),alt=input.altImageBase64?validateImageBase64(input.altImageBase64):image;
@@ -191,12 +233,17 @@ function registerOcrHandlers({ipcMain,app,log}){
     }
     const local=candidates.find(c=>c.provider==='tesseract');
     const agreement=google&&local?tokenAgreement(google.text,local.text):1;
-    const needAzure=Boolean(input.forceAzure)||!google||(Number(google.confidence)||0)<.86||(local&&agreement<.64);
+    const combinedHint=[local?.text,google?.text].filter(Boolean).join('\n');
+    const isIdentity=identityHint(combinedHint);
+    const needAzure=Boolean(input.forceAzure)||isIdentity||!google||(Number(google.confidence)||0)<.86||(local&&agreement<.64);
     if(needAzure&&cfg.azure.endpoint&&cfg.azure.keyEnc){
-      try{candidates.push(await azureRead(alt,cfg));}catch(e){errors.push('Azure: '+(e.message||e));log('OCR_AZURE_FAIL',e);}
+      try{
+        const az=isIdentity?await azureIdDocument(image,cfg):await azureRead(alt,cfg);
+        candidates.push(az);
+      }catch(e){errors.push('Azure: '+(e.message||e));log('OCR_AZURE_FAIL',e);}
     }
     const best=chooseBest(candidates);
-    return {ok:Boolean(best),best,candidates,rescuedSignals:mergeSignals(candidates),errors,agreement,status:status()};
+    return {ok:Boolean(best),best,candidates,rescuedSignals:mergeSignals(candidates),structuredFields:mergeStructured(candidates),identityDocument:isIdentity,errors,agreement,status:status()};
   }
 
   ipcMain.handle('docfix:ocr:status',()=>({ok:true,...status()}));
