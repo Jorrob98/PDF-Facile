@@ -15,7 +15,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.8.5',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.8.6',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -171,10 +171,10 @@ async function runSelfTest(){
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.8.5':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.8.6':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         out.updaterHiddenWhenNoUpdate=document.querySelector('#docfix-update-button')?.hidden===true;
-        out.ocrModule=window.DocFixOCRMax?.version==='1.8.5';
+        out.ocrModule=window.DocFixOCRMax?.version==='1.8.6';
         const cloudTest=window.DocFixOCRCloud?.selfTest?await window.DocFixOCRCloud.selfTest():null;
         out.ocrCloudLogic=!!cloudTest&&cloudTest.identity===true&&cloudTest.structured===true&&cloudTest.agreement===true;
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
@@ -184,6 +184,16 @@ async function runSelfTest(){
         const safeCrops=multi.map(x=>window.DocFixDesktopDiagnostics?.safeMultiCropPreview?.(mc,x)).filter(Boolean);
         out.multiCardSafe=safeCrops.length===2&&safeCrops.every(c=>window.DocFixDesktopDiagnostics?.multiCropHealthy?.(c));
         for(const c of safeCrops){try{c.width=c.height=1}catch{}}
+        const edge=document.createElement('canvas');edge.width=900;edge.height=1300;const eg=edge.getContext('2d');
+        eg.fillStyle='#777983';eg.fillRect(0,0,edge.width,edge.height);
+        eg.fillStyle='#1b6ea9';eg.fillRect(0,0,880,505);
+        eg.fillStyle='#eef4f8';for(let y=80;y<480;y+=65)eg.fillRect(25,y,820,22);
+        eg.fillStyle='#0a1d2a';for(let x=80;x<820;x+=55)eg.fillRect(x,25,18,440);
+        eg.fillStyle='#ead4df';eg.fillRect(35,720,865,580);
+        eg.fillStyle='#faf6f8';for(let y=780;y<1260;y+=72)eg.fillRect(65,y,790,24);
+        eg.fillStyle='#29343a';for(let x=95;x<850;x+=63)eg.fillRect(x,755,16,500);
+        const stacked=window.DocFixDesktopDiagnostics?.stackedCardCandidatesByGap?.(edge)||[];
+        out.stackedEdgeCards=stacked.length===2&&stacked[0].box.y<.05&&stacked[1].box.y>.45;
         const orderTest=window.DocFixDesktopDiagnostics?.orderedIncoming?.([
           new File(['b'],'WhatsApp Image 2026-11-05 at 15.10.11.jpeg',{type:'image/jpeg',lastModified:2}),
           new File(['a'],'WhatsApp Image 2026-11-05 at 15.10.10.jpeg',{type:'image/jpeg',lastModified:1})
@@ -232,7 +242,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.8.5','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.8.6','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
