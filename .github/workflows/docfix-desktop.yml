@@ -43,6 +43,9 @@ jobs:
         run: |
           node --check main.js
           node --check prepare-vendor.js
+          node --check preload.js
+          node --check ocr-cloud-main.js
+          node --check app\ocr-max.js
           node --check app\group1-safe-crop.js
           node --check app\group2-orientation.js
           node --check app\group3-quality.js
@@ -55,11 +58,20 @@ jobs:
             'app\vendor\pdf-lib\pdf-lib.min.js',
             'app\vendor\tesseract\tesseract.min.js',
             'app\vendor\tesseract\worker.min.js',
-            'app\vendor\tessdata\eng.traineddata.gz'
+            'app\vendor\tessdata\eng.traineddata.gz',
+            'app\vendor\tessdata\ita.traineddata.gz'
           )
           foreach($f in $required){ if(!(Test-Path $f)){ throw "Manca $f" } }
           $cores=(Get-ChildItem app\vendor\tesseract-core\tesseract-core*.wasm.js -ErrorAction SilentlyContinue)
           if($cores.Count -lt 4){ throw "Core Tesseract incompleti: $($cores.Count)" }
+          $preload=Get-Content preload.js -Raw
+          if($preload -notmatch 'DocFixOCRCloud'){ throw 'Bridge OCR cloud mancante' }
+          $ocr=Get-Content app\ocr-max.js -Raw
+          if($ocr -notmatch 'OCR MAX'){ throw 'Modulo OCR MAX mancante' }
+          if($ocr -notmatch "createWorker\(\['ita','eng'\]"){ throw 'OCR italiano+inglese mancante' }
+          $cloud=Get-Content ocr-cloud-main.js -Raw
+          if($cloud -notmatch 'eu-vision.googleapis.com'){ throw 'Google Vision EU mancante' }
+          if($cloud -notmatch 'prebuilt-read:analyze'){ throw 'Azure Read fallback mancante' }
           Write-Host "Controlli statici superati"
 
       - name: Build Windows installer
