@@ -1,27 +1,60 @@
 {
-  "name":"docfix-desktop",
-  "version":"1.7.2",
-  "description":"DocFix Desktop by Jorrob",
-  "author":"Jorrob",
-  "main":"main.js",
-  "private":true,
-  "scripts":{"prepare-vendor":"node prepare-vendor.js","dist":"electron-builder --win nsis --x64 --publish never"},
-  "devDependencies":{
-    "electron":"45.2.2",
-    "electron-builder":"26.18.0",
-    "pdfjs-dist":"4.10.38",
-    "pdf-lib":"1.17.1",
-    "tesseract.js":"6.0.1",
-    "tesseract.js-core":"6.0.0",
-    "@tesseract.js-data/eng":"1.0.0"
+  "name": "docfix-desktop",
+  "version": "1.8.0",
+  "description": "DocFix Desktop by Jorrob",
+  "author": "Jorrob",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "prepare-vendor": "node prepare-vendor.js",
+    "dist": "electron-builder --win nsis --x64 --publish never"
   },
-  "build":{
-    "appId":"it.jorrob.docfix",
-    "productName":"DocFix",
-    "asar":true,
-    "files":["main.js","preload.js","app/**/*","build/icon.png"],
-    "directories":{"output":"dist","buildResources":"build"},
-    "win":{"target":[{"target":"nsis","arch":["x64"]}],"icon":"build/icon.png","artifactName":"DocFix_Setup_1.7.2.exe"},
-    "nsis":{"oneClick":true,"perMachine":false,"allowElevation":true,"createDesktopShortcut":true,"createStartMenuShortcut":true,"shortcutName":"DocFix","runAfterFinish":false,"deleteAppDataOnUninstall":false}
+  "devDependencies": {
+    "electron": "45.2.2",
+    "electron-builder": "26.18.0",
+    "pdfjs-dist": "4.10.38",
+    "pdf-lib": "1.17.1",
+    "tesseract.js": "6.0.1",
+    "tesseract.js-core": "6.0.0",
+    "@tesseract.js-data/eng": "1.0.0",
+    "@tesseract.js-data/ita": "1.0.0"
+  },
+  "build": {
+    "appId": "it.jorrob.docfix",
+    "productName": "DocFix",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "ocr-cloud-main.js",
+      "app/**/*",
+      "build/icon.png"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "DocFix_Setup_1.8.0.exe"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DocFix",
+      "runAfterFinish": false,
+      "deleteAppDataOnUninstall": false
+    }
   }
 }
