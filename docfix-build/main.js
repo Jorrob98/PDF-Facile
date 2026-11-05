@@ -188,7 +188,8 @@ async function runSelfTest(){
           new File(['b'],'WhatsApp Image 2026-11-05 at 15.10.11.jpeg',{type:'image/jpeg',lastModified:2}),
           new File(['a'],'WhatsApp Image 2026-11-05 at 15.10.10.jpeg',{type:'image/jpeg',lastModified:1})
         ])||[];
-        out.inputOrder=orderTest.length===2&&/15\.10\.10\.jpeg$/i.test(orderTest[0].name)&&/15\.10\.11\.jpeg$/i.test(orderTest[1].name);
+        out.inputOrder=orderTest.length===2&&/15\.10\.11\.jpeg$/i.test(orderTest[0].name)&&/15\.10\.10\.jpeg$/i.test(orderTest[1].name);
+        out.reverseFileOrder=typeof window.DocFixDesktopDiagnostics?.reverseFileOrder==='function';
         const fc=document.createElement('canvas');fc.width=1000;fc.height=700;const fg=fc.getContext('2d');
         fg.fillStyle='#b98861';fg.fillRect(0,0,fc.width,fc.height);
         const actual=[{x:.16,y:.20},{x:.84,y:.16},{x:.87,y:.74},{x:.13,y:.78}];
