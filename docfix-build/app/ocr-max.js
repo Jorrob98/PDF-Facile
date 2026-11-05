@@ -159,8 +159,9 @@ async function analyzeEntry(entry,force=false){
  if(entry.ocrState==='working')return;
  if(entry.ocrResult&&!force)return;
  entry.ocrState='working';entry.ocrError='';repaint();
+ let local=null;
  try{
-  const local=await localMultiPass(entry.processed),st=cloudStatus||await getCloudStatus();
+  local=await localMultiPass(entry.processed);const st=cloudStatus||await getCloudStatus();
   if(host()?.indexOf?.(entry)<0)return;
   let final={provider:'tesseract',text:local.best.text,confidence:clamp(local.best.confidence/100,0,1),score:local.best.score,signals:signals(local.best.text)};
   let candidates=[final],errors=[];
@@ -186,12 +187,15 @@ async function analyzeEntry(entry,force=false){
    signals:final.signals||signals(final.text),
    structuredFields:final.structuredFields||[],
    candidates,errors,
-   localPasses:local.results.map(x=>({name:x.name,confidence:x.confidence,score:x.score,text:x.text}))
+   localPasses:local.results.map(x=>({name:x.name,confidence:x.confidence,score:x.score}))
   };
   entry.ocrState=entry.ocrResult.text?'ready':'bad';
  }catch(e){
   console.error('OCR MAX',e);entry.ocrState='bad';entry.ocrError=String(e?.message||e);
- }finally{repaint();}
+ }finally{
+  for(const c of Object.values(local?.variants||{})){try{c.width=c.height=1}catch{}}
+  repaint();
+ }
 }
 function enqueue(entry,force=false){
  if(!entry)return;
