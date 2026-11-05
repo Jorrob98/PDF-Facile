@@ -6,6 +6,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: docfix-fast-update
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
