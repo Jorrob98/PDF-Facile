@@ -69,7 +69,7 @@ jobs:
           $stability=Get-Content app\stability.js -Raw
           if($stability -notmatch 'docfix-update-progress'){ throw 'Barra progresso aggiornamento mancante' }
           if($stability -notmatch 'fmtEta'){ throw 'Stima tempo aggiornamento mancante' }
-          if($stability -notmatch 'Aggiornamento 0%'){ throw 'Percentuale aggiornamento mancante' }
+          if($stability -notmatch 'openUpdateProgress'){ throw 'Flusso aggiornamento diretto mancante' }
           $preload=Get-Content preload.js -Raw
           if($preload -notmatch 'onProgress'){ throw 'Bridge progresso updater mancante' }
           if($preload -notmatch 'DocFixOCRCloud'){ throw 'Bridge OCR MAX mancante' }
