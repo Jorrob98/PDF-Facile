@@ -79,9 +79,12 @@ jobs:
       - name: Verify final installer
         shell: pwsh
         run: |
-          $f=Get-Item 'dist\DocFix_Setup_1.0.0.exe'
+          $version=(Get-Content package.json -Raw | ConvertFrom-Json).version
+          $fileName="DocFix_Setup_$version.exe"
+          $f=Get-Item ("dist\"+$fileName)
           if($f.Length -lt 50000000){ throw "Installer sospettosamente piccolo: $($f.Length)" }
           $hash=(Get-FileHash $f.FullName -Algorithm SHA256).Hash
+          "DOCFIX_SETUP_FILE=$fileName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "Installer: $($f.Length) bytes"
           Write-Host "SHA256: $hash"
 
@@ -89,6 +92,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: DocFix-Setup-Windows
-          path: docfix-build/dist/DocFix_Setup_1.0.0.exe
+          path: docfix-build/dist/${{ env.DOCFIX_SETUP_FILE }}
           if-no-files-found: error
           retention-days: 7
