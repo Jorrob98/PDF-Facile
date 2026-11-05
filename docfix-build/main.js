@@ -173,6 +173,7 @@ async function runSelfTest(){
         out.ocrBridge=!!window.DocFixOCRCloud;
         out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.8.2':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
+        out.updaterHiddenWhenNoUpdate=document.querySelector('#docfix-update-button')?.hidden===true;
         out.ocrModule=window.DocFixOCRMax?.version==='1.8.2';
         const cloudTest=window.DocFixOCRCloud?.selfTest?await window.DocFixOCRCloud.selfTest():null;
         out.ocrCloudLogic=!!cloudTest&&cloudTest.identity===true&&cloudTest.structured===true&&cloudTest.agreement===true;
@@ -316,9 +317,9 @@ ipcMain.handle('docfix:update:install',async(event)=>{
   try{
     const r=await downloadVerifiedUpdate(event.sender);
     if(!r.available)return {ok:true,...r};
-    sendUpdateProgress(event.sender,{phase:'install',percent:98,message:'Installazione pronta · DocFix si riavvierà',etaSeconds:5});
+    sendUpdateProgress(event.sender,{phase:'install',percent:98,message:'Applico aggiornamento…',etaSeconds:4});
     await launchVerifiedUpdater(r.updater);
-    sendUpdateProgress(event.sender,{phase:'restart',percent:99,message:'Chiudo DocFix e applico aggiornamento…',etaSeconds:4});
+    sendUpdateProgress(event.sender,{phase:'restart',percent:99,message:'Completo aggiornamento…',etaSeconds:2});
     return {ok:true,...r,launching:true};
   }catch(e){
     sendUpdateProgress(event.sender,{phase:'error',percent:0,message:e.message||String(e)});
