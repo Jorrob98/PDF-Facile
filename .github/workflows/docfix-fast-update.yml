@@ -97,6 +97,10 @@ jobs:
           grep -F "docfix:reset" verify/app/ocr-max.js
           grep -F "scheduleWorkerRelease" verify/app/ocr-max.js
           grep -F "Privacy sotto controllo" verify/app/index.html
+          grep -F "labeledFields" verify/app/ocr-max.js
+          grep -F "group1-superrun-20261105" verify/app/group1-safe-crop.js
+          grep -F "no-cache, no-store, must-revalidate" verify/main.js
+          grep -F "child.once('spawn'" verify/main.js
           grep -F "smartFilename" verify/main.js
           grep -F "docfix:update:progress" verify/main.js
           grep -F "UPDATE_DIRECT_LAUNCHED" verify/main.js
