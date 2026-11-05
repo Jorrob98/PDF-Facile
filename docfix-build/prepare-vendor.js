@@ -14,4 +14,7 @@ if(cores<4)throw new Error('Core Tesseract incompleti: '+cores);
 const eng=find(path.join(nm,'@tesseract.js-data','eng'),'eng.traineddata.gz');
 if(!eng)throw new Error('eng.traineddata.gz non trovato');
 copy(eng,path.join(v,'tessdata','eng.traineddata.gz'));
-console.log('Vendor locale pronto.');
+const ita=find(path.join(nm,'@tesseract.js-data','ita'),'ita.traineddata.gz');
+if(!ita)throw new Error('ita.traineddata.gz non trovato');
+copy(ita,path.join(v,'tessdata','ita.traineddata.gz'));
+console.log('Vendor locale pronto: OCR italiano + inglese.');
