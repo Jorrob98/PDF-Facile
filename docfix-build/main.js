@@ -66,7 +66,8 @@ function startLocalServer(){
           if(err||!st.isFile()){res.writeHead(404);return res.end('Not found');}
           res.setHeader('Content-Type',mime[path.extname(requested).toLowerCase()]||'application/octet-stream');
           const rel=path.relative(base,requested).split(path.sep).join('/');
-          res.setHeader('Cache-Control',rel.startsWith('vendor/')?'public, max-age=31536000, immutable':'no-cache');
+          res.setHeader('Cache-Control','no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma','no-cache');
           res.setHeader('Cross-Origin-Opener-Policy','same-origin');
           res.setHeader('X-Content-Type-Options','nosniff');
           fs.createReadStream(requested).on('error',e=>{log('READ_ERROR',e);if(!res.headersSent)res.writeHead(500);res.end();}).pipe(res);
@@ -286,22 +287,25 @@ async function downloadVerifiedUpdate(sender){
   return {available:true,current,latest:latest.version,updater};
 }
 function launchVerifiedUpdater(updater){
-  // 1.8.1: launch the verified NSIS updater directly.
-  // The previous PowerShell relay could be blocked by Windows policy/AV and
-  // DocFix could report "installazione pronta" without ever applying it.
-  const child=spawn(updater,['/S'],{
-    detached:true,
-    windowsHide:false,
-    stdio:'ignore',
-    cwd:path.dirname(updater)
+  // Quit only after Windows confirms that the verified updater process spawned.
+  return new Promise((resolve,reject)=>{
+    const child=spawn(updater,['/S'],{
+      detached:true,
+      windowsHide:false,
+      stdio:'ignore',
+      cwd:path.dirname(updater)
+    });
+    let settled=false;
+    child.once('error',err=>{
+      if(settled)return;settled=true;log('UPDATE_LAUNCH_ERROR',err);reject(err);
+    });
+    child.once('spawn',()=>{
+      if(settled)return;settled=true;child.unref();
+      log('UPDATE_DIRECT_LAUNCHED',updater,'pid='+String(child.pid||0));
+      setTimeout(()=>app.quit(),1200);
+      resolve(true);
+    });
   });
-  child.once('error',err=>log('UPDATE_LAUNCH_ERROR',err));
-  child.unref();
-  log('UPDATE_DIRECT_LAUNCHED',updater,'pid='+String(child.pid||0));
-  // Let NSIS start first; it will terminate this DocFix process, replace app.asar,
-  // then reopen DocFix itself.
-  setTimeout(()=>app.quit(),1200);
-  return true;
 }
 
 ipcMain.handle('docfix:update:version',()=>app.getVersion());
@@ -311,7 +315,7 @@ ipcMain.handle('docfix:update:install',async(event)=>{
     const r=await downloadVerifiedUpdate(event.sender);
     if(!r.available)return {ok:true,...r};
     sendUpdateProgress(event.sender,{phase:'install',percent:98,message:'Installazione pronta · DocFix si riavvierà',etaSeconds:5});
-    launchVerifiedUpdater(r.updater);
+    await launchVerifiedUpdater(r.updater);
     sendUpdateProgress(event.sender,{phase:'restart',percent:99,message:'Chiudo DocFix e applico aggiornamento…',etaSeconds:4});
     return {ok:true,...r,launching:true};
   }catch(e){
