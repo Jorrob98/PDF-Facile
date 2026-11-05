@@ -99,6 +99,9 @@ jobs:
           if($main -notmatch 'multiRefineSafe'){ throw 'Self-test rifinitura multi-tessera mancante' }
           if($main -notmatch 'stackedRecovery'){ throw 'Self-test recupero 3/4 mancante' }
           if($main -notmatch 'twoByTwoGate'){ throw 'Self-test blocco set incompleto mancante' }
+          if($main -notmatch 'onePlusOneRecovery'){ throw 'Self-test recupero 1+1 mancante' }
+          if($index -notmatch 'twoByTwoCandidateMeta'){ throw 'Decisione recupero 1+1 mancante' }
+          if($index -notmatch 'rebuildSourceAsTwoUp'){ throw 'Ricostruzione sorgente 2x2 mancante' }
           if($index -notmatch 'stackedCardCandidatesRecovery'){ throw 'Rilevatore di recupero 2x2 mancante' }
           if($index -notmatch 'recoverIncompleteTwoByTwo'){ throw 'Recupero automatico 3/4 mancante' }
           if($index -notmatch 'Set incompleto'){ throw 'Avviso set incompleto mancante' }
