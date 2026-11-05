@@ -204,6 +204,15 @@ async function runSelfTest(){
         const safeMulti=window.DocFixDesktopDiagnostics?.safeRefineMultiQuad?.(edge,[{x:0,y:0},{x:1,y:0},{x:1,y:.39},{x:0,y:.39}])||[];
         const safeArea=safeMulti.length===4?window.DocFixScanner.area(safeMulti):0;
         out.multiRefineSafe=safeMulti.length===4&&safeArea>.30&&safeArea<.46;
+        const recovery=document.createElement('canvas');recovery.width=900;recovery.height=1300;const rg=recovery.getContext('2d');
+        rg.fillStyle='#8b8e91';rg.fillRect(0,0,900,1300);
+        rg.fillStyle='#5f86a0';rg.fillRect(18,18,864,500);rg.fillStyle='#d8e6ec';
+        for(let y=70;y<480;y+=58)rg.fillRect(45,y,810,18);
+        rg.fillStyle='#b39aa3';rg.fillRect(28,760,850,520);rg.fillStyle='#f1e6ea';
+        for(let y=815;y<1240;y+=61)rg.fillRect(55,y,790,20);
+        const recovered=window.DocFixDesktopDiagnostics?.stackedCardCandidatesRecovery?.(recovery)||[];
+        out.stackedRecovery=recovered.length===2;
+        out.twoByTwoGate=typeof window.DocFixDesktopDiagnostics?.twoByTwoState==='function';
         const orderTest=window.DocFixDesktopDiagnostics?.orderedIncoming?.([
           new File(['b'],'WhatsApp Image 2026-11-05 at 15.10.11.jpeg',{type:'image/jpeg',lastModified:2}),
           new File(['a'],'WhatsApp Image 2026-11-05 at 15.10.10.jpeg',{type:'image/jpeg',lastModified:1})
