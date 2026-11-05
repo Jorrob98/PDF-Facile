@@ -60,7 +60,7 @@ body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,tr
 <section id="dropzone" role="button" tabindex="0" aria-label="Carica foto o PDF" class="dropzone"><span class="upload-icon">↥</span><h2>Trascina qui i documenti</h2><p>Oppure selezionali dal dispositivo</p><div class="choose">+ Aggiungi foto o PDF</div><small>JPG, PNG, WebP, PDF · più file insieme · Ctrl+O per aprire · Ctrl+V per incollare una foto</small></section><input hidden id="picker" type="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp" multiple>
 <section id="workspace" class="workspace" hidden><div class="result-header"><div><div class="eyebrow">RISULTATO</div><h2>Le tue pagine</h2></div><span id="summary" class="pill"></span></div><p id="status" role="status" class="status" aria-live="polite"></p><div id="progress-wrap" class="progress-wrap" hidden><div id="progress-bar" class="progress-bar"></div></div><div class="review-row"><span>Controlla le anteprime; usa le frecce per scegliere l’ordine delle pagine.</span><strong id="review-count"></strong></div><div class="batch-toolbar"><button type="button" id="add-more" class="add-more">＋ Aggiungi altre foto o PDF</button><button type="button" id="reverse-files" class="add-more" hidden>↕ Inverti ordine file</button><span id="queue-count" role="status" aria-live="polite" hidden></span><button type="button" id="undo-remove" class="undo-remove" hidden>↶ Annulla eliminazione</button></div><div id="cards" class="pages"></div><div id="warnings" class="warnings" hidden></div><details class="advanced-options"><summary>Opzioni PDF</summary><div class="quality-choice"><label for="pdf-quality">Qualità del PDF</label><select id="pdf-quality" aria-label="Qualità del PDF"><option value="high" selected>Alta qualità · consigliata</option><option value="compact">PDF più leggero</option></select><small>Alta qualità preserva maggiormente scritte e dettagli; foto già sfocate non possono essere recuperate.</small></div><div class="layout-choice"><label for="pdf-layout">Impaginazione</label><select id="pdf-layout" aria-label="Impaginazione PDF"><option value="document" selected>Forma originale del documento</option><option value="a4">A4 per stampare · documento intero centrato</option></select><small>Il PDF rispetta sempre le proporzioni e non taglia i bordi. L’opzione A4 aggiunge margini bianchi per la stampa.</small></div></details><div class="action-bar"><button type="button" id="download" disabled class="download">↓ Scarica PDF pronto</button><button type="button" id="reset" class="reset">+ Nuovo documento</button></div><p id="sizes" class="sizes"></p></section>
 <div class="bottom"><div class="bottom-icon">♧</div><div><strong>Privacy sotto controllo</strong><span>PDF e correzioni restano sul PC. Se attivi OCR MAX Cloud, solo le immagini necessarie all’OCR vengono inviate ai provider cloud che hai configurato.</span></div></div></main>
-<footer>DocFix Desktop · Versione 1.8.8 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
+<footer>DocFix Desktop · Versione 1.8.9 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
 <div id="editor" class="editor-overlay" hidden><div class="editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-title"><div class="editor-head"><div><span class="eyebrow">CORREZIONE</span><h2 id="edit-title">Pagina</h2></div><button type="button" id="edit-close" aria-label="Chiudi">×</button></div><p>Sposta i quattro punti se il bordo è sbagliato. Qui trovi solo ciò che serve.</p><div class="editor-frame"><img id="editor-image" alt="Documento da correggere"><div id="corners" class="corners"><svg class="quad" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon id="frame-poly" points=""/></svg></div></div><div class="editor-actions"><button type="button" id="edit-left">↶ Sinistra 90°</button><button type="button" id="edit-rotate">↷ Destra 90°</button><button type="button" id="edit-flip">↻ Capovolgi 180°</button><button type="button" id="edit-full">Usa pagina completa</button><button type="button" id="edit-cancel">Annulla</button><button type="button" id="edit-apply" class="confirm">✓ Applica ritaglio</button></div></div></div>
 <script src="./group3-quality.js"></script><script src="./group5-export.js"></script><script>/* DocFix 37 — single, hardened PDF.js engine for every PDF operation. */
 'use strict';
@@ -820,7 +820,8 @@ function progress(i,total){$('progress-wrap').hidden=false;$('progress-bar').sty
 function note(s){const el=$('warnings');el.hidden=false;const p=document.createElement('div');p.textContent=s;el.appendChild(p)}
 function syncActions(){
  sourceBytes=sourceFiles.reduce((sum,s)=>sum+s.file.size,0);
- dl.disabled=busy||pending.length>0||entries.length===0;
+ const setState=twoByTwoState();
+ dl.disabled=busy||pending.length>0||entries.length===0||setState.incomplete;
  $('queue-count').hidden=!pending.length&&!processing;
  $('queue-count').textContent=processing?'Elaborazione '+completedInBatch+'/'+Math.max(totalInBatch,1)+' · in attesa: '+pending.length:pending.length+' file in attesa';
  $('undo-remove').hidden=!lastRemoved;
@@ -1115,6 +1116,30 @@ function stackedCardCandidatesByGap(original){
  const rect=(x0,y0,x1,y1)=>({quad:[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}],confidence:.86,status:'found',method:'stacked-gap-color',box:{x:x0,y:y0,width:x1-x0,height:y1-y0}});
  return [rect(topX.x0,0,topX.x1,topEnd/h),rect(bottomX.x0,bottomStart/h,bottomX.x1,1)];
 }
+function stackedCardCandidatesRecovery(original){
+ const scan=window.DocFixScanner,portrait=original.height/Math.max(1,original.width);
+ if(portrait<1.18||portrait>2.45)return [];
+ const s=scan.resize(original,340),w=s.width,h=s.height;if(h<220||w<170)return [];
+ const d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+ const row=new Float32Array(h),x0=Math.round(w*.04),x1=Math.round(w*.96);
+ for(let y=0;y<h;y++){let sum=0,sum2=0,grad=0,n=0,last=0;
+  for(let x=x0;x<x1;x++){const k=(y*w+x)*4,v=.299*d[k]+.587*d[k+1]+.114*d[k+2];sum+=v;sum2+=v*v;if(n)grad+=Math.abs(v-last);last=v;n++}
+  const mean=sum/Math.max(1,n),std=Math.sqrt(Math.max(0,sum2/Math.max(1,n)-mean*mean));row[y]=std+grad/Math.max(1,n-1);
+ }
+ const sm=new Float32Array(h);for(let y=0;y<h;y++){let z=0,n=0;for(let k=-5;k<=5;k++){z+=row[Math.max(0,Math.min(h-1,y+k))];n++}sm[y]=z/n}
+ const lo=Math.round(h*.30),hi=Math.round(h*.70),win=Math.max(8,Math.round(h*.045));let best=null;
+ for(let y=lo;y<=hi-win;y++){let z=0;for(let k=0;k<win;k++)z+=sm[y+k];z/=win;if(!best||z<best.avg)best={start:y,end:y+win-1,avg:z}}
+ if(!best)return [];
+ const med=(a,b)=>{const v=Array.from(sm.slice(Math.max(0,a),Math.min(h,b))).sort((x,y)=>x-y);return v[v.length>>1]||0};
+ const top=med(Math.round(h*.05),Math.max(Math.round(h*.20),best.start-Math.round(h*.05)));
+ const bottom=med(Math.min(h-1,best.end+Math.round(h*.05)),Math.round(h*.95));
+ if(top<18||bottom<18||best.avg>Math.min(top,bottom)*.72)return [];
+ const pad=Math.max(2,Math.round(h*.01)),topEnd=Math.min(h-1,best.start+pad),bottomStart=Math.max(0,best.end-pad);
+ const ht=topEnd/h,hb=(h-bottomStart)/h,rt=w/Math.max(1,topEnd),rb=w/Math.max(1,h-bottomStart);
+ if(ht<.24||ht>.59||hb<.24||hb>.59||rt<1.18||rt>2.18||rb<1.18||rb>2.18)return [];
+ const rect=(y0,y1)=>({quad:[{x:0,y:y0},{x:1,y:y0},{x:1,y:y1},{x:0,y:y1}],confidence:.72,status:'found',method:'stacked-recovery',box:{x:0,y:y0,width:1,height:y1-y0}});
+ return [rect(0,topEnd/h),rect(bottomStart/h,1)];
+}
 function multiCardCandidates(original){
  const scan=window.DocFixScanner,stacked=stackedCardCandidatesByGap(original);
  if(stacked.length===2)return stacked;
@@ -1222,9 +1247,9 @@ async function makeImageEntries(file,index,total=1,meta={}){
  return [{kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false}];
 }
 window.DocFixDesktopDiagnostics=Object.freeze({
- multiCardCandidates,stackedCardCandidatesByGap,pairedFourCards,regroupTwoFileFourCards,regroupLatestTwoUpSources,safeRefineMultiQuad,warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
+ multiCardCandidates,stackedCardCandidatesByGap,stackedCardCandidatesRecovery,pairedFourCards,regroupTwoFileFourCards,regroupLatestTwoUpSources,twoByTwoState,safeRefineMultiQuad,warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
  safeMultiCropPreview:(original,candidate)=>window.DocFixScanner.process(original,{crop:true,quad:expandQuadSafe(candidate.quad,.028),rotation:0,filter:'original',strength:0},2200),
- orderedIncoming,reverseFileOrder,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.8.8'
+ orderedIncoming,reverseFileOrder,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.8.9'
 });
 function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
  // The page's existing /Rotate is already applied in pdf.js previews.
@@ -1269,8 +1294,8 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
   item.addEventListener('dragover',ev=>{if(dragSource>=0&&!busy)ev.preventDefault()});
   item.addEventListener('drop',ev=>{if(dragSource>=0&&!busy){ev.preventDefault();moveEntry(dragSource,i)}dragSource=-1});
   item.addEventListener('dragend',()=>{dragSource=-1;item.classList.remove('drag-sort')});
- });const completeFour=entries.length===4&&entries.every(e=>e.pairLabel);
- $('summary').textContent=completeFour?'4 tessere · set completo 4/4':entries.length+' '+(entries.length===1?'pagina':'pagine')+(pending.length?' · '+pending.length+' in attesa':'');const reviewN=entries.filter(e=>e.review).length,qualityN=entries.filter(e=>e.qualityReview).length;$('review-count').textContent=reviewN?(reviewN+' da verificare'+(qualityN?' · '+qualityN+' qualità':'')):'Tutto pronto';syncActions();document.dispatchEvent(new CustomEvent('docfix:repaint',{detail:{entries:entries.slice()}}));}
+ });const completeFour=entries.length===4&&entries.every(e=>e.pairLabel),setState=twoByTwoState();
+ $('summary').textContent=completeFour?'4 tessere · set completo 4/4':setState.incomplete?('Set incompleto '+setState.count+'/4'):entries.length+' '+(entries.length===1?'pagina':'pagine')+(pending.length?' · '+pending.length+' in attesa':'');const reviewN=entries.filter(e=>e.review).length,qualityN=entries.filter(e=>e.qualityReview).length;$('review-count').textContent=reviewN?(reviewN+' da verificare'+(qualityN?' · '+qualityN+' qualità':'')):'Tutto pronto';syncActions();document.dispatchEvent(new CustomEvent('docfix:repaint',{detail:{entries:entries.slice()}}));}
 function moveEntry(from,to){if(busy||from===to||from<0||to<0||from>=entries.length||to>=entries.length)return;
  const [item]=entries.splice(from,1);entries.splice(to,0,item);lastPdfSize=null;repaint();status('Ordine delle pagine aggiornato: il PDF seguirà questo ordine.');}
 function discardUnusedSource(id){if(id===activeSource||pending.some(x=>x.id===id)||entries.some(e=>e.sourceIndex===id))return;sourceFiles=sourceFiles.filter(s=>s.id!==id)}
@@ -1397,6 +1422,32 @@ function regroupLatestTwoUpSources(){
  if(slots.length!==4)return false;
  ordered.forEach(e=>e.pairGroup=a+'|'+b);applyFourCardLabels(ordered,slots);return true;
 }
+function twoByTwoState(){
+ const imageSources=sourceFiles.filter(s=>!/\.pdf$/i.test(s.file.name)&&s.file.type!=='application/pdf');
+ if(imageSources.length!==2)return {candidate:false,incomplete:false,complete:false,count:0};
+ const ids=imageSources.map(s=>s.id),group=entries.filter(e=>ids.includes(e.sourceIndex));
+ const counts=ids.map(id=>group.filter(e=>e.sourceIndex===id).length);
+ const hasTwo=counts.includes(2),complete=counts[0]===2&&counts[1]===2;
+ return {candidate:hasTwo,complete,incomplete:hasTwo&&!complete,count:group.length,ids,counts};
+}
+async function recoverIncompleteTwoByTwo(){
+ const state=twoByTwoState();if(!state.incomplete)return false;
+ const missingPos=state.counts.findIndex(n=>n===1);if(missingPos<0)return false;
+ const sourceId=state.ids[missingPos],oldIndex=entries.findIndex(e=>e.sourceIndex===sourceId),old=entries[oldIndex];
+ if(!old?.original)return false;
+ const candidates=stackedCardCandidatesRecovery(old.original);if(candidates.length!==2)return false;
+ const made=[];
+ for(let i=0;i<2;i++){
+  const fixed=await normalizeKnownCard(old.original,candidates[i].quad,'Recupero 2x2 · tessera '+(i+1),candidates[i].confidence,{multiSafe:true});
+  if(!multiCropHealthy(fixed.processed)){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · Ritaglio prudente: controlla i bordi'}
+  made.push({kind:'raster',original:old.original,...fixed,source:old.source,title:old.source+' · tessera '+(i+1),sourceIndex:sourceId,loadBatch:old.loadBatch??null,batchPos:old.batchPos??missingPos,batchSize:2,splitSlot:i,splitCount:2,twoUp:true,recoveredTwoUp:true});
+ }
+ entries.splice(oldIndex,1,...made);
+ const paired=regroupLatestTwoUpSources()||regroupTwoFileFourCards(old.loadBatch);
+ document.dispatchEvent(new CustomEvent('docfix:entries-added',{detail:{entries:made.slice()}}));
+ if(paired)status('Recupero automatico riuscito: set completo 4/4.');
+ return paired;
+}
 async function drainPending(){
  if(processing||exporting||!pending.length)return;
  const token=sequence;processing=true;busy=true;completedInBatch=0;totalInBatch=pending.length;dl.disabled=true;
@@ -1424,8 +1475,12 @@ async function drainPending(){
   }
  }finally{
   if(token===sequence){
+   await recoverIncompleteTwoByTwo();
    processing=false;busy=false;activeSource=null;$('progress-wrap').hidden=true;
-   if(entries.length){status(entries.some(e=>e.review)?'Tutte le foto elaborate. Controlla le pagine evidenziate prima del PDF.':'Tutte le foto caricate. Controlla l’ordine e scarica il PDF.');}
+   const setState=twoByTwoState();
+   if(setState.incomplete)status('Set incompleto '+setState.count+'/4 · manca un ritaglio: controlla la foto evidenziata.');
+   else if(setState.complete)status('Set completo 4/4 · controlla le anteprime e scarica il PDF.');
+   else if(entries.length){status(entries.some(e=>e.review)?'Tutte le foto elaborate. Controlla le pagine evidenziate prima del PDF.':'Tutte le foto caricate. Controlla l’ordine e scarica il PDF.');}
    else status('Nessuna pagina disponibile. Aggiungi foto o controlla gli avvisi.');
    repaint();
    // Late batches added while leaving the processing loop are processed too.
@@ -1453,7 +1508,7 @@ async function exportRasterOffline(){
  });
 }
 async function exportPdf(){
- if(busy||pending.length||!entries.length)return;
+ if(busy||pending.length||!entries.length||twoByTwoState().incomplete)return;
  exporting=true;busy=true;dl.disabled=true;
  status('Preparo il PDF, senza tagliare i bordi…');
  $('progress-wrap').hidden=false;progress(0,entries.length);
