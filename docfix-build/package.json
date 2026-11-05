@@ -1,6 +1,6 @@
 {
   "name":"docfix-desktop",
-  "version":"1.6.1",
+  "version":"1.7.0",
   "description":"DocFix Desktop by Jorrob",
   "author":"Jorrob",
   "main":"main.js",
@@ -21,7 +21,7 @@
     "asar":true,
     "files":["main.js","preload.js","app/**/*","build/icon.png"],
     "directories":{"output":"dist","buildResources":"build"},
-    "win":{"target":[{"target":"nsis","arch":["x64"]}],"icon":"build/icon.png","artifactName":"DocFix_Setup_1.6.1.exe"},
+    "win":{"target":[{"target":"nsis","arch":["x64"]}],"icon":"build/icon.png","artifactName":"DocFix_Setup_1.7.0.exe"},
     "nsis":{"oneClick":true,"perMachine":false,"allowElevation":true,"createDesktopShortcut":true,"createStartMenuShortcut":true,"shortcutName":"DocFix","runAfterFinish":false,"deleteAppDataOnUninstall":false}
   }
 }
