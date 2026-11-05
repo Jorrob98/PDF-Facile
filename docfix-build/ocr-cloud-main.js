@@ -277,6 +277,20 @@ function registerOcrHandlers({ipcMain,app,log}){
     return {ok:Boolean(best),best,candidates,rescuedSignals:mergeSignals(candidates),structuredFields:mergeStructured(candidates),identityDocument:isIdentity,errors,agreement,status:status()};
   }
 
+  function cloudLogicSelfTest(){
+    const mock=structuredAzureFields({documents:[{fields:{
+      FirstName:{content:'MARIO',confidence:.99},
+      LastName:{content:'ROSSI',confidence:.98},
+      DateOfBirth:{valueDate:'1985-01-10',confidence:.97}
+    }}]});
+    return {
+      identity:identityHint('REPUBBLICA ITALIANA CARTA DI IDENTITA'),
+      structured:mock.length===3&&mock.some(x=>x.name==='FirstName'&&x.value==='MARIO'),
+      agreement:tokenAgreement('MARIO ROSSI 123','MARIO ROSSI 123')>.99
+    };
+  }
+
+  ipcMain.handle('docfix:ocr:selftest',()=>cloudLogicSelfTest());
   ipcMain.handle('docfix:ocr:status',()=>({ok:true,...status()}));
   ipcMain.handle('docfix:ocr:save',(_e,input)=>{try{return {ok:true,...saveConfig(input)}}catch(e){log('OCR_CONFIG_FAIL',e);return {ok:false,error:e.message||String(e)}}});
   ipcMain.handle('docfix:ocr:recognize',async(_e,input)=>{
