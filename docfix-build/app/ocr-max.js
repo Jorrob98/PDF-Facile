@@ -140,7 +140,7 @@ async function canvasBase64(canvas,quality=.94){
  }
  throw Error('Immagine OCR troppo grande');
 }
-function providerLabel(p){return p==='google'?'Google Vision':p==='azure'?'Azure Read':p==='tesseract'?'Tesseract IT+EN':p==='pdf-text'?'Testo PDF originale':String(p||'OCR')}
+function providerLabel(p){return p==='google'?'Google Vision':p==='azure'?'Azure Read':p==='azure-id'?'Azure ID Document':p==='tesseract'?'Tesseract IT+EN':p==='pdf-text'?'Testo PDF originale':String(p||'OCR')}
 async function getCloudStatus(){
  if(!window.DocFixOCRCloud)return {google:{configured:false},azure:{configured:false},secureStorage:false};
  const r=await window.DocFixOCRCloud.status();cloudStatus=r;return r;
@@ -171,6 +171,7 @@ async function analyzeEntry(entry,force=false){
    if(cloud?.candidates?.length)candidates=cloud.candidates;
    if(cloud?.best)final=cloud.best;
    if(cloud?.rescuedSignals)final={...final,signals:cloud.rescuedSignals};
+   final={...final,structuredFields:cloud?.structuredFields||[]};
    errors=cloud?.errors||[];
   }
   entry.ocrResult={
@@ -179,6 +180,7 @@ async function analyzeEntry(entry,force=false){
    score:clamp(Number(final.score)||Number(final.confidence)||0,0,1),
    provider:final.provider||'tesseract',
    signals:final.signals||signals(final.text),
+   structuredFields:final.structuredFields||[],
    candidates,errors,
    localPasses:local.results.map(x=>({name:x.name,confidence:x.confidence,score:x.score,text:x.text}))
   };
@@ -220,9 +222,13 @@ function decorate(entries){
   b.onclick=()=>e.ocrResult?openResult(e):enqueue(e,true);
  });
 }
-function fieldChips(s){
+function fieldChips(s,structured=[]){
  const all=[...s.cfs.map(x=>'CF '+x),...s.vins.map(x=>'VIN '+x),...s.plates.map(x=>'Targa '+x),...s.dates.map(x=>'Data '+x),...s.mrz.map(x=>'MRZ '+x)];
- return all.map(x=>'<span class="ocr-field-chip">'+escapeHtml(x)+'</span>').join('');
+ for(const f of structured||[]){
+  const pct=Number.isFinite(Number(f.confidence))?' · '+Math.round(Number(f.confidence)*100)+'%':'';
+  all.push(String(f.name||'Campo')+': '+String(f.value||'')+pct);
+ }
+ return [...new Set(all)].map(x=>'<span class="ocr-field-chip">'+escapeHtml(x)+'</span>').join('');
 }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function modal(html){
@@ -238,7 +244,7 @@ function openResult(entry){
    <span class="ocr-chip">Confidenza: ${Math.round((r.confidence||0)*100)}%</span>
    ${providers.map(x=>'<span class="ocr-chip">'+escapeHtml(x)+'</span>').join('')}
   </div>
-  <div class="ocr-fields">${fieldChips(s)||'<span class="ocr-field-chip">Nessun campo strutturato validato</span>'}</div>
+  <div class="ocr-fields">${fieldChips(s,r.structuredFields)||'<span class="ocr-field-chip">Nessun campo strutturato validato</span>'}</div>
   <textarea class="ocr-text" spellcheck="false"></textarea>
   ${r.errors?.length?'<p>'+r.errors.map(escapeHtml).join(' · ')+'</p>':''}
   <div class="ocr-actions"><button class="secondary copy">Copia testo</button><button class="secondary retry">Rileggi al massimo</button><button class="primary close">Chiudi</button></div>
