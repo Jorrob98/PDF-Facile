@@ -7,7 +7,7 @@
  const median=(a)=>{a.sort((x,y)=>x-y);return a[(a.length/2)|0]||0};
  const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
  const norm=(q,w,h)=>q.map(p=>({x:p.x/w,y:p.y/h}));
- const pixel=(d,w,x,y)=>{const p=(clamp(Math.round(y),0,1e9)*w+clamp(Math.round(x),0,w-1))*4;return [d[p],d[p+1],d[p+2]]};
+ const pixel=(d,w,x,y)=>{const h=Math.max(1,Math.floor(d.length/(Math.max(1,w)*4))),p=(clamp(Math.round(y),0,h-1)*w+clamp(Math.round(x),0,w-1))*4;return [d[p],d[p+1],d[p+2]]};
  const quadRatio=(q,w,h)=>{const p=q.map(z=>({x:z.x*w,y:z.y*h})),side=(i,j)=>Math.hypot(p[i].x-p[j].x,p[i].y-p[j].y),ww=(side(0,1)+side(2,3))/2,hh=(side(1,2)+side(3,0))/2;return Math.max(ww,hh)/Math.max(1,Math.min(ww,hh))};
  function morph(bits,w,h,rx,ry,isDilation){
   const stride=w+1,I=new Uint32Array((w+1)*(h+1));
@@ -149,5 +149,5 @@
   if(validateLegacy(source,safe))return {...safe,confidence:Math.min((safe.confidence||.8)+(fine?.refined?.02:0),.88),reason:fine?.refined?'Bordi confermati e rifiniti, controllo di sicurezza attivo':'Bordi confermati, controllo di sicurezza attivo'};
   return {quad:scan.defaultQuad(),confidence:0,status:'uncertain',reason:'Non riconosco con certezza tutti i bordi: mantengo la foto intera. Premi Correggi per impostare i quattro angoli.'};
  };
- window.DocFixGroup1={candidateFromBackground,validateLegacy,edgeSupport,refineQuad,version:'group1-fine-20261104'};
+ window.DocFixGroup1={candidateFromBackground,validateLegacy,edgeSupport,refineQuad,version:'group1-superrun-20261105'};
 })();
