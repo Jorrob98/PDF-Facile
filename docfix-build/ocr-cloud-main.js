@@ -60,7 +60,7 @@ function registerOcrHandlers({ipcMain,app,log}){
     return new Promise((resolve,reject)=>{
       const u=new URL(url),payload=body==null?null:Buffer.from(JSON.stringify(body),'utf8');
       const req=https.request(u,{method,headers:{
-        'User-Agent':'DocFix-OCR-MAX/1.8.3',
+        'User-Agent':'DocFix-OCR-MAX/1.8.4',
         'Accept':'application/json',
         ...(payload?{'Content-Type':'application/json','Content-Length':String(payload.length)}:{}),
         ...headers
