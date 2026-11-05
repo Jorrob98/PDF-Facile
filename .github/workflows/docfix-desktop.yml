@@ -97,6 +97,11 @@ jobs:
           if($main -notmatch 'stackedEdgeCards'){ throw 'Self-test tessere ai bordi mancante' }
           if($main -notmatch 'fourCardPairOrder'){ throw 'Self-test 2 file -> 4 anteprime mancante' }
           if($main -notmatch 'multiRefineSafe'){ throw 'Self-test rifinitura multi-tessera mancante' }
+          if($main -notmatch 'stackedRecovery'){ throw 'Self-test recupero 3/4 mancante' }
+          if($main -notmatch 'twoByTwoGate'){ throw 'Self-test blocco set incompleto mancante' }
+          if($index -notmatch 'stackedCardCandidatesRecovery'){ throw 'Rilevatore di recupero 2x2 mancante' }
+          if($index -notmatch 'recoverIncompleteTwoByTwo'){ throw 'Recupero automatico 3/4 mancante' }
+          if($index -notmatch 'Set incompleto'){ throw 'Avviso set incompleto mancante' }
           if($index -notmatch 'safeRefineMultiQuad'){ throw 'Rifinitura prudente multi-tessera mancante' }
           if($index -notmatch 'regroupLatestTwoUpSources'){ throw 'Accoppiamento caricamenti separati mancante' }
           if($index -notmatch 'Ritaglio prudente: controlla i bordi'){ throw 'Fallback due anteprime prudente mancante' }
