@@ -174,6 +174,12 @@ function registerOcrHandlers({ipcMain,app,log}){
     if(!valid.length)return null;
     return valid.map(c=>({...c,score:candidateScore(c,valid),signals:validatedSignals(c.text)})).sort((a,b)=>b.score-a.score)[0];
   }
+  function mergeSignals(candidates){
+    const out={cfs:[],vins:[],plates:[],dates:[],mrz:[]};
+    for(const c of candidates){const s=validatedSignals(c.text);for(const k of Object.keys(out))out[k].push(...s[k]);}
+    for(const k of Object.keys(out))out[k]=[...new Set(out[k])];
+    return out;
+  }
 
   async function recognize(input={}){
     const cfg=readConfig(),image=validateImageBase64(input.imageBase64),alt=input.altImageBase64?validateImageBase64(input.altImageBase64):image;
@@ -190,7 +196,7 @@ function registerOcrHandlers({ipcMain,app,log}){
       try{candidates.push(await azureRead(alt,cfg));}catch(e){errors.push('Azure: '+(e.message||e));log('OCR_AZURE_FAIL',e);}
     }
     const best=chooseBest(candidates);
-    return {ok:Boolean(best),best,candidates,errors,agreement,status:status()};
+    return {ok:Boolean(best),best,candidates,rescuedSignals:mergeSignals(candidates),errors,agreement,status:status()};
   }
 
   ipcMain.handle('docfix:ocr:status',()=>({ok:true,...status()}));
