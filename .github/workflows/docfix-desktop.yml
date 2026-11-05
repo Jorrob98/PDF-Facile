@@ -86,6 +86,10 @@ jobs:
           if($stability -notmatch 'refreshUpdateButton'){ throw 'Controllo automatico aggiornamenti mancante' }
           if($stability -notmatch 'update.hidden=true'){ throw 'Pulsante aggiornamento non nascosto di default' }
           if($stability -notmatch 'Aggiornamento disponibile'){ throw 'Etichetta aggiornamento disponibile mancante' }
+          $index=Get-Content app\index.html -Raw
+          if($index -notmatch 'safeMultiCropPreview'){ throw 'Ritaglio sicuro multi-tessera mancante' }
+          if($index -notmatch 'multiCropHealthy'){ throw 'Validazione multi-tessera mancante' }
+          if($index -notmatch 'ritaglio automatico annullato per sicurezza'){ throw 'Fallback foto completa mancante' }
           $crop=Get-Content app\group1-safe-crop.js -Raw
           if($crop -notmatch 'group1-superrun-20261105'){ throw 'Fix limiti ritaglio SUPER RUN mancante' }
           $main=Get-Content main.js -Raw
