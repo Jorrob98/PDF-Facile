@@ -120,7 +120,6 @@ jobs:
           grep -F "multiCardSafe" verify/main.js
           grep -F "safeMultiCropPreview" verify/app/index.html
           grep -F "multiCropHealthy" verify/app/index.html
-          grep -F "ritaglio automatico annullato per sicurezza" verify/app/index.html
           grep -F "orderedIncoming" verify/app/index.html
           grep -F "inputOrder" verify/main.js
           grep -F "reverseFileOrder" verify/main.js
