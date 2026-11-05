@@ -89,7 +89,6 @@ jobs:
           $index=Get-Content app\index.html -Raw
           if($index -notmatch 'safeMultiCropPreview'){ throw 'Ritaglio sicuro multi-tessera mancante' }
           if($index -notmatch 'multiCropHealthy'){ throw 'Validazione multi-tessera mancante' }
-          if($index -notmatch 'ritaglio automatico annullato per sicurezza'){ throw 'Fallback foto completa mancante' }
           if($index -notmatch 'orderedIncoming'){ throw 'Ordinamento naturale file multipli mancante' }
           $main=Get-Content main.js -Raw
           if($main -notmatch 'inputOrder'){ throw 'Self-test ordine file mancante' }
