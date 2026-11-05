@@ -90,6 +90,9 @@ jobs:
           if($index -notmatch 'safeMultiCropPreview'){ throw 'Ritaglio sicuro multi-tessera mancante' }
           if($index -notmatch 'multiCropHealthy'){ throw 'Validazione multi-tessera mancante' }
           if($index -notmatch 'ritaglio automatico annullato per sicurezza'){ throw 'Fallback foto completa mancante' }
+          if($index -notmatch 'orderedIncoming'){ throw 'Ordinamento naturale file multipli mancante' }
+          $main=Get-Content main.js -Raw
+          if($main -notmatch 'inputOrder'){ throw 'Self-test ordine file mancante' }
           $crop=Get-Content app\group1-safe-crop.js -Raw
           if($crop -notmatch 'group1-superrun-20261105'){ throw 'Fix limiti ritaglio SUPER RUN mancante' }
           $main=Get-Content main.js -Raw
