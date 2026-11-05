@@ -168,8 +168,9 @@ async function analyzeEntry(entry,force=false){
   if((st.google?.configured||st.azure?.configured)&&window.DocFixOCRCloud){
    const imageBase64=await canvasBase64(local.variants.natural,.95);
    const altImageBase64=await canvasBase64(local.variants.bw,.93);
+   const shape=Math.max(entry.processed.width,entry.processed.height)/Math.max(1,Math.min(entry.processed.width,entry.processed.height));
    const cloud=await window.DocFixOCRCloud.recognize({
-    imageBase64,altImageBase64,
+    imageBase64,altImageBase64,identityLikely:shape>=1.45&&shape<=1.90,
     local:{text:local.best.text,confidence:clamp(local.best.confidence/100,0,1)}
    });
    if(cloud?.candidates?.length)candidates=cloud.candidates;
