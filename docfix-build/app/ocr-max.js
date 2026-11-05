@@ -142,7 +142,7 @@ async function canvasBase64(canvas,quality=.94){
  }
  throw Error('Immagine OCR troppo grande');
 }
-function providerLabel(p){return p==='google'?'Google Vision':p==='azure'?'Azure Read':p==='azure-id'?'Azure ID Document':p==='tesseract'?'Tesseract IT+EN':p==='pdf-text'?'Testo PDF originale':String(p||'OCR')}
+function providerLabel(p){return p==='google'?'Google Vision':p==='google-rescue'?'Google Vision · rescue':p==='azure'?'Azure Read':p==='azure-id'?'Azure ID Document':p==='tesseract'?'Tesseract IT+EN':p==='pdf-text'?'Testo PDF originale':String(p||'OCR')}
 async function getCloudStatus(){
  if(!window.DocFixOCRCloud)return {google:{configured:false},azure:{configured:false},secureStorage:false};
  const r=await window.DocFixOCRCloud.status();cloudStatus=r;return r;
