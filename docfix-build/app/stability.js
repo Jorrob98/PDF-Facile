@@ -1,5 +1,5 @@
 (()=>{'use strict';
- const VERSION='1.8.1';
+ const VERSION='1.8.2';
  function toast(message,kind='error'){
    let box=document.getElementById('docfix-runtime-message');
    if(!box){box=document.createElement('div');box.id='docfix-runtime-message';box.setAttribute('role','alert');document.body.appendChild(box);}
@@ -62,25 +62,20 @@
 
  `;document.head.appendChild(css);
 
- function updateModal(latest,notes){
-   return new Promise(resolve=>{
-     const wrap=document.createElement('div');wrap.className='docfix-update-modal';
-     const shortNotes=String(notes||'').trim().split('\n').filter(Boolean).slice(0,3).join(' · ');
-     wrap.innerHTML=`<div class="docfix-update-card" role="dialog" aria-modal="true" aria-label="Aggiornamento DocFix">
-       <h3>DocFix ${latest} è disponibile</h3>
-       <p>${shortNotes?shortNotes.replace(/[<>&]/g,''): 'Scarico solo il piccolo aggiornamento e riavvio DocFix automaticamente.'}</p>
-       <div class="docfix-update-progress" hidden>
-         <div class="docfix-update-progress-head"><strong>Preparazione…</strong><b>0%</b></div>
-         <div class="docfix-update-track"><div class="docfix-update-fill"></div></div>
-         <div class="docfix-update-meta"><span></span><span></span></div>
-       </div>
-       <div class="docfix-update-actions"><button class="later" type="button">Più tardi</button><button class="now" type="button">Aggiorna ora</button></div>
-     </div>`;
-     const done=v=>{wrap.remove();resolve(v)};
-     wrap.querySelector('.later').onclick=()=>done(false);wrap.querySelector('.now').onclick=()=>done(true);
-     wrap.addEventListener('click',e=>{if(e.target===wrap)done(false)});
-     document.body.appendChild(wrap);wrap.querySelector('.now').focus();
-   });
+ function openUpdateProgress(latest){
+   document.querySelector('.docfix-update-modal')?.remove();
+   const wrap=document.createElement('div');wrap.className='docfix-update-modal';
+   wrap.innerHTML=`<div class="docfix-update-card" role="status" aria-live="polite" aria-label="Aggiornamento DocFix">
+     <h3>Aggiorno DocFix</h3>
+     <p>Scarico, verifico e applico la versione ${latest}. Non devi fare altro.</p>
+     <div class="docfix-update-progress">
+       <div class="docfix-update-progress-head"><strong>Preparazione…</strong><b>0%</b></div>
+       <div class="docfix-update-track"><div class="docfix-update-fill"></div></div>
+       <div class="docfix-update-meta"><span></span><span></span></div>
+     </div>
+   </div>`;
+   document.body.appendChild(wrap);
+   return wrap;
  }
  function fmtBytes(n){
    n=Number(n)||0;if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(n<10240?1:0)+' KB';return (n/1048576).toFixed(n<10485760?1:0)+' MB';
@@ -95,10 +90,9 @@
    const box=wrap.querySelector('.docfix-update-progress'),title=box?.querySelector('strong'),pct=box?.querySelector('b'),fill=box?.querySelector('.docfix-update-fill'),meta=box?.querySelector('.docfix-update-meta');
    if(!box||!title||!pct||!fill||!meta)return null;
    box.hidden=false;
-   wrap.querySelector('.docfix-update-actions')?.setAttribute('hidden','');
    return {
      update(p={}){
-       const value=Math.max(0,Math.min(99,Math.round(Number(p.percent)||0)));
+       const value=Math.max(0,Math.min(100,Math.round(Number(p.percent)||0)));
        pct.textContent=value+'%';fill.style.width=value+'%';title.textContent=p.message||('Aggiorno DocFix '+latest+'…');
        const details=(p.downloaded&&p.total?fmtBytes(p.downloaded)+' / '+fmtBytes(p.total):(p.total?fmtBytes(p.total):''))+(p.speed?' · '+fmtBytes(p.speed)+'/s':'');
        const eta=fmtEta(p.etaSeconds);
@@ -106,34 +100,51 @@
      },
      error(message){
        title.textContent='Aggiornamento non riuscito';pct.textContent='—';fill.style.width='0%';meta.children[0].textContent=String(message||'');meta.children[1].textContent='';
-       wrap.querySelector('.docfix-update-actions')?.removeAttribute('hidden');
      }
    };
  }
+ async function refreshUpdateButton(button){
+   if(!button)return;
+   button.hidden=true;button.disabled=false;button.classList.remove('available');
+   if(!window.DocFixUpdater)return;
+   try{
+     const r=await window.DocFixUpdater.check();
+     if(!r?.ok||!r.available)return;
+     button.dataset.latest=r.latest||'';
+     button.textContent='↻ Aggiornamento disponibile';
+     button.classList.add('available');button.hidden=false;
+   }catch(e){
+     console.warn('Controllo aggiornamenti non disponibile',e);
+     button.hidden=true;
+   }
+ }
  async function handleUpdate(button){
-   if(!window.DocFixUpdater){toast('Aggiornamenti automatici non disponibili in questa versione.','error');return}
-   const old=button.textContent;button.disabled=true;button.textContent='Controllo…';
+   if(!window.DocFixUpdater){button.hidden=true;return}
+   button.disabled=true;
    try{
      const r=await window.DocFixUpdater.check();
      if(!r?.ok)throw Error(r?.error||'Controllo aggiornamenti non riuscito');
-     if(!r.available){button.classList.remove('available');toast('DocFix è già aggiornato alla versione '+r.current+'.','ok');return}
-     button.classList.add('available');button.textContent='Aggiorna alla '+r.latest;
-     const yes=await updateModal(r.latest,r.notes);
-     if(!yes)return;
-     button.disabled=true;button.textContent='Aggiornamento 0%';
+     if(!r.available){button.hidden=true;button.classList.remove('available');return}
+     openUpdateProgress(r.latest);
      const view=progressView(r.latest);
+     button.hidden=true;
      let unsubscribe=()=>{};
-     if(window.DocFixUpdater.onProgress)unsubscribe=window.DocFixUpdater.onProgress(p=>{view?.update(p);if(p?.percent)button.textContent='Aggiornamento '+Math.min(99,Math.round(p.percent))+'%'});
+     if(window.DocFixUpdater.onProgress)unsubscribe=window.DocFixUpdater.onProgress(p=>view?.update(p));
      try{
-       view?.update({percent:1,message:'Avvio aggiornamento…'});
+       view?.update({percent:1,message:'Preparo aggiornamento…'});
        const install=await window.DocFixUpdater.install();
        if(!install?.ok)throw Error(install?.error||'Installazione aggiornamento non riuscita');
-       if(!install.available){toast('DocFix è già aggiornato.','ok');return}
-       view?.update({percent:99,message:'Installazione in corso · riavvio automatico',etaSeconds:4});
-       button.textContent='Riavvio DocFix…';
+       if(!install.available){
+         document.querySelector('.docfix-update-modal')?.remove();
+         return;
+       }
+       view?.update({percent:100,message:'Aggiornamento applicato',etaSeconds:1});
      }finally{setTimeout(()=>{try{unsubscribe()}catch{}},10000)}
-   }catch(e){console.error(e);progressView()?.error(e?.message||e);toast('Aggiornamento non riuscito: '+(e?.message||e),'error')}
-   finally{if(document.body.isConnected&&button.textContent!=='Riavvio DocFix…'){button.disabled=false;if(!button.classList.contains('available'))button.textContent=old;}}
+   }catch(e){
+     console.error(e);progressView()?.error(e?.message||e);
+     toast('Aggiornamento non riuscito: '+(e?.message||e),'error');
+     button.disabled=false;button.hidden=false;button.textContent='↻ Riprova aggiornamento';
+   }
  }
  window.addEventListener('error',e=>{console.error('DocFix runtime error',e.error||e.message);toast('DocFix ha rilevato un problema inatteso. La pratica resta aperta: prova di nuovo oppure avvia un nuovo documento.');});
  window.addEventListener('unhandledrejection',e=>{console.error('DocFix async error',e.reason);toast('Un’operazione non è riuscita. I file originali non sono stati modificati.');});
@@ -144,10 +155,13 @@
    if(top&&!document.querySelector('.desktop-tools')){
      const tools=document.createElement('div');tools.className='desktop-tools';
      const version=document.createElement('span');version.className='desktop-version';version.textContent='v'+VERSION;
-     const badge=document.createElement('span');badge.className='desktop-ready';badge.innerHTML='<i></i> Offline · pronto';
-     const update=document.createElement('button');update.id='docfix-update-button';update.className='docfix-update-button';update.type='button';update.textContent='↻ Aggiorna DocFix';
+     const badge=document.createElement('span');badge.className='desktop-ready';badge.innerHTML='<i></i> Pronto';
+     const update=document.createElement('button');update.id='docfix-update-button';update.className='docfix-update-button';update.type='button';update.hidden=true;update.textContent='';
      update.addEventListener('click',()=>handleUpdate(update));
      tools.append(version,badge,update);top.appendChild(tools);
+     window.DocFixUpdater?.currentVersion?.().then(v=>{if(v)version.textContent='v'+v}).catch(()=>{});
+     setTimeout(()=>refreshUpdateButton(update),900);
+     setInterval(()=>refreshUpdateButton(update),30*60*1000);
    }
    const intro=document.querySelector('.intro');
    if(intro&&!document.querySelector('.docfix-flow')){
