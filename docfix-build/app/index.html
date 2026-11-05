@@ -855,6 +855,18 @@ document.addEventListener('dragover',e=>{if(e.dataTransfer?.types?.includes('Fil
 document.addEventListener('dragleave',e=>{if(e.target===document.documentElement)zone.classList.remove('dragging')});
 document.addEventListener('drop',e=>{if(e.dataTransfer?.files?.length){e.preventDefault();zone.classList.remove('dragging');addFiles(Array.from(e.dataTransfer.files))}});
 const supported=f=>/\.(pdf|jpe?g|png|webp)$/i.test(f.name)||f.type==='application/pdf'||/^image\/(jpeg|png|webp)$/.test(f.type);
+const fileOrderCollator=new Intl.Collator('it',{numeric:true,sensitivity:'base'});
+function orderedIncoming(files){
+ const list=Array.from(files||[]).map((file,index)=>({file,index}));
+ if(list.length<=1)return list.map(x=>x.file);
+ list.sort((a,b)=>{
+  const byName=fileOrderCollator.compare(a.file.name||'',b.file.name||'');
+  if(byName)return byName;
+  const byTime=(Number(a.file.lastModified)||0)-(Number(b.file.lastModified)||0);
+  return byTime||a.index-b.index;
+ });
+ return list.map(x=>x.file);
+}
 let libPromise=null;
 function script(url){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=url;s.onload=resolve;s.onerror=()=>reject(new Error('Componente PDF locale non disponibile.'));document.head.appendChild(s)})}
 async function pdfLib(){if(window.PDFLib)return window.PDFLib;if(!libPromise)libPromise=script('./vendor/pdf-lib/pdf-lib.min.js').then(()=>window.PDFLib).catch(e=>{libPromise=null;throw e});return libPromise}
@@ -1135,7 +1147,7 @@ async function makeImageEntries(file,index,total=1){
 window.DocFixDesktopDiagnostics=Object.freeze({
  multiCardCandidates,warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
  safeMultiCropPreview:(original,candidate)=>window.DocFixScanner.process(original,{crop:true,quad:expandQuadSafe(candidate.quad,.028),rotation:0,filter:'original',strength:0},2200),
- refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.8.3'
+ orderedIncoming,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.8.4'
 });
 function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
  // The page's existing /Rotate is already applied in pdf.js previews.
@@ -1243,7 +1255,7 @@ $('edit-full').onclick=()=>{if(editIndex<0)return;const e=entries[editIndex];e.r
 $('edit-apply').onclick=()=>{if(editIndex<0)return;if(!window.DocFixScanner.validQuad(editQuad)){alert('Gli angoli si incrociano. Riprova.');return}
  const e=entries[editIndex];e.rotation=editRotation;e.processed=window.DocFixScanner.process(editSource,{crop:true,quad:editQuad,rotation:0,filter:'original',strength:0},4200);e.cropped=true;e.geometryReview=false;e.orientationReview=false;e.sourceQuad=rotatedQuad(editQuad,(360-editRotation)%360);const q=qualityAudit(e.processed,e.sourceQuad);e.qualityReview=q.review;e.qualityIssues=q.issues;e.qualityMetrics=q.metrics;e.review=q.review;e.how='Ritaglio verificato'+(q.issues.length?' · '+q.issues.join(' · '):'');lastPdfSize=null;closeCorrection();repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}))};
 function addFiles(files){
- const incoming=Array.from(files||[]);if(!incoming.length)return;
+ const incoming=orderedIncoming(files);if(!incoming.length)return;
  workspace.hidden=false;document.body.classList.add('has-document');zone.hidden=false;
  let added=0,rejected=0;
  for(const f of incoming){
