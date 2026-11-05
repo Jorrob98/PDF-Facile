@@ -11,3 +11,8 @@ contextBridge.exposeInMainWorld('DocFixUpdater',Object.freeze({
     return ()=>ipcRenderer.removeListener('docfix:update:progress',handler);
   }
 }));
+contextBridge.exposeInMainWorld('DocFixOCRCloud',Object.freeze({
+  status:()=>ipcRenderer.invoke('docfix:ocr:status'),
+  saveConfig:(config)=>ipcRenderer.invoke('docfix:ocr:save',config),
+  recognize:(payload)=>ipcRenderer.invoke('docfix:ocr:recognize',payload)
+}));
