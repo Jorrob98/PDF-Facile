@@ -93,6 +93,8 @@ jobs:
           if($index -notmatch 'orderedIncoming'){ throw 'Ordinamento naturale file multipli mancante' }
           $main=Get-Content main.js -Raw
           if($main -notmatch 'inputOrder'){ throw 'Self-test ordine file mancante' }
+          if($main -notmatch 'reverseFileOrder'){ throw 'Self-test inversione file mancante' }
+          if($index -notmatch 'Inverti ordine file'){ throw 'Comando inversione file mancante' }
           $crop=Get-Content app\group1-safe-crop.js -Raw
           if($crop -notmatch 'group1-superrun-20261105'){ throw 'Fix limiti ritaglio SUPER RUN mancante' }
           $main=Get-Content main.js -Raw
