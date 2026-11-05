@@ -1,7 +1,7 @@
 name: Build DocFix Fast Incremental Update
-# SUPER RUN FINAL 1.8.7
-# retry verified multi-card 1.8.7
-# OCR MAX final rebuild 1.8.7
+# SUPER RUN FINAL 1.8.8
+# retry verified multi-card 1.8.8
+# OCR MAX final rebuild 1.8.8
 
 on:
   push:
@@ -43,7 +43,7 @@ jobs:
           mkdir -p build
           base64 -d build/icon.b64 > build/icon.png
 
-      - name: Validate DocFix 1.8.7 updater progress and workflow
+      - name: Validate DocFix 1.8.8 updater progress and workflow
         shell: bash
         working-directory: docfix-build
         run: |
@@ -62,7 +62,7 @@ jobs:
           grep -F "listen(18654)" main.js
           grep -F "pendingSecondInstance" main.js
           grep -F "if(show)showWindow('load-complete')" main.js
-          grep -F "1.8.7" package.json
+          grep -F "1.8.8" package.json
           test "$(find app/vendor/tesseract-core -name 'tesseract-core*.wasm.js' | wc -l)" -ge 4
           test -f app/vendor/pdfjs/pdf.min.mjs
           test -f app/vendor/pdfjs/pdf.worker.min.mjs
@@ -76,8 +76,8 @@ jobs:
           cp -a app/. pack/app/
           cp build/icon.png pack/build/icon.png
 
-          npx --no-install asar pack pack DocFix-1.8.7-app.asar
-          npx --no-install asar extract DocFix-1.8.7-app.asar verify
+          npx --no-install asar pack pack DocFix-1.8.8-app.asar
+          npx --no-install asar extract DocFix-1.8.8-app.asar verify
           node --check verify/main.js
           grep -F "startup-fallback'),300" verify/main.js
           grep -F "STARTUP_BUNDLE_OK" verify/main.js
@@ -89,8 +89,8 @@ jobs:
           grep -F "alreadyDocumentShape" verify/app/index.html
           grep -F "trimCardBackground(processed,backLike)" verify/app/index.html
           grep -F 'class="advanced-options"' verify/app/index.html
-          grep -F "version:'1.8.7'" verify/app/index.html
-          grep -F "const VERSION='1.8.7'" verify/app/stability.js
+          grep -F "version:'1.8.8'" verify/app/index.html
+          grep -F "const VERSION='1.8.8'" verify/app/stability.js
           grep -F "DocFixOCRCloud" verify/preload.js
           grep -F "registerOcrHandlers" verify/main.js
           grep -F "OCR MAX" verify/app/ocr-max.js
@@ -127,20 +127,26 @@ jobs:
           grep -F "stackedCardCandidatesByGap" verify/app/index.html
           grep -F "stackedEdgeCards" verify/main.js
           grep -F "fourCardPairOrder" verify/main.js
+          grep -F "multiRefineSafe" verify/main.js
+          grep -F "safeRefineMultiQuad" verify/app/index.html
+          grep -F "regroupLatestTwoUpSources" verify/app/index.html
+          grep -F "Ritaglio prudente: controlla i bordi" verify/app/index.html
+          grep -F "set completo 4/4" verify/app/index.html
+          grep -F "Scambia fronte/retro" verify/app/index.html
           grep -F "pairedFourCards" verify/app/index.html
           grep -F "4 tessere separate" verify/app/index.html
           grep -F "stacked-gap-color" verify/app/index.html
           grep -F "Inverti ordine file" verify/app/index.html
           grep -F "openUpdateProgress" verify/app/stability.js
-          grep -F "1.8.7" verify/package.json
+          grep -F "1.8.8" verify/package.json
           test -f verify/app/vendor/pdfjs/pdf.min.mjs
           test -f verify/app/vendor/tessdata/eng.traineddata.gz
           test -f verify/app/vendor/tessdata/ita.traineddata.gz
 
-          size=$(stat -c%s DocFix-1.8.7-app.asar)
+          size=$(stat -c%s DocFix-1.8.8-app.asar)
           if [ "$size" -lt 1000000 ]; then echo "app.asar troppo piccolo: $size"; exit 1; fi
           echo "APP_ASAR_SIZE=$size" >> "$GITHUB_ENV"
-          echo "APP_ASAR_SHA=$(sha256sum DocFix-1.8.7-app.asar | awk '{print $1}')" >> "$GITHUB_ENV"
+          echo "APP_ASAR_SHA=$(sha256sum DocFix-1.8.8-app.asar | awk '{print $1}')" >> "$GITHUB_ENV"
 
       - name: Install NSIS
         run: |
@@ -153,7 +159,7 @@ jobs:
         run: |
           cat > update.nsi <<'NSI'
           Unicode true
-          Name "Aggiornamento DocFix 1.8.7"
+          Name "Aggiornamento DocFix 1.8.8"
           OutFile "DocFix_Aggiornamento_1.8.exe"
           RequestExecutionLevel user
           SetCompressor /SOLID lzma
@@ -215,7 +221,7 @@ jobs:
 
             backup_ok:
               SetOutPath "$INSTDIR\resources"
-              File /oname=app.asar.new "DocFix-1.8.7-app.asar"
+              File /oname=app.asar.new "DocFix-1.8.8-app.asar"
 
               ClearErrors
               FileOpen $3 "$INSTDIR\resources\app.asar.new" r
@@ -242,17 +248,17 @@ jobs:
 
             install_ok:
               FileOpen $2 "$INSTDIR\resources\docfix-version.txt" w
-              FileWrite $2 "1.8.7"
+              FileWrite $2 "1.8.8"
               FileClose $2
               FileOpen $2 "$INSTDIR\resources\docfix-update-status.txt" w
-              FileWrite $2 "OK 1.8.7"
+              FileWrite $2 "OK 1.8.8"
               FileClose $2
               Delete "$INSTDIR\resources\app.asar.bak"
 
               Sleep 700
               ExecShell "open" "$INSTDIR\DocFix.exe"
               IfSilent success_silent 0
-              MessageBox MB_ICONINFORMATION|MB_OK "DocFix è stato aggiornato alla versione 1.8.7.$\r$\n$\r$\nIl programma è stato riaperto."
+              MessageBox MB_ICONINFORMATION|MB_OK "DocFix è stato aggiornato alla versione 1.8.8.$\r$\n$\r$\nIl programma è stato riaperto."
             success_silent:
               SetErrorLevel 0
               Goto done
@@ -299,16 +305,16 @@ jobs:
           echo "UPDATER_SHA=$sha"
           file DocFix_Aggiornamento_1.8.exe | grep -Ei 'PE32|MS Windows'
 
-      - name: Publish verified DocFix 1.8.7 simplified update
+      - name: Publish verified DocFix 1.8.8 simplified update
         shell: bash
         working-directory: docfix-build
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag='v1.8.7'
-          title='DocFix Desktop 1.8.7'
-          notes='DocFix 1.8.7 gestisce il formato reale 2x2: due foto contenenti entrambe codice fiscale e carta identità vengono ritagliate in quattro anteprime separate e raggruppate come CF fronte, CF retro, CI fronte, CI retro.'
+          tag='v1.8.8'
+          title='DocFix Desktop 1.8.8'
+          notes='DocFix 1.8.8 rinforza la modalità 2x2: quando vengono rilevate due tessere le mantiene sempre entrambe, rifinisce i bordi solo se sicuro, accoppia anche due file aggiunti separatamente e mostra il set completo 4/4 con comando Scambia fronte/retro.'
 
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" DocFix_Aggiornamento_1.8.exe DocFix_Aggiornamento_1.8.sha256 --clobber
