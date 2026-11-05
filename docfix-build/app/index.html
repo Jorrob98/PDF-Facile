@@ -825,8 +825,10 @@ function syncActions(){
  $('queue-count').textContent=processing?'Elaborazione '+completedInBatch+'/'+Math.max(totalInBatch,1)+' · in attesa: '+pending.length:pending.length+' file in attesa';
  $('undo-remove').hidden=!lastRemoved;
  const sourceOrder=[...new Set(entries.map(e=>e.sourceIndex))];
+ const pairedSet=entries.length===4&&entries.every(e=>e.twoUp&&e.pairLabel)&&sourceOrder.length===2;
  $('reverse-files').hidden=busy||sourceOrder.length<2;
  $('reverse-files').disabled=busy||sourceOrder.length<2;
+ $('reverse-files').textContent=pairedSet?'↔ Scambia fronte/retro':'↕ Inverti ordine file';
  $('sizes').textContent='Originali: '+fmt(sourceBytes)+(lastPdfSize!==null?' · Ultimo PDF: '+fmt(lastPdfSize):' · Il PDF viene creato quando premi Scarica.');
 }
 function reset(){
@@ -1267,7 +1269,8 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
   item.addEventListener('dragover',ev=>{if(dragSource>=0&&!busy)ev.preventDefault()});
   item.addEventListener('drop',ev=>{if(dragSource>=0&&!busy){ev.preventDefault();moveEntry(dragSource,i)}dragSource=-1});
   item.addEventListener('dragend',()=>{dragSource=-1;item.classList.remove('drag-sort')});
- });$('summary').textContent=entries.length+' '+(entries.length===1?'pagina':'pagine')+(pending.length?' · '+pending.length+' in attesa':'');const reviewN=entries.filter(e=>e.review).length,qualityN=entries.filter(e=>e.qualityReview).length;$('review-count').textContent=reviewN?(reviewN+' da verificare'+(qualityN?' · '+qualityN+' qualità':'')):'Tutto pronto';syncActions();document.dispatchEvent(new CustomEvent('docfix:repaint',{detail:{entries:entries.slice()}}));}
+ });const completeFour=entries.length===4&&entries.every(e=>e.pairLabel);
+ $('summary').textContent=completeFour?'4 tessere · set completo 4/4':entries.length+' '+(entries.length===1?'pagina':'pagine')+(pending.length?' · '+pending.length+' in attesa':'');const reviewN=entries.filter(e=>e.review).length,qualityN=entries.filter(e=>e.qualityReview).length;$('review-count').textContent=reviewN?(reviewN+' da verificare'+(qualityN?' · '+qualityN+' qualità':'')):'Tutto pronto';syncActions();document.dispatchEvent(new CustomEvent('docfix:repaint',{detail:{entries:entries.slice()}}));}
 function moveEntry(from,to){if(busy||from===to||from<0||to<0||from>=entries.length||to>=entries.length)return;
  const [item]=entries.splice(from,1);entries.splice(to,0,item);lastPdfSize=null;repaint();status('Ordine delle pagine aggiornato: il PDF seguirà questo ordine.');}
 function discardUnusedSource(id){if(id===activeSource||pending.some(x=>x.id===id)||entries.some(e=>e.sourceIndex===id))return;sourceFiles=sourceFiles.filter(s=>s.id!==id)}
@@ -1293,7 +1296,9 @@ function reverseFileOrder(){
    const br=rank.has(b.s.id)?rank.get(b.s.id):reversed.length+b.i;
    return ar-br;
  }).map(x=>x.s);
- lastPdfSize=null;repaint();status('Ordine dei file invertito. Il PDF seguirà questo ordine.');
+ for(const e of entries){if(e.twoUp){e.pairGroup=null;e.pairLabel=null;e.title=e.source+' · tessera '+(Number(e.splitSlot||0)+1)}}
+ regroupLatestTwoUpSources();
+ lastPdfSize=null;repaint();status(entries.length===4&&entries.every(e=>e.pairLabel)?'Fronte e retro scambiati. Le 4 tessere sono state riordinate.':'Ordine dei file invertito. Il PDF seguirà questo ordine.');
 }
 $('reverse-files').onclick=reverseFileOrder;
 window.DocFixOcrHost=Object.freeze({entries:()=>entries.slice(),indexOf:e=>entries.indexOf(e),repaint:()=>repaint(),isBusy:()=>busy||processing||exporting});
