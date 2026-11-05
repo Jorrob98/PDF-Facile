@@ -1,5 +1,6 @@
 name: Build DocFix Fast Incremental Update
 # SUPER RUN FINAL 1.8.3
+# retry verified multi-card 1.8.3
 # OCR MAX final rebuild 1.8.3
 
 on:
