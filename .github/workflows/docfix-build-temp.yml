@@ -82,6 +82,11 @@ jobs:
           if($cloud -notmatch 'google-rescue'){ throw 'Google rescue OCR mancante' }
           if($ocr -notmatch 'docfix:reset'){ throw 'Reset coda OCR mancante' }
           if($ocr -notmatch 'scheduleWorkerRelease'){ throw 'Rilascio RAM OCR mancante' }
+          if($ocr -notmatch 'labeledFields'){ throw 'Estrazione campi etichettati mancante' }
+          $crop=Get-Content app\group1-safe-crop.js -Raw
+          if($crop -notmatch 'group1-superrun-20261105'){ throw 'Fix limiti ritaglio SUPER RUN mancante' }
+          if($main -notmatch 'no-cache, no-store, must-revalidate'){ throw 'Protezione cache obsoleta mancante' }
+          if($main -notmatch "child.once\('spawn'"){ throw 'Conferma avvio updater mancante' }
           $required=@(
             'app\vendor\pdfjs\pdf.min.mjs',
             'app\vendor\pdfjs\pdf.worker.min.mjs',
