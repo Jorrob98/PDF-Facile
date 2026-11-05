@@ -96,6 +96,9 @@ jobs:
           if($main -notmatch 'reverseFileOrder'){ throw 'Self-test inversione file mancante' }
           if($index -notmatch 'stackedCardCandidatesByGap'){ throw 'Rilevatore due tessere sovrapposte mancante' }
           if($main -notmatch 'stackedEdgeCards'){ throw 'Self-test tessere ai bordi mancante' }
+          if($main -notmatch 'fourCardPairOrder'){ throw 'Self-test 2 file -> 4 anteprime mancante' }
+          if($index -notmatch 'pairedFourCards'){ throw 'Raggruppamento 2x2 mancante' }
+          if($index -notmatch '4 tessere separate'){ throw 'Stato 4 tessere mancante' }
           if($index -notmatch 'Inverti ordine file'){ throw 'Comando inversione file mancante' }
           $crop=Get-Content app\group1-safe-crop.js -Raw
           if($crop -notmatch 'group1-superrun-20261105'){ throw 'Fix limiti ritaglio SUPER RUN mancante' }
