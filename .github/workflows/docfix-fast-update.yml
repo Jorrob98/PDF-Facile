@@ -126,6 +126,7 @@ jobs:
           grep -F "reverseFileOrder" verify/main.js
           grep -F "stackedCardCandidatesByGap" verify/app/index.html
           grep -F "stackedEdgeCards" verify/main.js
+          grep -F "stacked-gap-color" verify/app/index.html
           grep -F "Inverti ordine file" verify/app/index.html
           grep -F "openUpdateProgress" verify/app/stability.js
           grep -F "1.8.6" verify/package.json
