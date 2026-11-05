@@ -84,6 +84,22 @@ function registerOcrHandlers({ipcMain,app,log}){
     });
   }
 
+  async function jsonRequestRetry(url,opts={},attempts=3){
+    let last;
+    for(let i=0;i<attempts;i++){
+      try{return await jsonRequest(url,opts)}
+      catch(e){
+        last=e;const code=Number(e?.statusCode)||0;
+        const retryable=!code||[408,425,429,500,502,503,504].includes(code);
+        if(!retryable||i===attempts-1)throw e;
+        const retryAfter=Number(e?.headers?.['retry-after']);
+        const delay=Number.isFinite(retryAfter)&&retryAfter>0?Math.min(5000,retryAfter*1000):Math.min(4000,450*Math.pow(2,i));
+        await new Promise(r=>setTimeout(r,delay));
+      }
+    }
+    throw last||new Error('Richiesta OCR non riuscita');
+  }
+
   const stripDataUrl=s=>String(s||'').replace(/^data:image\/[a-z0-9.+-]+;base64,/i,'').replace(/\s+/g,'');
   function validateImageBase64(value){
     const s=stripDataUrl(value);
@@ -106,7 +122,7 @@ function registerOcrHandlers({ipcMain,app,log}){
     const project=encodeURIComponent(cfg.google.projectId),key=encodeURIComponent(dec(cfg.google.apiKeyEnc));
     const url='https://eu-vision.googleapis.com/v1/projects/'+project+'/locations/eu/images:annotate?key='+key;
     const body={requests:[{image:{content:image},features:[{type:'DOCUMENT_TEXT_DETECTION',model:'builtin/latest'}],imageContext:{languageHints:['it','en']}}]};
-    const r=await jsonRequest(url,{method:'POST',body,timeout:35000});
+    const r=await jsonRequestRetry(url,{method:'POST',body,timeout:35000},3);
     const first=r.data?.responses?.[0];
     if(first?.error)throw new Error(first.error.message||'Google Vision OCR non riuscito');
     const text=String(first?.fullTextAnnotation?.text||first?.textAnnotations?.[0]?.description||'').trim();
@@ -119,13 +135,13 @@ function registerOcrHandlers({ipcMain,app,log}){
     const key=dec(cfg.azure.keyEnc);
     const locale=modelId==='prebuilt-read'?'&locale=it-IT':'';
     const startUrl=endpoint+'/documentintelligence/documentModels/'+encodeURIComponent(modelId)+':analyze?api-version=2024-11-30'+locale;
-    const start=await jsonRequest(startUrl,{method:'POST',headers:{'Ocp-Apim-Subscription-Key':key},body:{base64Source:image},timeout:35000});
+    const start=await jsonRequestRetry(startUrl,{method:'POST',headers:{'Ocp-Apim-Subscription-Key':key},body:{base64Source:image},timeout:35000},3);
     const op=start.headers['operation-location'];
     if(!op)throw new Error('Azure non ha restituito Operation-Location.');
     let last=null;
     for(let i=0;i<42;i++){
       await new Promise(r=>setTimeout(r,i<4?450:750));
-      const r=await jsonRequest(op,{headers:{'Ocp-Apim-Subscription-Key':key},timeout:20000});
+      const r=await jsonRequestRetry(op,{headers:{'Ocp-Apim-Subscription-Key':key},timeout:20000},3);
       last=r.data;
       const state=String(last?.status||'').toLowerCase();
       if(state==='succeeded')break;
@@ -232,8 +248,15 @@ function registerOcrHandlers({ipcMain,app,log}){
       try{google=await googleVision(image,cfg);candidates.push(google);}catch(e){errors.push('Google: '+(e.message||e));log('OCR_GOOGLE_FAIL',e);}
     }
     const local=candidates.find(c=>c.provider==='tesseract');
-    const agreement=google&&local?tokenAgreement(google.text,local.text):1;
-    const combinedHint=[local?.text,google?.text].filter(Boolean).join('\n');
+    const firstAgreement=google&&local?tokenAgreement(google.text,local.text):1;
+    if(google&&alt!==image&&((Number(google.confidence)||0)<.82||(local&&firstAgreement<.55))){
+      try{
+        const rescue=await googleVision(alt,cfg);rescue.provider='google-rescue';candidates.push(rescue);
+      }catch(e){errors.push('Google rescue: '+(e.message||e));log('OCR_GOOGLE_RESCUE_FAIL',e);}
+    }
+    const googleCandidates=candidates.filter(c=>c.provider==='google'||c.provider==='google-rescue');
+    const agreement=local&&googleCandidates.length?Math.max(...googleCandidates.map(g=>tokenAgreement(g.text,local.text))):1;
+    const combinedHint=[local?.text,...googleCandidates.map(g=>g.text)].filter(Boolean).join('\n');
     const isIdentity=Boolean(input.identityLikely)||identityHint(combinedHint);
     const needAzure=Boolean(input.forceAzure)||isIdentity||!google||(Number(google.confidence)||0)<.86||(local&&agreement<.64);
     if(needAzure&&cfg.azure.endpoint&&cfg.azure.keyEnc){
