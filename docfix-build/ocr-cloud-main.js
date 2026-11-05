@@ -234,13 +234,21 @@ function registerOcrHandlers({ipcMain,app,log}){
     const local=candidates.find(c=>c.provider==='tesseract');
     const agreement=google&&local?tokenAgreement(google.text,local.text):1;
     const combinedHint=[local?.text,google?.text].filter(Boolean).join('\n');
-    const isIdentity=identityHint(combinedHint);
+    const isIdentity=Boolean(input.identityLikely)||identityHint(combinedHint);
     const needAzure=Boolean(input.forceAzure)||isIdentity||!google||(Number(google.confidence)||0)<.86||(local&&agreement<.64);
     if(needAzure&&cfg.azure.endpoint&&cfg.azure.keyEnc){
-      try{
-        const az=isIdentity?await azureIdDocument(image,cfg):await azureRead(alt,cfg);
-        candidates.push(az);
-      }catch(e){errors.push('Azure: '+(e.message||e));log('OCR_AZURE_FAIL',e);}
+      if(isIdentity){
+        try{
+          const id=await azureIdDocument(image,cfg);
+          if(id.text||id.structuredFields?.length)candidates.push(id);
+          else throw new Error('Modello ID senza dati utili');
+        }catch(e){
+          errors.push('Azure ID: '+(e.message||e));log('OCR_AZURE_ID_FAIL',e);
+          try{candidates.push(await azureRead(alt,cfg));}catch(e2){errors.push('Azure Read: '+(e2.message||e2));log('OCR_AZURE_FAIL',e2);}
+        }
+      }else{
+        try{candidates.push(await azureRead(alt,cfg));}catch(e){errors.push('Azure: '+(e.message||e));log('OCR_AZURE_FAIL',e);}
+      }
     }
     const best=chooseBest(candidates);
     return {ok:Boolean(best),best,candidates,rescuedSignals:mergeSignals(candidates),structuredFields:mergeStructured(candidates),identityDocument:isIdentity,errors,agreement,status:status()};
