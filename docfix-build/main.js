@@ -181,6 +181,9 @@ async function runSelfTest(){
         for(const y of [230,620]){mg.fillStyle='#d9eef0';mg.fillRect(130,y,640,360);mg.fillStyle='#1b6380';mg.fillRect(130,y,640,80);mg.fillStyle='#fff';mg.fillRect(170,y+120,560,70);mg.fillStyle='#111';for(let x=190;x<700;x+=12)mg.fillRect(x,y+135,5,40);mg.fillStyle='#222';mg.font='32px Arial';mg.fillText('DOCFIX TEST',190,y+250);}
         const multi=window.DocFixDesktopDiagnostics?.multiCardCandidates(mc)||[];
         out.multiCard=multi.length===2&&multi.every(x=>x.status==='found');
+        const safeCrops=multi.map(x=>window.DocFixDesktopDiagnostics?.safeMultiCropPreview?.(mc,x)).filter(Boolean);
+        out.multiCardSafe=safeCrops.length===2&&safeCrops.every(c=>window.DocFixDesktopDiagnostics?.multiCropHealthy?.(c));
+        for(const c of safeCrops){try{c.width=c.height=1}catch{}}
         const fc=document.createElement('canvas');fc.width=1000;fc.height=700;const fg=fc.getContext('2d');
         fg.fillStyle='#b98861';fg.fillRect(0,0,fc.width,fc.height);
         const actual=[{x:.16,y:.20},{x:.84,y:.16},{x:.87,y:.74},{x:.13,y:.78}];
