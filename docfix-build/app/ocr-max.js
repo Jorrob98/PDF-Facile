@@ -125,7 +125,7 @@ async function canvasBase64(canvas,quality=.94){
  }
  throw Error('Immagine OCR troppo grande');
 }
-function providerLabel(p){return p==='google'?'Google Vision':p==='azure'?'Azure Read':p==='tesseract'?'Tesseract IT+EN':String(p||'OCR')}
+function providerLabel(p){return p==='google'?'Google Vision':p==='azure'?'Azure Read':p==='tesseract'?'Tesseract IT+EN':p==='pdf-text'?'Testo PDF originale':String(p||'OCR')}
 async function getCloudStatus(){
  if(!window.DocFixOCRCloud)return {google:{configured:false},azure:{configured:false},secureStorage:false};
  const r=await window.DocFixOCRCloud.status();cloudStatus=r;return r;
@@ -135,6 +135,10 @@ function repaint(){try{host()?.repaint?.()}catch{}}
 
 async function analyzeEntry(entry,force=false){
  if(!entry?.processed)return;
+ if(entry.embeddedText&&entry.embeddedText.length>=20&&!force){
+  entry.ocrResult={text:entry.embeddedText,confidence:.995,score:.995,provider:'pdf-text',signals:signals(entry.embeddedText),candidates:[{provider:'pdf-text',text:entry.embeddedText,confidence:.995}],errors:[],localPasses:[]};
+  entry.ocrState='ready';repaint();return;
+ }
  if(entry.ocrState==='working')return;
  if(entry.ocrResult&&!force)return;
  entry.ocrState='working';entry.ocrError='';repaint();
@@ -151,6 +155,7 @@ async function analyzeEntry(entry,force=false){
    });
    if(cloud?.candidates?.length)candidates=cloud.candidates;
    if(cloud?.best)final=cloud.best;
+   if(cloud?.rescuedSignals)final={...final,signals:cloud.rescuedSignals};
    errors=cloud?.errors||[];
   }
   entry.ocrResult={
@@ -173,7 +178,7 @@ function enqueue(entry,force=false){
 }
 async function drain(){
  if(running)return;running=true;
- try{while(queue.length){const x=queue.shift();await analyzeEntry(x.entry,x.force);}}finally{running=false}
+ try{while(queue.length){while(host()?.isBusy?.())await sleep(250);const x=queue.shift();await analyzeEntry(x.entry,x.force);}}finally{running=false}
 }
 
 function decorate(entries){
@@ -242,6 +247,7 @@ async function openSettings(){
    <p>Le chiavi vengono cifrate da Windows sul PC. Non vengono inserite nei PDF e non sono leggibili dalla pagina di DocFix.</p>
    <div class="ocr-actions"><button class="danger clear-g">Rimuovi Google</button><button class="danger clear-a">Rimuovi Azure</button><button class="secondary close">Annulla</button><button class="primary save">Salva OCR MAX</button></div>
   `);
+  wrap.dataset.locked='1';
   const close=()=>{wrap.remove();settingsOpen=false};
   wrap.querySelector('.close').onclick=close;
   wrap.querySelector('.save').onclick=async()=>{
