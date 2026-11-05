@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const VERSION='1.8.1';
+const VERSION='1.8.2';
 let workerPromise=null,workerIdleTimer=null,queue=[],queuedEntries=new Set(),running=false,cloudStatus=null,settingsOpen=false;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -309,7 +309,7 @@ async function openSettings(){
  try{
   const st=await getCloudStatus();
   const wrap=modal(`
-   <h3>OCR MAX 1.8.1</h3>
+   <h3>OCR MAX 1.8.2</h3>
    <p>Tesseract italiano+inglese lavora sempre. Google Vision EU è il motore cloud principale; Azure Read interviene automaticamente sui casi dubbi.</p>
    <div class="ocr-provider"><strong>Google Vision EU <span class="${st.google?.configured?'ocr-ok':'ocr-off'}">${st.google?.configured?'Configurato ✓':'Da configurare'}</span></strong>
     <div class="ocr-grid" style="margin-top:12px">
