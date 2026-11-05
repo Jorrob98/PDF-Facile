@@ -44,12 +44,14 @@ async function worker(){
  })().catch(e=>{workerPromise=null;throw e});
  return workerPromise;
 }
+async function releaseWorkerNow(){
+ if(workerIdleTimer){clearTimeout(workerIdleTimer);workerIdleTimer=null}
+ const w=workerPromise;workerPromise=null;
+ try{const resolved=await w;await resolved?.terminate?.()}catch{}
+}
 function scheduleWorkerRelease(){
  if(workerIdleTimer)clearTimeout(workerIdleTimer);
- workerIdleTimer=setTimeout(async()=>{
-  const w=workerPromise;workerPromise=null;workerIdleTimer=null;
-  try{const resolved=await w;await resolved?.terminate?.()}catch{}
- },90000);
+ workerIdleTimer=setTimeout(()=>{void releaseWorkerNow()},90000);
 }
 function makeCanvas(source,w,h,filter='none'){
  const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));
@@ -149,7 +151,7 @@ function host(){return window.DocFixOcrHost||null}
 function repaint(){try{host()?.repaint?.()}catch{}}
 
 async function analyzeEntry(entry,force=false){
- if(!entry?.processed)return;
+ if(!entry?.processed||host()?.indexOf?.(entry)<0)return;
  if(entry.embeddedText&&entry.embeddedText.length>=20&&!force){
   entry.ocrResult={text:entry.embeddedText,confidence:.995,score:.995,provider:'pdf-text',signals:signals(entry.embeddedText),candidates:[{provider:'pdf-text',text:entry.embeddedText,confidence:.995}],errors:[],localPasses:[]};
   entry.ocrState='ready';repaint();return;
@@ -159,6 +161,7 @@ async function analyzeEntry(entry,force=false){
  entry.ocrState='working';entry.ocrError='';repaint();
  try{
   const local=await localMultiPass(entry.processed),st=cloudStatus||await getCloudStatus();
+  if(host()?.indexOf?.(entry)<0)return;
   let final={provider:'tesseract',text:local.best.text,confidence:clamp(local.best.confidence/100,0,1),score:local.best.score,signals:signals(local.best.text)};
   let candidates=[final],errors=[];
   if((st.google?.configured||st.azure?.configured)&&window.DocFixOCRCloud){
@@ -174,6 +177,7 @@ async function analyzeEntry(entry,force=false){
    final={...final,structuredFields:cloud?.structuredFields||[]};
    errors=cloud?.errors||[];
   }
+  if(host()?.indexOf?.(entry)<0)return;
   entry.ocrResult={
    text:String(final.text||'').trim(),
    confidence:clamp(Number(final.confidence)||0,0,1),
@@ -273,7 +277,7 @@ async function openSettings(){
      <div class="ocr-field wide"><label>Azure key</label><input class="a-key" type="password" autocomplete="new-password" placeholder="${st.azure?.configured?'Salvata · lascia vuoto per mantenerla':'Inserisci chiave'}"></div>
     </div>
    </div>
-   <p>Le chiavi vengono cifrate da Windows sul PC. Non vengono inserite nei PDF e non sono leggibili dalla pagina di DocFix.</p>
+   <p>Le chiavi vengono cifrate da Windows sul PC. Quando OCR MAX Cloud è attivo, l’immagine della pagina viene inviata ai provider configurati esclusivamente per il riconoscimento OCR.</p>
    <div class="ocr-actions"><button class="danger clear-g">Rimuovi Google</button><button class="danger clear-a">Rimuovi Azure</button><button class="secondary close">Annulla</button><button class="primary save">Salva OCR MAX</button></div>
   `);
   wrap.dataset.locked='1';
@@ -305,6 +309,7 @@ async function refreshHeader(){
 
 document.addEventListener('docfix:entries-added',e=>{for(const entry of e.detail?.entries||[])enqueue(entry,false)});
 document.addEventListener('docfix:entry-changed',e=>{const entry=e.detail?.entry;if(entry){entry.ocrResult=null;enqueue(entry,true)}});
+document.addEventListener('docfix:reset',()=>{queue=[];queuedEntries.clear();if(!running)void releaseWorkerNow()});
 document.addEventListener('docfix:repaint',e=>decorate(e.detail?.entries||[]));
 document.addEventListener('DOMContentLoaded',()=>{ensureStyle();setTimeout(refreshHeader,0);const existing=host()?.entries?.()||[];for(const e of existing)if(!e.ocrResult)enqueue(e,false);});
 window.DocFixOCRMax=Object.freeze({version:VERSION,analyzeEntry,openResult,openSettings,signals});
