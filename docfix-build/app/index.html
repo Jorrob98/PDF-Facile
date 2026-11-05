@@ -60,7 +60,7 @@ body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,tr
 <section id="dropzone" role="button" tabindex="0" aria-label="Carica foto o PDF" class="dropzone"><span class="upload-icon">↥</span><h2>Trascina qui i documenti</h2><p>Oppure selezionali dal dispositivo</p><div class="choose">+ Aggiungi foto o PDF</div><small>JPG, PNG, WebP, PDF · più file insieme · Ctrl+O per aprire · Ctrl+V per incollare una foto</small></section><input hidden id="picker" type="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp" multiple>
 <section id="workspace" class="workspace" hidden><div class="result-header"><div><div class="eyebrow">RISULTATO</div><h2>Le tue pagine</h2></div><span id="summary" class="pill"></span></div><p id="status" role="status" class="status" aria-live="polite"></p><div id="progress-wrap" class="progress-wrap" hidden><div id="progress-bar" class="progress-bar"></div></div><div class="review-row"><span>Controlla le anteprime; usa le frecce per scegliere l’ordine delle pagine.</span><strong id="review-count"></strong></div><div class="batch-toolbar"><button type="button" id="add-more" class="add-more">＋ Aggiungi altre foto o PDF</button><button type="button" id="reverse-files" class="add-more" hidden>↕ Inverti ordine file</button><span id="queue-count" role="status" aria-live="polite" hidden></span><button type="button" id="undo-remove" class="undo-remove" hidden>↶ Annulla eliminazione</button></div><div id="cards" class="pages"></div><div id="warnings" class="warnings" hidden></div><details class="advanced-options"><summary>Opzioni PDF</summary><div class="quality-choice"><label for="pdf-quality">Qualità del PDF</label><select id="pdf-quality" aria-label="Qualità del PDF"><option value="high" selected>Alta qualità · consigliata</option><option value="compact">PDF più leggero</option></select><small>Alta qualità preserva maggiormente scritte e dettagli; foto già sfocate non possono essere recuperate.</small></div><div class="layout-choice"><label for="pdf-layout">Impaginazione</label><select id="pdf-layout" aria-label="Impaginazione PDF"><option value="document" selected>Forma originale del documento</option><option value="a4">A4 per stampare · documento intero centrato</option></select><small>Il PDF rispetta sempre le proporzioni e non taglia i bordi. L’opzione A4 aggiunge margini bianchi per la stampa.</small></div></details><div class="action-bar"><button type="button" id="download" disabled class="download">↓ Scarica PDF pronto</button><button type="button" id="reset" class="reset">+ Nuovo documento</button></div><p id="sizes" class="sizes"></p></section>
 <div class="bottom"><div class="bottom-icon">♧</div><div><strong>Privacy sotto controllo</strong><span>PDF e correzioni restano sul PC. Se attivi OCR MAX Cloud, solo le immagini necessarie all’OCR vengono inviate ai provider cloud che hai configurato.</span></div></div></main>
-<footer>DocFix Desktop · Versione 1.8.6 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
+<footer>DocFix Desktop · Versione 1.8.7 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
 <div id="editor" class="editor-overlay" hidden><div class="editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-title"><div class="editor-head"><div><span class="eyebrow">CORREZIONE</span><h2 id="edit-title">Pagina</h2></div><button type="button" id="edit-close" aria-label="Chiudi">×</button></div><p>Sposta i quattro punti se il bordo è sbagliato. Qui trovi solo ciò che serve.</p><div class="editor-frame"><img id="editor-image" alt="Documento da correggere"><div id="corners" class="corners"><svg class="quad" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon id="frame-poly" points=""/></svg></div></div><div class="editor-actions"><button type="button" id="edit-left">↶ Sinistra 90°</button><button type="button" id="edit-rotate">↷ Destra 90°</button><button type="button" id="edit-flip">↻ Capovolgi 180°</button><button type="button" id="edit-full">Usa pagina completa</button><button type="button" id="edit-cancel">Annulla</button><button type="button" id="edit-apply" class="confirm">✓ Applica ritaglio</button></div></div></div>
 <script src="./group3-quality.js"></script><script src="./group5-export.js"></script><script>/* DocFix 37 — single, hardened PDF.js engine for every PDF operation. */
 'use strict';
@@ -810,7 +810,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const zone=$('dropzone'),picker=$('picker'),cards=$('cards'),workspace=$('workspace'),dl=$('download');
 const LIMIT=45*1048576,MAX_PAGES=40,MAX_FILES=12,MAX_TOTAL=100*1048576;
-let entries=[],sourceFiles=[],pending=[],activeSource=null,sourceBytes=0,busy=false,processing=false,exporting=false,sequence=0,currentURL=null,nextSourceId=1;
+let entries=[],sourceFiles=[],pending=[],activeSource=null,sourceBytes=0,busy=false,processing=false,exporting=false,sequence=0,currentURL=null,nextSourceId=1,nextLoadBatch=1;
 let completedInBatch=0,totalInBatch=0,lastRemoved=null,lastPdfSize=null,dragSource=-1;
 const wait=()=>new Promise(r=>setTimeout(r,0));
 const fmt=n=>n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(2)+' MB';
@@ -1114,7 +1114,9 @@ function stackedCardCandidatesByGap(original){
  return [rect(topX.x0,0,topX.x1,topEnd/h),rect(bottomX.x0,bottomStart/h,bottomX.x1,1)];
 }
 function multiCardCandidates(original){
- const scan=window.DocFixScanner,raw=(scan.detectAll?.(original)||[]).filter(c=>c?.status==='found'&&c.confidence>=.70&&scan.validQuad(c.quad));
+ const scan=window.DocFixScanner,stacked=stackedCardCandidatesByGap(original);
+ if(stacked.length===2)return stacked;
+ const raw=(scan.detectAll?.(original)||[]).filter(c=>c?.status==='found'&&c.confidence>=.70&&scan.validQuad(c.quad));
  const good=raw.map(c=>({...c,box:c.box||quadBounds(c.quad)})).filter(c=>{
   const a=scan.area(c.quad),r=quadCardRatio(c.quad,original.width,original.height);
   return a>=.075&&a<=.54&&r>=1.22&&r<=2.05&&c.box.width>=.44&&c.box.width<=1&&c.box.height>=.14&&c.box.height<=.58;
@@ -1188,7 +1190,7 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
  const qualityNote=quality.issues.length?' · '+quality.issues.join(' · '):'';
  return {processed,rotation,review,geometryReview,orientationReview,qualityReview,qualityIssues:quality.issues,qualityMetrics:quality.metrics,cropped:true,sourceQuad:quad,how:label+(multiSafe?' · margine di sicurezza':fine?.refined?' · bordi rifiniti':'')+' · '+method+qualityNote+(review?' · Verifica consigliata':'')};
 }
-async function makeImageEntries(file,index,total=1){
+async function makeImageEntries(file,index,total=1,meta={}){
  const original=await imageCanvas(file,total),multi=multiCardCandidates(original);
  if(multi.length===2){
   const out=[];
@@ -1200,21 +1202,21 @@ async function makeImageEntries(file,index,total=1){
     fallback.review=true;fallback.geometryReview=true;
     fallback.how='2 documenti possibili · ritaglio automatico annullato per sicurezza · Foto completa conservata';
     if(original.docfixDownscaled)fallback.how+=' · Foto ridotta per evitare blocchi di memoria';
-    return [{kind:'raster',original,...fallback,source:file.name,title:file.name+' · foto completa',sourceIndex:index}];
+    return [{kind:'raster',original,...fallback,source:file.name,title:file.name+' · foto completa',sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false}];
    }
    if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
-   out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),sourceIndex:index});
+   out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:i,splitCount:2,twoUp:true});
   }
   return out;
  }
  const fixed=await normalizeRaster(original);
  if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
- return [{kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index}];
+ return [{kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false}];
 }
 window.DocFixDesktopDiagnostics=Object.freeze({
- multiCardCandidates,stackedCardCandidatesByGap,warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
+ multiCardCandidates,stackedCardCandidatesByGap,regroupTwoFileFourCards,warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
  safeMultiCropPreview:(original,candidate)=>window.DocFixScanner.process(original,{crop:true,quad:expandQuadSafe(candidate.quad,.028),rotation:0,filter:'original',strength:0},2200),
- orderedIncoming,reverseFileOrder,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.8.6'
+ orderedIncoming,reverseFileOrder,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.8.7'
 });
 function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
  // The page's existing /Rotate is already applied in pdf.js previews.
@@ -1338,19 +1340,33 @@ $('edit-apply').onclick=()=>{if(editIndex<0)return;if(!window.DocFixScanner.vali
 function addFiles(files){
  const incoming=orderedIncoming(files);if(!incoming.length)return;
  workspace.hidden=false;document.body.classList.add('has-document');zone.hidden=false;
- let added=0,rejected=0;
+ let added=0,rejected=0;const batchId=nextLoadBatch++,accepted=[];
  for(const f of incoming){
   if(!supported(f)){note('«'+f.name+'»: formato non supportato (usa JPG, PNG, WebP, PDF).');rejected++;continue}
   if(f.size>LIMIT){note('«'+f.name+'»: oltre il limite di 45 MB.');rejected++;continue}
   if(sourceFiles.length>=MAX_FILES){note('«'+f.name+'»: limite di 12 file raggiunto. Elimina prima una pagina o avvia una nuova pratica.');rejected++;continue}
   if(sourceFiles.reduce((n,s)=>n+s.file.size,0)+f.size>MAX_TOTAL){note('«'+f.name+'»: limite totale di 100 MB raggiunto.');rejected++;continue}
   if(entries.length+pending.length>=MAX_PAGES){note('«'+f.name+'»: limite di 40 pagine raggiunto.');rejected++;continue}
-  const item={file:f,id:nextSourceId++};sourceFiles.push(item);pending.push(item);added++;
+  const item={file:f,id:nextSourceId++,batchId,batchPos:accepted.length,batchSize:0};accepted.push(item);sourceFiles.push(item);pending.push(item);added++;
  }
+ for(const item of accepted)item.batchSize=accepted.length;
  if(added){lastPdfSize=null;dl.disabled=true;if(processing)totalInBatch+=added;status(added+' '+(added===1?'file aggiunto':'file aggiunti')+' alla coda. Puoi aggiungere altre foto; il PDF aspetta tutti i file.');}
  else if(rejected)status('Nessun nuovo file aggiunto. Controlla gli avvisi.');
  repaint();syncActions();
  if(!processing&&!exporting&&pending.length)void drainPending();
+}
+function regroupTwoFileFourCards(batchId){
+ if(batchId==null)return false;
+ const group=entries.filter(e=>e.loadBatch===batchId);
+ if(group.length!==4||!group.every(e=>e.twoUp&&e.splitCount===2&&e.batchSize===2))return false;
+ const by=(pos,slot)=>group.find(e=>e.batchPos===pos&&e.splitSlot===slot);
+ const ordered=[by(0,0),by(1,0),by(0,1),by(1,1)];
+ if(ordered.some(x=>!x))return false;
+ const slots=[];entries.forEach((e,i)=>{if(e.loadBatch===batchId)slots.push(i)});
+ if(slots.length!==4)return false;
+ const labels=['Codice fiscale · fronte','Codice fiscale · retro','Carta identità · fronte','Carta identità · retro'];
+ ordered.forEach((e,i)=>{e.pairLabel=labels[i];e.title=labels[i]+' · '+e.source;entries[slots[i]]=e});
+ return true;
 }
 async function drainPending(){
  if(processing||exporting||!pending.length)return;
@@ -1364,11 +1380,13 @@ async function drainPending(){
     // must never share the same pdf-lib copy-source cache key.
     const batch=(/\.pdf$/i.test(f.name)||f.type==='application/pdf')
       ?await makePdfEntries(f,item.id,token)
-      :await makeImageEntries(f,item.id,Math.max(1,entries.length+pending.length+1));
+      :await makeImageEntries(f,item.id,Math.max(1,entries.length+pending.length+1),item);
     if(token!==sequence)return;
     if(entries.length+batch.length>MAX_PAGES)throw Error('Limite di 40 pagine raggiunto; questo file non è stato aggiunto.');
     entries.push(...batch);
+    const paired=regroupTwoFileFourCards(item.batchId);
     document.dispatchEvent(new CustomEvent('docfix:entries-added',{detail:{entries:batch.slice()}}));
+    if(paired)status('4 tessere separate: CF fronte/retro · CI fronte/retro.');
    }catch(err){
     if(token!==sequence)return;
     note('«'+f.name+'»: '+String(err?.message||err));
