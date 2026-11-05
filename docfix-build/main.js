@@ -14,7 +14,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.7.1',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.7.2',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -168,7 +168,7 @@ async function runSelfTest(){
         out.ocr=typeof ocr?.data?.text==='string'&&ocr.data.text.length>0;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.7.1':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.7.2':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
         for(const y of [230,620]){mg.fillStyle='#d9eef0';mg.fillRect(130,y,640,360);mg.fillStyle='#1b6380';mg.fillRect(130,y,640,80);mg.fillStyle='#fff';mg.fillRect(170,y+120,560,70);mg.fillStyle='#111';for(let x=190;x<700;x+=12)mg.fillRect(x,y+135,5,40);mg.fillStyle='#222';mg.font='32px Arial';mg.fillText('DOCFIX TEST',190,y+250);}
@@ -216,7 +216,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.7.1','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.7.2','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
@@ -283,24 +283,21 @@ async function downloadVerifiedUpdate(sender){
   return {available:true,current,latest:latest.version,updater};
 }
 function launchVerifiedUpdater(updater){
-  const dir=path.dirname(updater),helper=path.join(dir,'apply-docfix-update.ps1'),exe=process.execPath;
-  const ps=[
-    "$ErrorActionPreference='Stop'",
-    "$u="+JSON.stringify(updater),
-    "$appExe="+JSON.stringify(exe),
-    "$p=Start-Process -FilePath $u -ArgumentList '/S' -PassThru",
-    "$p.WaitForExit()",
-    "if($p.ExitCode -eq 0){",
-    "  Start-Sleep -Milliseconds 1200",
-    "  for($i=0;$i -lt 5;$i++){try{Start-Process -FilePath $appExe;break}catch{Start-Sleep -Milliseconds 800}}",
-    "}",
-    "Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue"
-  ].join("\r\n");
-  fs.writeFileSync(helper,ps,'utf8');
-  const child=spawn('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-File',helper],{detached:true,windowsHide:true,stdio:'ignore'});
+  // 1.7.2: launch the verified NSIS updater directly.
+  // The previous PowerShell relay could be blocked by Windows policy/AV and
+  // DocFix could report "installazione pronta" without ever applying it.
+  const child=spawn(updater,['/S'],{
+    detached:true,
+    windowsHide:false,
+    stdio:'ignore',
+    cwd:path.dirname(updater)
+  });
+  child.once('error',err=>log('UPDATE_LAUNCH_ERROR',err));
   child.unref();
-  log('UPDATE_HELPER_LAUNCHED',updater);
-  setTimeout(()=>app.quit(),500);
+  log('UPDATE_DIRECT_LAUNCHED',updater,'pid='+String(child.pid||0));
+  // Let NSIS start first; it will terminate this DocFix process, replace app.asar,
+  // then reopen DocFix itself.
+  setTimeout(()=>app.quit(),1200);
   return true;
 }
 
