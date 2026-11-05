@@ -51,9 +51,10 @@
  }
  function validate(blob,pages){if(!(blob instanceof Blob)||blob.size<250||blob.type!=='application/pdf'||!Number.isInteger(pages)||pages<1)throw Error('PDF non valido: esportazione interrotta');return blob}
  function filename(entries){
-  if(entries.length!==1)return 'documenti-docfix.pdf';
-  const raw=String(entries[0].source||'documento').replace(/\.[^.]+$/,'').normalize('NFKC').replace(/[\\/:*?"<>|\x00-\x1F\x7F]/g,' ').replace(/\s+/g,' ').trim().replace(/^[.\s-]+/,'').slice(0,72)||'documento';
+  const sources=[...new Set((entries||[]).map(e=>String(e?.source||'').trim()).filter(Boolean))];
+  if(sources.length!==1)return 'documenti-docfix.pdf';
+  const raw=sources[0].replace(/\.[^.]+$/,'').normalize('NFKC').replace(/[\\/:*?"<>|\x00-\x1F\x7F]/g,' ').replace(/\s+/g,' ').trim().replace(/^[.\s-]+/,'').slice(0,72)||'documento';
   return `${raw}-docfix.pdf`;
  }
- window.DocFixGroup5=Object.freeze({create,layout,validate,filename,version:'5.0-candidate'});
+ window.DocFixGroup5=Object.freeze({create,layout,validate,filename,version:'5.1-smart-name'});
 })();
