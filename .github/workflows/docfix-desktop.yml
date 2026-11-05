@@ -71,7 +71,12 @@ jobs:
           if($ocr -notmatch "createWorker\(\['ita','eng'\]"){ throw 'OCR italiano+inglese mancante' }
           $cloud=Get-Content ocr-cloud-main.js -Raw
           if($cloud -notmatch 'eu-vision.googleapis.com'){ throw 'Google Vision EU mancante' }
-          if($cloud -notmatch 'prebuilt-read:analyze'){ throw 'Azure Read fallback mancante' }
+          if($cloud -notmatch 'prebuilt-read'){ throw 'Azure Read fallback mancante' }
+          if($cloud -notmatch 'prebuilt-idDocument'){ throw 'Azure ID Document mancante' }
+          if($cloud -notmatch 'jsonRequestRetry'){ throw 'Retry cloud OCR mancante' }
+          if($cloud -notmatch 'google-rescue'){ throw 'Google rescue OCR mancante' }
+          if($ocr -notmatch 'docfix:reset'){ throw 'Reset coda OCR mancante' }
+          if($ocr -notmatch 'scheduleWorkerRelease'){ throw 'Rilascio RAM OCR mancante' }
           Write-Host "Controlli statici superati"
 
       - name: Build Windows installer
