@@ -1,6 +1,6 @@
 (()=>{'use strict';
-const VERSION='1.8.0';
-let workerPromise=null,queue=[],running=false,cloudStatus=null,settingsOpen=false;
+const VERSION='1.8.1';
+let workerPromise=null,workerIdleTimer=null,queue=[],queuedEntries=new Set(),running=false,cloudStatus=null,settingsOpen=false;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
@@ -32,6 +32,7 @@ async function loadTesseract(){
  return window.Tesseract;
 }
 async function worker(){
+ if(workerIdleTimer){clearTimeout(workerIdleTimer);workerIdleTimer=null}
  if(!workerPromise)workerPromise=(async()=>{
   const T=await loadTesseract();
   return T.createWorker(['ita','eng'],1,{
@@ -42,6 +43,13 @@ async function worker(){
   });
  })().catch(e=>{workerPromise=null;throw e});
  return workerPromise;
+}
+function scheduleWorkerRelease(){
+ if(workerIdleTimer)clearTimeout(workerIdleTimer);
+ workerIdleTimer=setTimeout(async()=>{
+  const w=workerPromise;workerPromise=null;workerIdleTimer=null;
+  try{const resolved=await w;await resolved?.terminate?.()}catch{}
+ },90000);
 }
 function makeCanvas(source,w,h,filter='none'){
  const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));
@@ -107,6 +115,13 @@ async function localMultiPass(source){
   await sleep(0);
  }
  results.sort((a,b)=>b.score-a.score);
+ const first=results[0];
+ if(!first||first.score<.79||first.confidence<80){
+  const rescue=makeCanvas(v.natural,v.natural.width,v.natural.height,'grayscale(1) contrast(1.95) brightness(1.08)');
+  try{const r=await recognizeOne(w,rescue,P.SPARSE_TEXT??'11');results.push({...r,name:'rescue',score:localScore(r)});}catch(e){console.warn('OCR rescue failed',e);}
+  rescue.width=rescue.height=1;
+  results.sort((a,b)=>b.score-a.score);
+ }
  return {best:results[0]||{text:'',confidence:0,score:0,name:'none'},results,variants:v};
 }
 async function canvasBase64(canvas,quality=.94){
@@ -174,11 +189,19 @@ async function analyzeEntry(entry,force=false){
 }
 function enqueue(entry,force=false){
  if(!entry)return;
- queue.push({entry,force});void drain();
+ if(queuedEntries.has(entry)&&!force)return;
+ if(force){queue=queue.filter(x=>x.entry!==entry);queuedEntries.delete(entry)}
+ queuedEntries.add(entry);queue.push({entry,force});void drain();
 }
 async function drain(){
  if(running)return;running=true;
- try{while(queue.length){while(host()?.isBusy?.())await sleep(250);const x=queue.shift();await analyzeEntry(x.entry,x.force);}}finally{running=false}
+ try{
+  while(queue.length){
+   while(host()?.isBusy?.())await sleep(250);
+   const x=queue.shift();queuedEntries.delete(x.entry);
+   await analyzeEntry(x.entry,x.force);
+  }
+ }finally{running=false;scheduleWorkerRelease()}
 }
 
 function decorate(entries){
@@ -203,7 +226,7 @@ function fieldChips(s){
 }
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function modal(html){
- const wrap=document.createElement('div');wrap.className='ocr-modal';wrap.innerHTML='<div class="ocr-card">'+html+'</div>';document.body.appendChild(wrap);wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove()});return wrap;
+ const wrap=document.createElement('div');wrap.className='ocr-modal';wrap.innerHTML='<div class="ocr-card">'+html+'</div>';document.body.appendChild(wrap);wrap.addEventListener('click',e=>{if(e.target===wrap&&wrap.dataset.locked!=='1')wrap.remove()});return wrap;
 }
 function openResult(entry){
  const r=entry.ocrResult||{},s=r.signals||signals(r.text),providers=[...new Set((r.candidates||[]).map(x=>providerLabel(x.provider)))];
@@ -230,7 +253,7 @@ async function openSettings(){
  try{
   const st=await getCloudStatus();
   const wrap=modal(`
-   <h3>OCR MAX 1.8</h3>
+   <h3>OCR MAX 1.8.1</h3>
    <p>Tesseract italiano+inglese lavora sempre. Google Vision EU è il motore cloud principale; Azure Read interviene automaticamente sui casi dubbi.</p>
    <div class="ocr-provider"><strong>Google Vision EU <span class="${st.google?.configured?'ocr-ok':'ocr-off'}">${st.google?.configured?'Configurato ✓':'Da configurare'}</span></strong>
     <div class="ocr-grid" style="margin-top:12px">
