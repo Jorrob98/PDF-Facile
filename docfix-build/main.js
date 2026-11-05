@@ -15,7 +15,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.8.7',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.8.8',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -171,10 +171,10 @@ async function runSelfTest(){
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.8.7':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.8.8':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         out.updaterHiddenWhenNoUpdate=document.querySelector('#docfix-update-button')?.hidden===true;
-        out.ocrModule=window.DocFixOCRMax?.version==='1.8.7';
+        out.ocrModule=window.DocFixOCRMax?.version==='1.8.8';
         const cloudTest=window.DocFixOCRCloud?.selfTest?await window.DocFixOCRCloud.selfTest():null;
         out.ocrCloudLogic=!!cloudTest&&cloudTest.identity===true&&cloudTest.structured===true&&cloudTest.agreement===true;
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
@@ -195,12 +195,15 @@ async function runSelfTest(){
         const stacked=window.DocFixDesktopDiagnostics?.stackedCardCandidatesByGap?.(edge)||[];
         out.stackedEdgeCards=stacked.length===2&&stacked[0].box.y<.05&&stacked[1].box.y>.45;
         const pairTest=window.DocFixDesktopDiagnostics?.pairedFourCards?.([
-          {id:'f1-top',batchPos:0,splitSlot:0,splitCount:2,batchSize:2,twoUp:true},
-          {id:'f1-bottom',batchPos:0,splitSlot:1,splitCount:2,batchSize:2,twoUp:true},
-          {id:'f2-top',batchPos:1,splitSlot:0,splitCount:2,batchSize:2,twoUp:true},
-          {id:'f2-bottom',batchPos:1,splitSlot:1,splitCount:2,batchSize:2,twoUp:true}
+          {id:'f1-top',sourceIndex:101,splitSlot:0,splitCount:2,batchSize:1,twoUp:true},
+          {id:'f1-bottom',sourceIndex:101,splitSlot:1,splitCount:2,batchSize:1,twoUp:true},
+          {id:'f2-top',sourceIndex:202,splitSlot:0,splitCount:2,batchSize:1,twoUp:true},
+          {id:'f2-bottom',sourceIndex:202,splitSlot:1,splitCount:2,batchSize:1,twoUp:true}
         ])||[];
         out.fourCardPairOrder=pairTest.map(x=>x.id).join('|')==='f1-top|f2-top|f1-bottom|f2-bottom';
+        const safeMulti=window.DocFixDesktopDiagnostics?.safeRefineMultiQuad?.(edge,[{x:0,y:0},{x:1,y:0},{x:1,y:.39},{x:0,y:.39}])||[];
+        const safeArea=safeMulti.length===4?window.DocFixScanner.area(safeMulti):0;
+        out.multiRefineSafe=safeMulti.length===4&&safeArea>.30&&safeArea<.46;
         const orderTest=window.DocFixDesktopDiagnostics?.orderedIncoming?.([
           new File(['b'],'WhatsApp Image 2026-11-05 at 15.10.11.jpeg',{type:'image/jpeg',lastModified:2}),
           new File(['a'],'WhatsApp Image 2026-11-05 at 15.10.10.jpeg',{type:'image/jpeg',lastModified:1})
@@ -249,7 +252,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.8.7','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.8.8','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
