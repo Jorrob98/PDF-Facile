@@ -42,9 +42,9 @@
  }
  function recognizeMRZOrientation(source){
   const ratio=Math.max(source.width,source.height)/Math.min(source.width,source.height);if(ratio<1.30||ratio>2.02)return {angle:0,trustworthy:false,method:'not-card'};
-  const small=scan.resize(source,900),hits=[];for(const a of CANDIDATES){const rr=rotateCanvas(small,a),result=signature(rr);if(result.candidate)hits.push({angle:a,score:result.score,top:result.top,bottom:result.bottom});}
+  const small=scan.resize(source,900),hits=[];for(const a of CANDIDATES){const rr=rotateCanvas(small,a),result=signature(rr);if(result.candidate)hits.push({angle:a,score:result.score,top:result.top,bottom:result.bottom});if(rr!==small)rr.width=rr.height=1;}
   hits.sort((a,b)=>b.score-a.score);if(hits.length===1)return {...hits[0],method:'mrz',trustworthy:true};
   return {angle:0,method:'mrz-inconclusive',trustworthy:false,candidates:hits.map(h=>h.angle)};
  }
- window.DocFixGroup2=Object.freeze({normalizedAngle,rotateCanvas,signature,recognizeMRZOrientation,version:'group2-20261029'});
+ window.DocFixGroup2=Object.freeze({normalizedAngle,rotateCanvas,signature,recognizeMRZOrientation,version:'group2-superrun-20261105'});
 })();
