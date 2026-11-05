@@ -100,7 +100,7 @@
      update(p={}){
        const value=Math.max(0,Math.min(99,Math.round(Number(p.percent)||0)));
        pct.textContent=value+'%';fill.style.width=value+'%';title.textContent=p.message||('Aggiorno DocFix '+latest+'…');
-       const details=p.downloaded&&p.total?fmtBytes(p.downloaded)+' / '+fmtBytes(p.total):(p.total?fmtBytes(p.total):'');
+       const details=(p.downloaded&&p.total?fmtBytes(p.downloaded)+' / '+fmtBytes(p.total):(p.total?fmtBytes(p.total):''))+(p.speed?' · '+fmtBytes(p.speed)+'/s':'');
        const eta=fmtEta(p.etaSeconds);
        meta.children[0].textContent=details;meta.children[1].textContent=eta;
      },
