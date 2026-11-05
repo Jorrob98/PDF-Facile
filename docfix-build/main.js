@@ -14,7 +14,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.6.0',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.6.1',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -168,7 +168,7 @@ async function runSelfTest(){
         out.ocr=typeof ocr?.data?.text==='string'&&ocr.data.text.length>0;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.6.0':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.6.1':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
         for(const y of [230,620]){mg.fillStyle='#d9eef0';mg.fillRect(130,y,640,360);mg.fillStyle='#1b6380';mg.fillRect(130,y,640,80);mg.fillStyle='#fff';mg.fillRect(170,y+120,560,70);mg.fillStyle='#111';for(let x=190;x<700;x+=12)mg.fillRect(x,y+135,5,40);mg.fillStyle='#222';mg.font='32px Arial';mg.fillText('DOCFIX TEST',190,y+250);}
@@ -213,15 +213,20 @@ function isNewerVersion(candidate,current){
   for(let i=0;i<3;i++){if((a[i]||0)>(b[i]||0))return true;if((a[i]||0)<(b[i]||0))return false}
   return false;
 }
-function httpsBuffer(url,headers={},redirects=0){
+function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.6','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.6.1','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
-      if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1));}
+      if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
       const chunks=[];let total=0;
-      res.on('data',c=>{chunks.push(c);total+=c.length;if(total>220*1024*1024){req.destroy(new Error('Aggiornamento troppo grande'));}});
+      const headerTotal=Number(res.headers['content-length'])||0,expected=headerTotal||Number(totalHint)||0;
+      res.on('data',c=>{
+        chunks.push(c);total+=c.length;
+        if(onProgress)try{onProgress(total,expected)}catch{}
+        if(total>220*1024*1024){req.destroy(new Error('Aggiornamento troppo grande'));}
+      });
       res.on('end',()=>resolve(Buffer.concat(chunks)));
     });
     req.setTimeout(25000,()=>req.destroy(new Error('Timeout connessione aggiornamenti')));
@@ -246,17 +251,32 @@ async function checkForUpdates(){
   const latest=await getLatestUpdate();
   return {current,latest:latest.version,available:isNewerVersion(latest.version,current),notes:latest.notes};
 }
-async function downloadVerifiedUpdate(){
+function sendUpdateProgress(sender,data){
+  try{if(sender&&!sender.isDestroyed())sender.send('docfix:update:progress',data)}catch{}
+}
+async function downloadVerifiedUpdate(sender){
+  sendUpdateProgress(sender,{phase:'preparing',percent:2,message:'Preparo aggiornamento…'});
   const latest=await getLatestUpdate();
   const current=app.getVersion();
   if(!isNewerVersion(latest.version,current))return {available:false,current,latest:latest.version};
+  sendUpdateProgress(sender,{phase:'metadata',percent:5,message:'Pacchetto trovato · preparo il download',total:latest.size||0});
   log('UPDATE_DOWNLOAD_START',current,'->',latest.version);
-  const [exe,shaRaw]=await Promise.all([httpsBuffer(latest.exeUrl,{'Accept':'application/octet-stream'}),httpsBuffer(latest.shaUrl,{'Accept':'text/plain'})]);
+  const started=Date.now();
+  const [exe,shaRaw]=await Promise.all([
+    httpsBuffer(latest.exeUrl,{'Accept':'application/octet-stream'},0,(received,total)=>{
+      const known=total||latest.size||0,raw=known?Math.min(1,received/known):0;
+      const elapsed=Math.max(.25,(Date.now()-started)/1000),speed=received/elapsed,eta=known&&speed>1024?Math.max(0,(known-received)/speed):null;
+      sendUpdateProgress(sender,{phase:'download',percent:Math.max(6,Math.min(88,Math.round(6+raw*82))),message:'Scarico aggiornamento',downloaded:received,total:known,speed,etaSeconds:eta});
+    },latest.size),
+    httpsBuffer(latest.shaUrl,{'Accept':'text/plain'})
+  ]);
+  sendUpdateProgress(sender,{phase:'verify',percent:92,message:'Verifico integrità SHA-256…',downloaded:exe.length,total:latest.size||exe.length});
   if(latest.size&&exe.length!==latest.size)throw new Error('Dimensione aggiornamento non valida');
   const expected=(shaRaw.toString('utf8').match(/[a-fA-F0-9]{64}/)||[])[0]?.toLowerCase();
   if(!expected)throw new Error('Firma SHA-256 aggiornamento mancante');
   const actual=crypto.createHash('sha256').update(exe).digest('hex');
   if(actual!==expected)throw new Error('Verifica SHA-256 aggiornamento fallita');
+  sendUpdateProgress(sender,{phase:'save',percent:96,message:'Pacchetto verificato · preparo installazione…',downloaded:exe.length,total:exe.length,etaSeconds:4});
   const dir=path.join(app.getPath('userData'),'updates');fs.mkdirSync(dir,{recursive:true});
   const updater=path.join(dir,latest.exeName);fs.writeFileSync(updater,exe);
   log('UPDATE_VERIFIED',latest.version,actual,exe.length);
@@ -286,7 +306,19 @@ function launchVerifiedUpdater(updater){
 
 ipcMain.handle('docfix:update:version',()=>app.getVersion());
 ipcMain.handle('docfix:update:check',async()=>{try{return {ok:true,...await checkForUpdates()}}catch(e){log('UPDATE_CHECK_FAIL',e);return {ok:false,error:e.message||String(e)}}});
-ipcMain.handle('docfix:update:install',async()=>{try{const r=await downloadVerifiedUpdate();if(!r.available)return {ok:true,...r};launchVerifiedUpdater(r.updater);return {ok:true,...r,launching:true};}catch(e){log('UPDATE_INSTALL_FAIL',e);return {ok:false,error:e.message||String(e)}}});
+ipcMain.handle('docfix:update:install',async(event)=>{
+  try{
+    const r=await downloadVerifiedUpdate(event.sender);
+    if(!r.available)return {ok:true,...r};
+    sendUpdateProgress(event.sender,{phase:'install',percent:98,message:'Installazione pronta · DocFix si riavvierà',etaSeconds:5});
+    launchVerifiedUpdater(r.updater);
+    sendUpdateProgress(event.sender,{phase:'restart',percent:99,message:'Chiudo DocFix e applico aggiornamento…',etaSeconds:4});
+    return {ok:true,...r,launching:true};
+  }catch(e){
+    sendUpdateProgress(event.sender,{phase:'error',percent:0,message:e.message||String(e)});
+    log('UPDATE_INSTALL_FAIL',e);return {ok:false,error:e.message||String(e)}
+  }
+});
 
 function fatalStartup(err){
   log('FATAL_STARTUP',err);
