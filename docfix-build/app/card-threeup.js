@@ -1,4 +1,4 @@
-/* DocFix 1.9.9 - independent 3-up detector and 90-degree source normalization.
+/* DocFix 1.9.10 - independent 3-up detector and 90-degree source normalization.
  * Only analyzes a temporary scaled canvas. All final crops originate from
  * the untouched, full-resolution source (one perspective transformation).
  * Offline, no personal data upload, no document text generation. */
@@ -190,6 +190,14 @@ function analyzeRGBA(pixels,w,h){
    options.sort((a,b)=>a.score-b.score);
    const choice=options[0]?.candidate||base;
    const result={...choice};
+   // The lowest contrast threshold retains outer pink plastic boundaries
+   // which higher thresholds sometimes confuse with the inner printed grid.
+   const outer=snapshots.find(t=>t.threshold===14)?.cards.find(candidate=>{
+    const center=q=>({x:q.reduce((sum,p)=>sum+p.x,0)/4,y:q.reduce((sum,p)=>sum+p.y,0)/4});
+    const a=center(candidate.quad),b=center(choice.quad);
+    return Math.hypot(a.x-b.x,a.y-b.y)<.115;
+   });
+   if(outer)result.outerQuad=outer.quad.map(p=>({...p}));
    if(choice.maskFill<.58&&Math.abs(choice.angle)<3.5){
     const refined=snapMutedEdges(choice,lab,w,h);
     if(refined)result.quad=refined;
@@ -223,9 +231,10 @@ function detect(original){
  if(result.cards.length!==3)return {cards:[],reason:'tre tessere non confermate',candidates:result.cards.length};
  const cards=result.cards.map(card=>({...card,
   quad:portrait?card.quad.map(p=>({x:1-p.y,y:p.x})):card.quad,
+  outerQuad:card.outerQuad?(portrait?card.outerQuad.map(p=>({x:1-p.y,y:p.x})):card.outerQuad):null,
   orientation:portrait?'left':'none'}));
  if(cards.some(c=>!scan.validQuad(c.quad)))return {cards:[],reason:'angoli non validi'};
  return {cards,orientation:portrait?'left':'none',verified:true};
 }
-window.DocFixThreeUp=Object.freeze({detect,analyzeRGBA,version:'1.9.9'});
+window.DocFixThreeUp=Object.freeze({detect,analyzeRGBA,version:'1.9.10'});
 })();
