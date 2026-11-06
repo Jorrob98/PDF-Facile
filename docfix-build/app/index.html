@@ -1371,7 +1371,7 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
  const qualityNote=quality.issues.length?' · '+quality.issues.join(' · '):'';
  const cropNote=multiSafe?(physicalVerified?'4 bordi rilevati sull’originale · prospettiva corretta una volta':'CONTROLLARE I BORDI · il ritaglio automatico non è riuscito'):fine?.refined?'bordi rifiniti':'';
  const deskewNote=deskew.applied?' · raddrizzato '+Math.abs(deskew.angle).toFixed(1)+'° · residuo '+Math.abs(deskew.residual||0).toFixed(1)+'°':(!deskew.verified&&cardKind==='cf'?' · raddrizzamento non applicato: nessun miglioramento verificato':'');
- return {processed,rotation,review,geometryReview,orientationReview,qualityReview,qualityIssues:quality.issues,qualityMetrics:quality.metrics,cropped:true,sourceQuad:quad,deskewAngle:deskew.applied?deskew.angle:0,how:label+(cropNote?' · '+cropNote:'')+(tightMethod&&tightened?' · '+tightMethod:'')+deskewNote+' · '+method+qualityNote+(review?' · Verifica consigliata':'')};
+ return {processed,rotation,review,cropVerified:physicalVerified,geometryReview,orientationReview,qualityReview,qualityIssues:quality.issues,qualityMetrics:quality.metrics,cropped:physicalVerified,sourceQuad:quad,deskewAngle:deskew.applied?deskew.angle:0,how:label+(cropNote?' · '+cropNote:'')+(tightMethod&&tightened?' · '+tightMethod:'')+deskewNote+' · '+method+qualityNote+(review?' · Verifica consigliata':'')};
 }
 async function makeImageEntries(file,index,total=1,meta={}){
  const original=await imageCanvas(file,total),multi=multiCardCandidates(original);
@@ -1424,7 +1424,7 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
  const item=document.createElement('article');item.className='page-card'+(e.review?' needs-check':'');
  const pv=document.createElement('button');pv.type='button';pv.className='preview';pv.onclick=()=>openCorrection(i);pv.title='Apri pagina '+(i+1)+' per controllarla';
  const img=document.createElement('img');img.src=thumb(e.processed);img.alt='Anteprima pagina '+(i+1);
- const tag=document.createElement('span');tag.className='tag'+(e.review?' warning':'');tag.textContent=e.qualityReview?'Qualità da controllare':e.review?'Verifica consigliata':'Elaborata';
+ const tag=document.createElement('span');tag.className='tag'+(e.review?' warning':'');tag.textContent=e.cropVerified===false?'Bordi da correggere':e.qualityReview?'Qualità da controllare':e.review?'Verifica consigliata':'Elaborata';
  const count=document.createElement('span');count.className='page-number';count.textContent='Pagina '+(i+1);pv.append(img,tag,count);
  const info=document.createElement('div');info.className='card-info';const name=document.createElement('strong');name.textContent=e.title;name.title=e.title;
  const desc=document.createElement('small');desc.textContent=e.how;
