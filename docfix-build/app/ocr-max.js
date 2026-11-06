@@ -64,12 +64,18 @@ function upscale(source){
  return makeCanvas(source,source.width*scale,source.height*scale);
 }
 function variants(source){
- const natural=upscale(source);
- const contrast=makeCanvas(natural,natural.width,natural.height,'grayscale(1) contrast(1.34) brightness(1.05)');
- let bw=null;
- try{bw=window.DocFixScanner?.process?.(natural,{crop:false,rotation:0,filter:'bw',strength:78},3000)||null}catch{}
- if(!bw)bw=makeCanvas(natural,natural.width,natural.height,'grayscale(1) contrast(1.8)');
- return {natural,contrast,bw};
+ // Do not leak partially constructed canvases if filtering fails mid-way.
+ const owned=[];
+ try{
+  const natural=upscale(source);owned.push(natural);
+  const contrast=makeCanvas(natural,natural.width,natural.height,'grayscale(1) contrast(1.34) brightness(1.05)');
+  owned.push(contrast);
+  let bw=null;
+  try{bw=window.DocFixScanner?.process?.(natural,{crop:false,rotation:0,filter:'bw',strength:78},3000)||null}catch{}
+  if(!bw)bw=makeCanvas(natural,natural.width,natural.height,'grayscale(1) contrast(1.8)');
+  if(bw!==natural&&bw!==contrast)owned.push(bw);
+  return {natural,contrast,bw};
+ }catch(e){for(const c of owned){c.width=c.height=1;}throw e;}
 }
 function normalizeTokens(text){return String(text||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').match(/[A-Z0-9]{2,}/g)||[]}
 function cfValid(cf){
