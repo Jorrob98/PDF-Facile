@@ -1397,6 +1397,8 @@ async function makeImageEntries(file,index,total=1,meta={}){
     {multiSafe:true,sourceVerified:true,orientationKnown:triple.orientation==='left',cardKind:'generic'});
    if(!multiCropHealthy(fixed.processed)){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · Verifica consigliata';}
    if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
+   fixed.how+=' · DocFix 1.9.11 · '+(c.materialVerified?('classificato '+(c.kind||'tessera')+' / '+(c.sideGuess||'verso incerto')):'tipo e verso da verificare');
+   if(c.geometryReview){fixed.geometryReview=true;fixed.review=true;fixed.how+=' · bordo da verificare';}
    out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),
     sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,
     splitSlot:i,splitCount:3,threeUp:true,twoUp:false,docType:c.kind||null,photoSide:c.sideGuess||'indefinito',materialVerified:c.materialVerified===true,cfDarkness:Number.isFinite(c.darkFraction)?c.darkFraction:null});
