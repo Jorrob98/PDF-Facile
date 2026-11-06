@@ -100,7 +100,7 @@ const ids=x=>x.map(e=>e.id).join(',');
  const bytes=await blob.arrayBuffer(),head=new TextDecoder().decode(new Uint8Array(bytes).slice(0,900));
  assert.ok(head.includes('/Count 6'),'PDF must declare all 6 pages');
  assert.equal(exportAPI.validate(blob,6),blob);
- assert.equal(exportAPI.filename(source),'DocFix-1.9.12-6-tessere.pdf',
+ assert.equal(exportAPI.filename(source),'DocFix-1.9.13-6-tessere.pdf',
    'versioned PDF should not collide with previous Downloads');
  await assert.rejects(()=>exportAPI.create([{processed:{width:0,height:0}}],{encodeJPEG:async()=>fakeJPEG}),
    /non valida/,'invalid canvas must never produce a PDF');
@@ -216,7 +216,7 @@ const ids=x=>x.map(e=>e.id).join(',');
   const fakeFs={existsSync:p=>disk.has(p),mkdirSync(){},
     writeFileSync:(p,s)=>disk.set(p,String(s)),
     readFileSync:p=>disk.get(p),unlinkSync:p=>disk.delete(p)};
-  let version='1.9.12';
+  let version='1.9.13';
   const app={getPath:()=>'/tmp/docfix-test',getVersion:()=>version};
   const api=new Function('fs','path','app','log','isNewerVersion','SELF_TEST',
     receiptSource+'return {writeUpdateReceipt,inspectUpdateReceipt,updateReceiptPath};')(
@@ -227,7 +227,7 @@ const ids=x=>x.map(e=>e.id).join(',');
   version='1.9.13';
   assert.equal(api.inspectUpdateReceipt().status,'confirmed','installed version must be confirmed');
   assert.equal(disk.size,0,'confirmed receipt removed');
-  version='1.9.12';
+  version='1.9.13';
   api.writeUpdateReceipt('1.9.13');
   disk.set(api.updateReceiptPath(),JSON.stringify({target:'1.9.13',created:Date.now()-150000}));
   assert.equal(api.inspectUpdateReceipt().status,'unconfirmed','failed silent install detected');
