@@ -227,20 +227,24 @@ const ids=x=>x.map(e=>e.id).join(',');
   const fakeFs={existsSync:p=>disk.has(p),mkdirSync(){},
     writeFileSync:(p,s)=>disk.set(p,String(s)),
     readFileSync:p=>disk.get(p),unlinkSync:p=>disk.delete(p)};
-  let version='1.9.13';
+  const latest=JSON.parse(read('package.json')).version;
+  const parts=latest.split('.').map(Number);
+  assert.ok(parts[2]>0,'update regression requires a patch version newer than zero');
+  const previous=parts.slice(0,2).concat(parts[2]-1).join('.');
+  let version=previous;
   const app={getPath:()=>'/tmp/docfix-test',getVersion:()=>version};
   const api=new Function('fs','path','app','log','isNewerVersion','SELF_TEST',
     receiptSource+'return {writeUpdateReceipt,inspectUpdateReceipt,updateReceiptPath};')(
     fakeFs,path,app,()=>{},
     (target,current)=>target.split('.').map(Number).join(',')>current.split('.').map(Number).join(','),false);
-  api.writeUpdateReceipt('1.9.13');
+  api.writeUpdateReceipt(latest);
   assert.equal(api.inspectUpdateReceipt().status,'pending','new update remains pending');
-  version='1.9.13';
+  version=latest;
   assert.equal(api.inspectUpdateReceipt().status,'confirmed','installed version must be confirmed');
   assert.equal(disk.size,0,'confirmed receipt removed');
-  version='1.9.13';
-  api.writeUpdateReceipt('1.9.13');
-  disk.set(api.updateReceiptPath(),JSON.stringify({target:'1.9.13',created:Date.now()-150000}));
+  version=previous;
+  api.writeUpdateReceipt(latest);
+  disk.set(api.updateReceiptPath(),JSON.stringify({target:latest,created:Date.now()-150000}));
   assert.equal(api.inspectUpdateReceipt().status,'unconfirmed','failed silent install detected');
   assert.equal(disk.size,0,'failed receipt cleared to avoid repeated alerts');
   assert.ok(preload.includes('docfix:update:last-result'),'update receipt exposed to UI');
