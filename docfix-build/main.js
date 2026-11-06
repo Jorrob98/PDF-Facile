@@ -246,6 +246,11 @@ async function runSelfTest(){
         out.sixCardDarknessRecovery=!!fallback?.ok&&fallback.ordered.map(e=>e.id).join(',')==='4,3,5,2,6,1';
         const uncertain=badLabels.map(e=>({...e,cfDarkness:.50,photoSide:'indefinito'}));
         out.sixCardUncertainSafe=window.DocFixDesktopDiagnostics?.planSixCardOrder?.(uncertain)?.ok===false;
+        // Version-stamped real output and licence-only post-correction are mandatory.
+        out.licenceSafeStraightener=typeof window.DocFixDesktopDiagnostics?.straightenLicenceWithoutCutting==='function';
+        const syntheticSix=Array.from({length:6},(_,i)=>({threeUp:true,source:'source-'+(i<3?'one':'two')+'.jpg'}));
+        out.sixPageUniqueExport=window.DocFixGroup5?.filename?.(syntheticSix)==='DocFix-1.9.12-6-tessere.pdf';
+
 
         // Both cards must be detected independently on the same untouched scan.
         const sourceFirst=multi.length===2?multi.map(c=>window.DocFixDesktopDiagnostics?.detectOriginalCard?.(mc,c.quad)):[],
@@ -335,7 +340,7 @@ async function runSelfTest(){
         const verifiedDeskew=skew?window.DocFixDesktopDiagnostics?.fineDeskewCard?.(skew,{cardKind:'cf'}):null;
         const verifiedResidual=verifiedDeskew?.canvas?window.DocFixDesktopDiagnostics?.estimateFineDeskew?.(verifiedDeskew.canvas,{cardKind:'cf'}):null;
         out.deskewResidualVerified=!!verifiedDeskew?.applied&&verifiedDeskew.verified===true&&verifiedDeskew.residual<=.5&&(!verifiedResidual?.applied||Math.abs(verifiedResidual.angle)<=.5);
-        out.diagnosticsCoverage=['tightenSeparatedCardCanvas','estimateFineDeskew','fineDeskewCard','twoByTwoCandidateMeta','detectPhysicalLines','detectOriginalCard','detectTextureCards','detectThreeCards','threeByTwoState','polishThreeCards','regroupSixCards','planSixCardOrder'].every(k=>typeof window.DocFixDesktopDiagnostics?.[k]==='function');
+        out.diagnosticsCoverage=['tightenSeparatedCardCanvas','estimateFineDeskew','fineDeskewCard','twoByTwoCandidateMeta','detectPhysicalLines','detectOriginalCard','detectTextureCards','detectThreeCards','threeByTwoState','polishThreeCards','regroupSixCards','planSixCardOrder','straightenLicenceWithoutCutting'].every(k=>typeof window.DocFixDesktopDiagnostics?.[k]==='function');
         const orderTest=window.DocFixDesktopDiagnostics?.orderedIncoming?.([
           new File(['b'],'WhatsApp Image 2026-11-05 at 15.10.11.jpeg',{type:'image/jpeg',lastModified:2}),
           new File(['a'],'WhatsApp Image 2026-11-05 at 15.10.10.jpeg',{type:'image/jpeg',lastModified:1})
