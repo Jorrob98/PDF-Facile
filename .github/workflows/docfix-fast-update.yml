@@ -132,7 +132,7 @@ jobs:
           grep -F "onePlusOneRecovery" verify/main.js
           grep -F "tightSeparatedCard" verify/main.js
           grep -F "cfPhysicalCrop" verify/main.js
-          grep -F "cardKind='cf'" verify/app/index.html
+          grep -F "cardKind==='cf'" verify/app/index.html
           grep -F "rotatedProbe" verify/app/index.html
           grep -F "tightenSeparatedCardCanvas" verify/app/index.html
           grep -F "bordo fisico rifinito" verify/app/index.html
