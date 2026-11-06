@@ -51,6 +51,9 @@
  }
  function validate(blob,pages){if(!(blob instanceof Blob)||blob.size<250||blob.type!=='application/pdf'||!Number.isInteger(pages)||pages<1)throw Error('PDF non valido: esportazione interrotta');return blob}
  function filename(entries){
+  // A version-stamped filename makes it impossible to confuse a newly
+  // generated 6-card PDF with an older Downloads copy.
+  if((entries||[]).length===6&&(entries||[]).every(e=>e.threeUp))return 'DocFix-1.9.12-6-tessere.pdf';
   const sources=[...new Set((entries||[]).map(e=>String(e?.source||'').trim()).filter(Boolean))];
   if(sources.length!==1)return 'documenti-docfix.pdf';
   const raw=sources[0].replace(/\.[^.]+$/,'').normalize('NFKC').replace(/[\\/:*?"<>|\x00-\x1F\x7F]/g,' ').replace(/\s+/g,' ').trim().replace(/^[.\s-]+/,'').slice(0,72)||'documento';
