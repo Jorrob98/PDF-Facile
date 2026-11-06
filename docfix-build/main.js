@@ -15,7 +15,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.9.2',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.9.3',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -171,10 +171,10 @@ async function runSelfTest(){
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.2':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.3':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         out.updaterHiddenWhenNoUpdate=document.querySelector('#docfix-update-button')?.hidden===true;
-        out.ocrModule=window.DocFixOCRMax?.version==='1.9.2';
+        out.ocrModule=window.DocFixOCRMax?.version==='1.9.3';
         const cloudTest=window.DocFixOCRCloud?.selfTest?await window.DocFixOCRCloud.selfTest():null;
         out.ocrCloudLogic=!!cloudTest&&cloudTest.identity===true&&cloudTest.structured===true&&cloudTest.agreement===true;
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
@@ -233,6 +233,12 @@ async function runSelfTest(){
         const cfTight=window.DocFixDesktopDiagnostics?.tightenSeparatedCardCanvas?.(cf,{cardKind:'cf'});
         const cfr=cfTight?.canvas?Math.max(cfTight.canvas.width,cfTight.canvas.height)/Math.max(1,Math.min(cfTight.canvas.width,cfTight.canvas.height)):0;
         out.cfPhysicalCrop=!!cfTight?.tightened&&cfTight.canvas.width<960&&cfTight.canvas.height<665&&cfr>1.45&&cfr<1.76;
+        const base=document.createElement('canvas');base.width=900;base.height=560;const sg=base.getContext('2d');
+        sg.fillStyle='#d9edf5';sg.fillRect(0,0,900,560);sg.fillStyle='#0d6f9a';sg.fillRect(0,0,900,90);
+        sg.fillStyle='#111';for(let y=150;y<500;y+=50)sg.fillRect(80,y,730,8);
+        const skew=window.DocFixDesktopDiagnostics?.fineDeskewCard?(()=>{const c=document.createElement('canvas'),a=2.5*Math.PI/180,cs=Math.abs(Math.cos(a)),sn=Math.abs(Math.sin(a));c.width=Math.ceil(base.width*cs+base.height*sn);c.height=Math.ceil(base.height*cs+base.width*sn);const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.translate(c.width/2,c.height/2);g.rotate(a);g.drawImage(base,-base.width/2,-base.height/2);return c})():null;
+        const est=skew?window.DocFixDesktopDiagnostics?.estimateFineDeskew?.(skew):null;
+        out.fineDeskew=!!est&&est.applied===true&&Math.abs(est.angle-2.5)<.9;
         const orderTest=window.DocFixDesktopDiagnostics?.orderedIncoming?.([
           new File(['b'],'WhatsApp Image 2026-11-05 at 15.10.11.jpeg',{type:'image/jpeg',lastModified:2}),
           new File(['a'],'WhatsApp Image 2026-11-05 at 15.10.10.jpeg',{type:'image/jpeg',lastModified:1})
@@ -281,7 +287,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.9.2','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.9.3','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
