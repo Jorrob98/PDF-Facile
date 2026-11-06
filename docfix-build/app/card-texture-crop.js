@@ -146,7 +146,7 @@ function detect(original){
  const sample=scan.resize(original,600),ctx=sample.getContext('2d',{willReadFrequently:true});
  let output;
  try{output=analyzeRGBA(ctx.getImageData(0,0,sample.width,sample.height).data,sample.width,sample.height)}
- finally{sample.width=sample.height=1;}
+ finally{if(sample!==original)sample.width=sample.height=1;}
  return output;
 }
 window.DocFixRealCrop=Object.freeze({detect,analyzeRGBA,version:'1.9.8'});
