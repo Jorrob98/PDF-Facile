@@ -805,7 +805,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const zone=$('dropzone'),picker=$('picker'),cards=$('cards'),workspace=$('workspace'),dl=$('download');
@@ -1206,6 +1206,8 @@ function tightenSeparatedCardCanvas(coarse,{cardKind='generic'}={}){
  const scan=window.DocFixScanner,candidates=[];
  const add=(candidate,extra={})=>{if(candidate?.status==='found'&&scan.validQuad(candidate.quad))candidates.push({...candidate,...extra})};
  add(scan.detectDocument?.(coarse));
+ // Independent physical-border detector, robust when the card almost fills the crop.
+ add(window.DocFixPhysicalEdges?.detect?.(coarse));
  for(const c of (scan.detectAll?.(coarse)||[]))add(c);
  // Codice fiscale / tessera sanitaria: the strongest blue-card detector is
  // orientation-sensitive. Run it once on a temporary 90° view and map the
@@ -1222,9 +1224,9 @@ function tightenSeparatedCardCanvas(coarse,{cardKind='generic'}={}){
  let best=null;
  for(const candidate of candidates){
   const a=scan.area(candidate.quad),r=quadCardRatio(candidate.quad,coarse.width,coarse.height),conf=Number(candidate.confidence)||0;
-  if(a<.18||a>.93||r<1.42||r>1.82||conf<.68)continue;
+  if(a<.18||a>.993||r<1.40||r>1.90||conf<.68)continue;
   let q=candidate.quad.map(p=>({...p}));
-  const fine=window.DocFixGroup1?.refineQuad?.(coarse,q);
+  const fine=candidate.physicalLines?null:window.DocFixGroup1?.refineQuad?.(coarse,q);
   if(fine?.refined&&scan.validQuad(fine.quad)){
    const af=scan.area(fine.quad),ratio=af/Math.max(.0001,a);
    if(ratio>=.82&&ratio<=1.08)q=fine.quad;
@@ -1233,11 +1235,11 @@ function tightenSeparatedCardCanvas(coarse,{cardKind='generic'}={}){
   const trustedOuter=/physical-outer-boundaries|precise-color|cf-physical|cf-precise/i.test(method);
   // CF generic card-edge boxes are allowed to be slightly looser rather than
   // cutting barcode/bottom text. Trusted physical edges get only a tiny pad.
-  const pad=cardKind==='cf'?(trustedOuter ? .010 : .026):.012;
+  const pad=candidate.physicalLines?.004:(cardKind==='cf'?(trustedOuter ? .010 : .026):.012);
   q=expandQuadSafe(q,pad);
   const qa=scan.area(q),qr=quadCardRatio(q,coarse.width,coarse.height);
-  if(qa<.17||qa>.95||qr<1.40||qr>1.84)continue;
-  const methodBonus=trustedOuter?1.25:(/card-edges?/i.test(method)?-.35:0);
+  if(qa<.17||qa>.997||qr<1.40||qr>1.90)continue;
+  const methodBonus=candidate.physicalLines?2.2:(trustedOuter?1.25:(/card-edges?/i.test(method)?-.35:0));
   const cfBonus=(cardKind==='cf'&&candidate.rotatedProbe)?0.75:0;
   const score=conf*1.8+(1-Math.abs(qr-1.586)/.25)+Math.min(.75,qa)+methodBonus+cfBonus;
   if(!best||score>best.score)best={quad:q,score,confidence:Math.max(conf,.72),method,backLike:candidate.cardBackLike===true,trustedOuter};
@@ -1245,7 +1247,7 @@ function tightenSeparatedCardCanvas(coarse,{cardKind='generic'}={}){
  if(!best)return {canvas:coarse,tightened:false,quad:null,confidence:0,method:'safe-zone'};
  const out=scan.process(coarse,{crop:true,quad:best.quad,rotation:0,filter:'original',strength:0},4200);
  const ratio=Math.max(out.width,out.height)/Math.max(1,Math.min(out.width,out.height));
- if(out.width<260||out.height<160||ratio<1.40||ratio>1.84){out.width=out.height=1;return {canvas:coarse,tightened:false,quad:null,confidence:0,method:'safe-zone'}}
+ if(out.width<260||out.height<160||ratio<1.40||ratio>1.90){out.width=out.height=1;return {canvas:coarse,tightened:false,quad:null,confidence:0,method:'safe-zone'}}
  return {canvas:out,tightened:true,quad:best.quad,confidence:best.confidence,method:best.method,backLike:best.backLike,trustedOuter:best.trustedOuter};
 }
 function estimateFineDeskew(source,{cardKind='generic'}={}){
@@ -1299,12 +1301,12 @@ function fineDeskewCard(source,{cardKind='generic'}={}){
   const turned=rotateFineCanvas(source,-angle),tight=tightenSeparatedCardCanvas(turned,{cardKind});
   if(!tight.tightened||!tight.canvas||tight.canvas===turned){turned.width=turned.height=1;continue}
   const ratio=Math.max(tight.canvas.width,tight.canvas.height)/Math.max(1,Math.min(tight.canvas.width,tight.canvas.height));
-  if(ratio<1.40||ratio>1.84){
+  if(ratio<1.40||ratio>1.90){
    if(tight.canvas!==turned)tight.canvas.width=tight.canvas.height=1;
    turned.width=turned.height=1;continue;
   }
   const after=estimateFineDeskew(tight.canvas,{cardKind});
-  const residual=after.applied?Math.abs(after.angle):0;
+  const residual=Math.abs(after.angle||0);
   const improved=residual<=.45||residual<=Math.max(0,baseAbs-.45);
   const shapePenalty=Math.abs(ratio-1.586)*.12,score=residual+shapePenalty;
   if(improved)candidates.push({canvas:tight.canvas,angle,residual,score,confidence:before.confidence,method:tight.method||'fine-deskew',after});
@@ -1390,7 +1392,7 @@ window.DocFixDesktopDiagnostics=Object.freeze({
  safeRefineMultiQuad,tightenSeparatedCardCanvas,estimateFineDeskew,fineDeskewCard,
  warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
  safeMultiCropPreview:(original,candidate)=>window.DocFixScanner.process(original,{crop:true,quad:expandQuadSafe(candidate.quad,.028),rotation:0,filter:'original',strength:0},2200),
- orderedIncoming,reverseFileOrder,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.9.5'
+ orderedIncoming,reverseFileOrder,detectPhysicalLines:(c)=>window.DocFixPhysicalEdges?.detect?.(c),refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.9.6'
 });
 function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
  // The page's existing /Rotate is already applied in pdf.js previews.
