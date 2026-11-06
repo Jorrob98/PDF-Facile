@@ -103,6 +103,9 @@ jobs:
           if($main -notmatch 'tightSeparatedCard'){ throw 'Self-test rifinitura bordo tessera mancante' }
           if($main -notmatch 'cfPhysicalCrop'){ throw 'Self-test bordo codice fiscale mancante' }
           if($main -notmatch 'fineDeskew'){ throw 'Self-test raddrizzamento fine mancante' }
+          if($main -notmatch 'cfFineDeskew'){ throw 'Self-test raddrizzamento CF mancante' }
+          if($main -notmatch 'diagnosticsCoverage'){ throw 'Copertura diagnostica deskew mancante' }
+          if($index -notmatch 'projection-bands'){ throw 'Deskew doppia banda mancante' }
           if($index -notmatch 'estimateFineDeskew'){ throw 'Raddrizzamento fine mancante' }
           if($index -notmatch 'raddrizzato '){ throw 'Stato raddrizzamento fine mancante' }
           if($index -notmatch "cardKind==='cf'"){ throw 'Modalità dedicata codice fiscale mancante' }
