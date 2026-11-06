@@ -1257,13 +1257,13 @@ function estimateFineDeskew(source,{cardKind='generic'}={}){
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const k=(y*w+x)*4;g[y*w+x]=.299*d[k]+.587*d[k+1]+.114*d[k+2]}
  const x0=Math.round(w*.06),x1=Math.round(w*.94),y0=Math.round(h*.07),y1=Math.round(h*.93);
  for(let y=y0+1;y<y1-1;y+=2)for(let x=x0;x<x1;x+=2){const v=Math.abs(g[(y+1)*w+x]-g[(y-1)*w+x]);if(v>7)grads.push(v)}
- if(grads.length<200){s.width=s.height=1;return {angle:0,confidence:0,applied:false,method:'few-edges'}}
+ if(grads.length<200){if(s!==source)s.width=s.height=1;return {angle:0,confidence:0,applied:false,method:'few-edges'}}
  grads.sort((a,b)=>a-b);const threshold=Math.max(15,grads[Math.floor(grads.length*.72)]||15),points=[];
  for(let y=y0+1;y<y1-1;y+=2)for(let x=x0;x<x1;x+=2){
   const v=Math.abs(g[(y+1)*w+x]-g[(y-1)*w+x]);
   if(v>=threshold)points.push([x,y,Math.min(100,v)]);
  }
- if(points.length<150){s.width=s.height=1;return {angle:0,confidence:0,applied:false,method:'few-strong-edges'}}
+ if(points.length<150){if(s!==source)s.width=s.height=1;return {angle:0,confidence:0,applied:false,method:'few-strong-edges'}}
  const cy=h/2,cx=w/2;
  const bestFor=(list)=>{
   const scoreAt=deg=>{
@@ -1284,7 +1284,7 @@ function estimateFineDeskew(source,{cardKind='generic'}={}){
  const cfStrong=Math.abs(chosen)>=.50&&Math.abs(chosen)<=4&&((all.improvement>=.012)||(bandAgree&&bandConf>=.006));
  const genericStrong=Math.abs(chosen)>=.55&&Math.abs(chosen)<=4&&all.improvement>=.030;
  const applied=cardKind==='cf'?cfStrong:genericStrong;
- s.width=s.height=1;
+ if(s!==source)s.width=s.height=1;
  return {angle:Number(chosen.toFixed(2)),confidence:Math.max(all.improvement,bandConf),applied,method:bandAgree?'projection-bands':'projection-all',upper:upper.angle,lower:lower.angle};
 }
 function rotateFineCanvas(source,deg){
@@ -1339,9 +1339,9 @@ function multiCropHealthy(canvas){
   let sum=0,sum2=0,n=0,dark=0,light=0;
   for(let i=0;i<d.length;i+=16){const y=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];sum+=y;sum2+=y*y;n++;dark+=y<45;light+=y>245}
   const mean=sum/Math.max(1,n),variance=sum2/Math.max(1,n)-mean*mean;
-  s.width=s.height=1;
+  if(s!==canvas)s.width=s.height=1;
   return variance>180&&dark/Math.max(1,n)<.88&&light/Math.max(1,n)<.96;
- }catch{return true}
+ }catch{return false}
 }
 async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSafe=false,cardKind='generic',sourceVerified=false,orientationKnown=false}={}){
  const scan=window.DocFixScanner;
