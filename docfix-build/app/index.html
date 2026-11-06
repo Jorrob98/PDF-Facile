@@ -1,0 +1,1905 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0c253b"><meta name="description" content="DocFix: corregge scansioni, PDF e documenti sul tuo dispositivo."><style>:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px;color:#162d40;background:#f4f6f8}*{box-sizing:border-box}body{margin:0}body.dialog-open{overflow:hidden}button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}[hidden]{display:none!important}.shell{max-width:1110px;margin:0 auto;padding:0 28px}.top{height:82px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e4e9ed}.brand{display:flex;align-items:center;gap:10px;color:#19334a;text-decoration:none;font-size:24px;font-weight:850;line-height:1}.brand>span:last-child>span{color:#0d8c83}.brand small{display:block;font-size:11px;color:#79919f;letter-spacing:.5px;margin-top:4px}.logo{width:47px;height:47px;display:grid;place-items:center;background:#103d53;color:white;border-radius:14px;font-size:29px}.safe{font-size:13px;color:#607c8e;background:#fff;border:1px solid #dfe8ec;border-radius:40px;padding:9px 14px}.safe span{color:#00a788;margin-right:6px}.intro{text-align:center;padding:46px 16px 18px}.eyebrow{font-weight:900;font-size:11px;letter-spacing:2px;color:#178f86}.intro h1{font-size:clamp(37px,5vw,65px);line-height:1.08;letter-spacing:-2px;margin:18px 0 15px}.intro em{color:#11988a;font-style:normal}.intro p{font-size:17px;color:#617888;line-height:1.6;max-width:740px;margin:0 auto}.dropzone{margin:28px auto 32px;max-width:740px;background:white;border:2px dashed #a8c8d6;border-radius:24px;padding:42px 24px;text-align:center;outline-offset:4px;box-shadow:0 9px 40px #183b530b;transition:.2s}.dropzone:is(:hover,:focus-visible,.dragging){border-color:#158c82;background:#f5fffd}.upload-icon{display:grid;place-items:center;margin:0 auto 16px;background:#e6f7f3;color:#198d83;width:64px;height:64px;border-radius:19px;font-size:41px}.dropzone h2{font-size:25px;letter-spacing:-.7px;margin:0 0 8px}.dropzone p{font-size:15px;color:#7690a0;margin:0 0 20px}.choose{display:inline-flex;align-items:center;justify-content:center;min-height:50px;background:#143c57;color:white;padding:12px 24px;border-radius:12px;font-weight:800}.dropzone small{display:block;font-size:12px;color:#93a7b4;margin-top:14px}.workspace{margin:22px auto 45px;max-width:960px}.result-header{display:flex;align-items:end;justify-content:space-between;gap:12px}.result-header h2{font-size:32px;letter-spacing:-1.2px;margin:6px 0}.pill{border-radius:30px;background:#def3ed;color:#126f66;font-weight:800;font-size:13px;padding:10px 17px}.status{font-size:15px;color:#5a7585;margin:12px 0}.progress-wrap{height:7px;background:#e1edf0;border-radius:12px;overflow:hidden;margin:12px 0}.progress-bar{height:100%;width:0;background:#189c8c}.review-row{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:18px 0;font-size:13px;color:#648195}.review-row strong{color:#b45f1a;white-space:nowrap}.pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}.page-card{border:1px solid #dbe5ed;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 4px 19px #16354c0b}.page-card.needs-check{border-color:#efc67c}.preview{position:relative;border:0;background:#edf2f5;width:100%;height:260px;display:flex;align-items:center;justify-content:center;padding:17px}.preview img{max-width:100%;max-height:226px;object-fit:contain;box-shadow:0 4px 20px #18334224}.tag{position:absolute;top:12px;left:12px;background:#d4f4e6;color:#096b59;padding:5px 10px;border-radius:30px;font-size:11px;font-weight:800}.tag.warning{color:#805006;background:#ffebbe}.page-number{position:absolute;right:12px;bottom:10px;background:#ffffffdd;color:#405d70;padding:4px 8px;border-radius:8px;font-size:11px}.card-info{padding:15px}.card-info strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.card-info small{display:block;font-size:12px;color:#678695;margin-top:7px;min-height:30px}.card-controls{margin-top:11px;display:flex}.card-controls button{border:1px solid #c6d9e2;color:#214b62;background:#f8fbfd;border-radius:10px;font-size:13px;font-weight:800;padding:10px 16px;width:100%}.warnings{background:#fff4db;color:#80500b;padding:15px 18px;border-radius:12px;margin:18px 0;font-size:13px;line-height:1.5}.action-bar{display:flex;align-items:center;justify-content:center;gap:14px;margin:26px 0 12px}.download{background:#109184;color:#fff;border:0;padding:17px 24px;border-radius:13px;font-size:17px;font-weight:900}.reset{background:#fff;color:#3e6073;border:1px solid #cadce3;border-radius:13px;padding:15px 21px;font-weight:700}.sizes{text-align:center;color:#7a92a0;font-size:13px}.bottom{max-width:750px;margin:38px auto;display:flex;align-items:center;gap:14px;padding:18px;background:#e8f0f3;border-radius:15px}.bottom-icon{font-size:32px;color:#12867a}.bottom strong{display:block;font-size:13px}.bottom span{display:block;color:#67818e;font-size:12px;line-height:1.5;margin-top:3px}footer{padding:24px 0;border-top:1px solid #dae3e8;color:#849daa;font-size:12px;display:flex;justify-content:space-between;gap:20px}.editor-overlay{position:fixed;inset:0;background:#0c243bdc;z-index:100;display:grid;place-items:center;padding:18px;overflow-y:auto}.editor-dialog{width:min(850px,100%);max-height:95vh;overflow-y:auto;background:#fff;border-radius:24px;padding:22px;box-shadow:0 20px 80px #071b2a50}.editor-head{display:flex;justify-content:space-between;align-items:center}.editor-head h2{margin:3px 0;font-size:24px}.editor-head button{width:42px;height:42px;border:0;border-radius:12px;background:#f2f4f7;font-size:28px}.editor-dialog>p{color:#698496;font-size:14px}.editor-frame{position:relative;display:flex;justify-content:center;align-items:center;max-height:56vh;min-height:180px;margin:15px auto;width:fit-content;max-width:100%;background:#eff1f4;border-radius:8px}.editor-frame img{display:block;max-width:100%;max-height:56vh;object-fit:contain}.corners{position:absolute;inset:0;touch-action:none}.quad{width:100%;height:100%;position:absolute;inset:0;overflow:visible;pointer-events:none}.quad polygon{fill:#0a94871a;stroke:#0f988c;stroke-width:.7;vector-effect:non-scaling-stroke}.corner{position:absolute;width:26px;height:26px;border-radius:50%;background:#fff;border:5px solid #0e948b;transform:translate(-50%,-50%);touch-action:none;box-shadow:0 2px 8px #0004}.editor-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:17px}.editor-actions button{border:1px solid #c8dce1;background:#f6f9fa;padding:12px 15px;border-radius:11px;font-size:13px;font-weight:800}.editor-actions .confirm{background:#118d83;color:#fff;border:1px solid #118d83}@media(max-width:600px){.shell{padding:0 15px}.top{height:72px}.safe{font-size:0;padding:10px}.intro{padding:34px 4px 8px}.intro h1{font-size:38px;letter-spacing:-1.7px}.intro p{font-size:14px}.dropzone{padding:30px 16px}.pages{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.preview{height:173px;padding:8px}.preview img{max-height:160px}.card-info{padding:10px}.card-info small{min-height:48px}.review-row{align-items:start}.page-number{font-size:10px}.action-bar{flex-direction:column}.download,.reset{width:100%}.editor-dialog{padding:15px}.editor-actions button{flex:1;min-width:40%}.bottom{margin:25px auto}footer{flex-direction:column}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Group 3: readable output wins over minimizing bytes. */
+.quality-choice{display:flex;flex-wrap:wrap;align-items:center;gap:9px 14px;margin:22px 0 3px;padding:13px 17px;border:1px solid #dbe5ed;border-radius:13px;background:#fff}
+.quality-choice label{font-weight:800;font-size:14px;color:#26485c}
+.quality-choice select{border:1px solid #b9d4dc;background:#f5fbfb;color:#17384b;border-radius:9px;min-height:42px;padding:8px 12px;font-size:14px}
+.quality-choice small{flex-basis:100%;font-size:12px;color:#617e8b}
+/* Group 2: compact, accessible controls for each page's orientation. */
+.card-controls{gap:6px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));}
+.card-controls button{padding:10px 4px;min-width:0;font-size:12px;}
+.card-controls button:last-child{grid-column:1/-1;background:#e8f6f3;color:#146f67;}
+.editor-actions{justify-content:center;}
+@media(max-width:600px){.card-controls{gap:4px}.card-controls button{font-size:11px;padding:9px 2px}}
+/* Once a document is loaded, prioritize its visible pages and the final PDF. */
+.has-document .intro{display:none}
+.has-document .workspace{margin-top:30px}
+.has-document .shell{min-height:100vh}
+.has-document .safe{background:#e9f8f5;border-color:#c1e6db}
+.has-document .result-header h2{font-size:clamp(24px,4vw,31px)}
+@media(max-width:600px){.has-document .workspace{margin-top:20px}.has-document .pages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Gruppo 4 — batch add, reorder and single-page delete, touch-first */
+.has-document .intro{padding:15px 8px 5px}.has-document .intro h1{font-size:clamp(25px,3vw,37px);margin:6px 0}.has-document .intro p{display:none}
+.has-document .dropzone{padding:12px 18px;margin:12px auto 10px;border-radius:14px;max-width:960px;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.has-document .dropzone .upload-icon{display:none}.has-document .dropzone h2{font-size:15px;margin:0}.has-document .dropzone p,.has-document .dropzone small{display:none}.has-document .dropzone .choose{min-height:39px;padding:8px 12px;font-size:13px}
+.batch-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 0 16px}.batch-toolbar button{border:1px solid #cbdde3;background:#fff;color:#18526b;padding:10px 14px;border-radius:11px;font-weight:800;font-size:13px;min-height:43px}.batch-toolbar .add-more{background:#e8f7f2;border-color:#9ed7c7;color:#096b59}.batch-toolbar #queue-count{font-size:13px;color:#8a5c15;font-weight:750}.batch-toolbar .undo-remove{margin-left:auto}
+.page-card .card-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;flex-wrap:wrap}.page-card .card-controls button{min-width:0;width:auto;padding:8px 3px;font-size:12px}.page-card .card-order{display:grid;grid-template-columns:1fr 1fr 2fr;gap:6px;margin-top:8px}.page-card .card-order button{border:1px solid #d6e1e8;background:#f8fafb;color:#345669;padding:9px 4px;border-radius:9px;font-size:12px;font-weight:800}.page-card .card-order .delete-page{background:#fff6f5;color:#a73931;border-color:#f1cbca}.page-card.drag-sort{opacity:.65;outline:2px dashed #11988a}
+@media(max-width:600px){.has-document .dropzone{padding:10px}.has-document .intro h1{font-size:25px}.batch-toolbar button{flex:1 1 auto}.page-card .card-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.page-card .card-order{grid-template-columns:1fr 1fr}.page-card .card-order .delete-page{grid-column:span 2}.page-card .card-order button{font-size:11px}}
+/* Gruppo 5 — optional, hidden from the one-click workflow */
+.layout-choice{display:flex;flex-direction:column;gap:5px;margin:14px 0 18px;color:#3d6171}.layout-choice label{font-weight:800;font-size:14px}.layout-choice select{font:inherit;border:1px solid #ccdce3;background:#fff;border-radius:12px;padding:10px 12px;max-width:440px;width:100%;color:#15364a}.layout-choice small{color:#648396;line-height:1.4;max-width:620px}
+.advanced-options{margin:14px 0 18px;border:1px solid #dbe5ed;border-radius:13px;background:#ffffffde;box-shadow:0 5px 20px #153b4b09;overflow:hidden}.advanced-options>summary{list-style:none;cursor:pointer;padding:14px 17px;font-weight:850;color:#26485c;user-select:none}.advanced-options>summary::-webkit-details-marker{display:none}.advanced-options>summary:after{content:"⌄";float:right;color:#0b8f84;font-size:18px}.advanced-options[open]>summary:after{content:"⌃"}.advanced-options .quality-choice,.advanced-options .layout-choice{margin:0;border:0;border-top:1px solid #e4ecef;border-radius:0;box-shadow:none}.advanced-options .layout-choice{padding:13px 17px}
+
+/* Gruppo 6 — ergonomia e installazione */
+.top{min-height:86px;height:auto;gap:12px;flex-wrap:wrap;padding-block:12px}.install-actions{display:flex;align-items:center;gap:8px}.install-actions button{border-radius:12px;min-height:44px;padding:10px 14px;font-size:13px;font-weight:800}.install-app{background:#103e58;color:white;border:1px solid #103e58}.update-app{background:white;color:#234a61;border:1px solid #c8d9e1}.install-help{max-width:1054px;margin:10px auto 0;padding:14px 18px;border:1px solid #b5d6da;background:#eefafa;color:#204f5c;border-radius:12px;font-size:14px;line-height:1.55}.choose,.download,.reset,.add-more,.undo-remove{min-height:48px}.page-card button{min-height:42px}.dropzone:focus-visible,button:focus-visible{outline:3px solid #13a69b;outline-offset:3px}.dropzone{margin-top:20px}.intro{padding-top:30px}.intro h1{font-size:clamp(34px,4.5vw,56px)}.bottom{margin-bottom:22px}
+@media(max-width:600px){.top{justify-content:center}.brand{margin-right:auto}.install-actions{width:100%;justify-content:stretch}.install-actions button{flex:1}.intro{padding-top:22px}.intro h1{font-size:35px}.pages{grid-template-columns:1fr}.preview{height:230px}.preview img{max-height:205px}.card-info small{min-height:0}.install-help{margin-inline:14px}.dropzone{margin-top:14px}}
+
+/* DocFix Desktop 1.1 — professional desktop UI */
+:root{--df-navy:#10364c;--df-teal:#0b9789;--df-bg:#edf3f5;--df-line:#d5e2e7}
+html{background:var(--df-bg)}
+body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,transparent 32%),radial-gradient(circle at 100% 10%,#dbeaf1 0,transparent 34%),linear-gradient(180deg,#f9fbfc,#edf3f5 58%,#e8eff2)}
+.shell{max-width:1220px;padding-inline:34px}
+.top{position:sticky;top:0;z-index:20;margin:0 -10px;padding:14px 10px;background:#f9fbfbe8;backdrop-filter:blur(18px);box-shadow:0 10px 30px #15374809}
+.logo{width:50px;height:50px;border-radius:15px;background:linear-gradient(145deg,#113d56,#0a897f);box-shadow:0 10px 24px #0d5a5f2d}
+.safe{background:#fff;border-radius:14px;box-shadow:0 5px 18px #153a4a0b}
+.intro{padding:54px 16px 16px}.intro .eyebrow{display:inline-flex;padding:7px 12px;border-radius:999px;background:#e3f5f1}
+.intro h1{font-size:clamp(45px,5.4vw,68px);letter-spacing:-3px;color:#102f43}
+.dropzone{max-width:820px;padding:48px 30px;border:1px solid #cfe0e5;background:linear-gradient(180deg,#fff,#fbfdfd);box-shadow:0 24px 70px #153b4b12;position:relative}
+.dropzone:before{content:"";position:absolute;inset:9px;border:2px dashed #bad5dc;border-radius:17px;pointer-events:none}
+.dropzone:is(:hover,:focus-visible,.dragging){transform:translateY(-2px);border-color:#7bc5ba}
+.choose{position:relative;background:linear-gradient(135deg,#123f59,#0b7472);box-shadow:0 10px 25px #0b59672a}
+.workspace{max-width:1030px}.page-card{border-radius:20px;box-shadow:0 10px 30px #173b4c0d;transition:.15s}
+.page-card:hover{transform:translateY(-2px);box-shadow:0 15px 35px #173b4c15}
+.quality-choice,.layout-choice{background:#ffffffde;box-shadow:0 5px 20px #153b4b09}
+.action-bar{position:sticky;bottom:16px;z-index:12;width:max-content;max-width:100%;margin:28px auto 15px;padding:9px;border:1px solid var(--df-line);background:#ffffffeb;backdrop-filter:blur(14px);border-radius:18px;box-shadow:0 18px 50px #14394a1c}
+.download{min-width:240px;background:linear-gradient(135deg,#0b9b8c,#087f79);box-shadow:0 8px 24px #0a887f2c}
+.editor-overlay{backdrop-filter:blur(8px)}
+@media(max-width:800px){.shell{padding-inline:18px}.top{position:static}.action-bar{width:100%}}
+</style><title>DocFix Desktop</title><link rel="icon" href="./icon-192.png" type="image/png"><meta name="docfix-build" content="desktop-1.7.2-auto-clean-20261105"></head><body>
+<div class="shell"><header class="top"><a class="brand" href="./"><span class="logo">▣</span><span>Doc<span>Fix</span><small>by Jorrob</small></span></a><span class="safe"><span>●</span> Tutto sul tuo PC</span></header>
+<main><section class="intro"><div class="eyebrow">DOCUMENTI PRONTI IN POCHI PASSAGGI</div><h1>Carica le foto.<br><em>Scarica il PDF.</em></h1><p>Libretto, patente, carta d’identità e PDF: correggo orientamento e bordi, preservo la qualità e preparo il documento pronto da usare.</p></section>
+<section id="dropzone" role="button" tabindex="0" aria-label="Carica foto o PDF" class="dropzone"><span class="upload-icon">↥</span><h2>Trascina qui i documenti</h2><p>Oppure selezionali dal dispositivo</p><div class="choose">+ Aggiungi foto o PDF</div><small>JPG, PNG, WebP, PDF · più file insieme · Ctrl+O per aprire · Ctrl+V per incollare una foto</small></section><input hidden id="picker" type="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp" multiple>
+<section id="workspace" class="workspace" hidden><div class="result-header"><div><div class="eyebrow">RISULTATO</div><h2>Le tue pagine</h2></div><span id="summary" class="pill"></span></div><p id="status" role="status" class="status" aria-live="polite"></p><div id="progress-wrap" class="progress-wrap" hidden><div id="progress-bar" class="progress-bar"></div></div><div class="review-row"><span>Controlla le anteprime; usa le frecce per scegliere l’ordine delle pagine.</span><strong id="review-count"></strong></div><div class="batch-toolbar"><button type="button" id="add-more" class="add-more">＋ Aggiungi altre foto o PDF</button><button type="button" id="reverse-files" class="add-more" hidden>↕ Inverti ordine file</button><span id="queue-count" role="status" aria-live="polite" hidden></span><button type="button" id="undo-remove" class="undo-remove" hidden>↶ Annulla eliminazione</button></div><div id="cards" class="pages"></div><div id="warnings" class="warnings" hidden></div><details class="advanced-options"><summary>Opzioni PDF</summary><div class="quality-choice"><label for="pdf-quality">Qualità del PDF</label><select id="pdf-quality" aria-label="Qualità del PDF"><option value="high" selected>Alta qualità · consigliata</option><option value="compact">PDF più leggero</option></select><small>Alta qualità preserva maggiormente scritte e dettagli; foto già sfocate non possono essere recuperate.</small></div><div class="layout-choice"><label for="pdf-layout">Impaginazione</label><select id="pdf-layout" aria-label="Impaginazione PDF"><option value="document" selected>Forma originale del documento</option><option value="a4">A4 per stampare · documento intero centrato</option></select><small>Il PDF rispetta sempre le proporzioni e non taglia i bordi. L’opzione A4 aggiunge margini bianchi per la stampa.</small></div></details><div class="action-bar"><button type="button" id="download" disabled class="download">↓ Scarica PDF pronto</button><button type="button" id="reset" class="reset">+ Nuovo documento</button></div><p id="sizes" class="sizes"></p></section>
+<div class="bottom"><div class="bottom-icon">♧</div><div><strong>Privacy sotto controllo</strong><span>PDF e correzioni restano sul PC. Se attivi OCR MAX Cloud, solo le immagini necessarie all’OCR vengono inviate ai provider cloud che hai configurato.</span></div></div></main>
+<footer>DocFix Desktop · Versione 1.9.13 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
+<div id="editor" class="editor-overlay" hidden><div class="editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-title"><div class="editor-head"><div><span class="eyebrow">CORREZIONE</span><h2 id="edit-title">Pagina</h2></div><button type="button" id="edit-close" aria-label="Chiudi">×</button></div><p>Sposta i quattro punti se il bordo è sbagliato. Qui trovi solo ciò che serve.</p><div class="editor-frame"><img id="editor-image" alt="Documento da correggere"><div id="corners" class="corners"><svg class="quad" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon id="frame-poly" points=""/></svg></div></div><div class="editor-actions"><button type="button" id="edit-left">↶ Sinistra 90°</button><button type="button" id="edit-rotate">↷ Destra 90°</button><button type="button" id="edit-flip">↻ Capovolgi 180°</button><button type="button" id="edit-full">Usa pagina completa</button><button type="button" id="edit-cancel">Annulla</button><button type="button" id="edit-apply" class="confirm">✓ Applica ritaglio</button></div></div></div>
+<script src="./group3-quality.js"></script><script src="./group5-export.js"></script><script>/* DocFix 37 — single, hardened PDF.js engine for every PDF operation. */
+'use strict';
+(() => {
+ const BASE='./vendor/pdfjs/';
+ const MODULE=BASE+'pdf.min.mjs';
+ const WORKER=BASE+'pdf.worker.min.mjs';
+ let pending=null;
+ async function load() {
+   if(window.pdfjsLib?.__docfixSecureEngine)return window.pdfjsLib;
+   if(!pending)pending=import(MODULE).then(mod=>{
+     if(!mod?.getDocument||!mod?.GlobalWorkerOptions)throw Error('Il lettore PDF aggiornato non è disponibile.');
+     mod.GlobalWorkerOptions.workerSrc=WORKER;
+     // Explicitly disable evaluation and document scripting for every tool.
+     const safe=Object.create(null);
+     Object.assign(safe,mod);
+     safe.getDocument=(source)=>{
+       const config=(source instanceof ArrayBuffer || ArrayBuffer.isView(source) || typeof source==='string')?{data:source}:Object.assign({},source);
+       return mod.getDocument({...config,isEvalSupported:false,enableScripting:false,enableXfa:false,stopAtErrors:true});
+     };
+     Object.defineProperty(safe,'__docfixSecureEngine',{value:true});
+     window.pdfjsLib=safe;
+     return safe;
+   }).catch(err=>{pending=null;throw Error('Motore PDF aggiornato non disponibile. Controlla la connessione e riprova. '+(err?.message||''))});
+   return pending;
+ }
+ window.DocFixPdfEngine=Object.freeze({load,urls:Object.freeze({module:MODULE,worker:WORKER}),version:'4.10.38'});
+})();
+</script><script>/* DocFix scanner 8.0 — local-only scanner, optimized light normalization. */
+(() => {
+'use strict';
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function area(q){return Math.abs(q.reduce((sum,p,i)=>sum+p.x*q[(i+1)%q.length].y-q[(i+1)%q.length].x*p.y,0))/2}
+function defaultQuad(){return [{x:.035,y:.035},{x:.965,y:.035},{x:.965,y:.965},{x:.035,y:.965}]}
+function normalize(quad,width,height){return quad.map(p=>({x:p.x/width,y:p.y/height}))}
+function validQuad(quad){if(!quad||quad.length!==4||quad.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)))return false;const cross=[];for(let i=0;i<4;i++){let a=quad[i],b=quad[(i+1)%4],c=quad[(i+2)%4];cross.push((b.x-a.x)*(c.y-b.y)-(b.y-a.y)*(c.x-b.x))}return cross.every(c=>c>0.004)||cross.every(c=>c<-.004)}
+function downsample(source,maxSide=420){const ratio=Math.min(1,maxSide/Math.max(source.width,source.height)),w=Math.max(1,Math.floor(source.width*ratio)),h=Math.max(1,Math.floor(source.height*ratio));const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(source,0,0,w,h);return {w,h,rgba:ctx.getImageData(0,0,w,h).data};}
+function histogramMedian(hist,total){let sum=0;for(let i=0;i<256;i++){sum+=hist[i];if(sum>=total/2)return i}return 0}
+function otsuThreshold(hist,total){let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let low=0,left=0,best=0,threshold=128;for(let t=0;t<256;t++){left+=hist[t];if(!left)continue;let right=total-left;if(!right)break;low+=t*hist[t];const a=low/left,b=(sum-low)/right,score=left*right*(a-b)*(a-b);if(score>best){best=score;threshold=t}}return threshold}
+
+/* Light-desk ID card detector.
+   Old luminance-only segmentation mistakes pastel cards for the tabletop.
+   Detect the coherent chromatic surface and fit an oriented rectangle via
+   principal axes. Never claim a crop when background/card separation is weak.
+   Works completely on-device without external model files or OCR. */
+function detectChromaticCard(source){
+ const {w,h,rgba}=downsample(source,420),N=w*h;
+ if(w<100||h<100)return null;
+ const perimeter=[];
+ for(let y=0;y<h;y+=3)for(let x=0;x<w;x+=3){
+  if(!((x<w*.12||x>w*.88)&&(y<h*.12||y>h*.88)))continue;
+  const i=(y*w+x)*4,r=rgba[i],g=rgba[i+1],b=rgba[i+2];
+  perimeter.push((Math.max(r,g,b)-Math.min(r,g,b))*255/Math.max(1,Math.max(r,g,b)));
+ }
+ if(perimeter.length<20)return null;
+ perimeter.sort((a,b)=>a-b);
+ const bgSat=perimeter[perimeter.length>>1];
+ // On saturated desks the colour cue is unreliable; use existing detectors.
+ if(bgSat>18)return null;
+ const threshold=Math.max(24,bgSat+15),raw=new Uint8Array(N);
+ for(let i=0;i<N;i++){
+  const j=i*4,r=rgba[j],g=rgba[j+1],b=rgba[j+2];
+  const hi=Math.max(r,g,b),lo=Math.min(r,g,b);
+  raw[i]=hi>36&&(hi-lo)*255/hi>=threshold?1:0;
+ }
+ // A small morphological closing joins green areas separated by text/barcodes.
+ const radius=9,expanded=new Uint8Array(N),mask=new Uint8Array(N);
+ for(let y=radius;y<h-radius;y++)for(let x=radius;x<w-radius;x++){
+  let found=0;
+  for(let dy=-radius;dy<=radius&&!found;dy++)for(let dx=-radius;dx<=radius;dx++)if(raw[(y+dy)*w+x+dx]){found=1;break;}
+  expanded[y*w+x]=found;
+ }
+ for(let y=radius*2;y<h-radius*2;y++)for(let x=radius*2;x<w-radius*2;x++){
+  let full=1;
+  for(let dy=-radius;dy<=radius&&full;dy++)for(let dx=-radius;dx<=radius;dx++)if(!expanded[(y+dy)*w+x+dx]){full=0;break;}
+  mask[y*w+x]=full;
+ }
+ const seen=new Uint8Array(N),queue=new Int32Array(N);
+ let best=null;
+ for(let origin=0;origin<N;origin++){
+  if(!mask[origin]||seen[origin])continue;
+  let head=0,tail=1,sx=0,sy=0,sxx=0,syy=0,sxy=0;
+  queue[0]=origin;seen[origin]=1;
+  const points=[];
+  while(head<tail){
+   const p=queue[head++],x=p%w,y=(p/w)|0;
+   sx+=x;sy+=y;sxx+=x*x;syy+=y*y;sxy+=x*y;
+   points.push(p);
+   for(const next of [p-1,p+1,p-w,p+w]){
+    if(next<0||next>=N||seen[next]||!mask[next]||(Math.abs(next-p)===1&&((next/w)|0)!==y))continue;
+    seen[next]=1;queue[tail++]=next;
+   }
+  }
+  if(tail<N*.045||tail>N*.78)continue;
+  // Minimum area oriented bounding rectangle. PCA alone is biased because
+  // the MRZ/barcode can create long, low-saturation holes across a card.
+  const stride=Math.max(1,Math.floor(points.length/4500));
+  function boundsAt(angle,step){
+   const ux=Math.cos(angle),uy=Math.sin(angle),vx=-uy,vy=ux;
+   let a=Infinity,b=-Infinity,c=Infinity,d=-Infinity;
+   for(let k=0;k<points.length;k+=step){const p=points[k],x=p%w,y=(p/w)|0,u=x*ux+y*uy,v=x*vx+y*vy;
+    if(u<a)a=u;if(u>b)b=u;if(v<c)c=v;if(v>d)d=v;
+   }
+   return {angle,rect:(b-a)*(d-c),a,b,c,d,ux,uy,vx,vy};
+  }
+  let shape=null;
+  for(let deg=-88;deg<=90;deg+=2){const candidate=boundsAt(deg*Math.PI/180,stride);if(!shape||candidate.rect<shape.rect)shape=candidate;}
+  for(let deg=-2;deg<=2;deg+=.4){const candidate=boundsAt(shape.angle+deg*Math.PI/180,stride);if(candidate.rect<shape.rect)shape=candidate;}
+  const {ux,uy,vx,vy}=shape;
+  const fine=boundsAt(shape.angle,1);
+  let minU=fine.a,maxU=fine.b,minV=fine.c,maxV=fine.d;
+  const spanU=maxU-minU,spanV=maxV-minV,minSide=Math.min(spanU,spanV),maxSide=Math.max(spanU,spanV);
+  const ratio=maxSide/Math.max(1,minSide),rectArea=spanU*spanV,relative=rectArea/N,coverage=tail/Math.max(1,rectArea);
+  if(ratio<1.39||ratio>1.92||minSide<Math.min(w,h)*.18||relative<.08||relative>.79||coverage<.24||coverage>.98)continue;
+  const expand=Math.max(2,Math.min(5,minSide*.012));
+  minU-=expand;maxU+=expand;minV-=expand;maxV+=expand;
+  const corners=[[minU,minV],[maxU,minV],[maxU,maxV],[minU,maxV]].map(([a,b])=>({x:(a*ux+b*vx)/w,y:(a*uy+b*vy)/h}));
+  const tl=corners.reduce((a,b)=>a.x+a.y<b.x+b.y?a:b);
+  const br=corners.reduce((a,b)=>a.x+a.y>b.x+b.y?a:b);
+  const tr=corners.reduce((a,b)=>a.x-a.y>b.x-b.y?a:b);
+  const bl=corners.reduce((a,b)=>a.x-a.y<b.x-b.y?a:b);
+  // Chromatic pixels rarely cover the white MRZ stripe. Extend the bottom
+  // edge conservatively so the third machine-readable line remains intact.
+  // Leaving extra desk is safer than deleting legal/identity information.
+  const depth=.135;
+  const brr={x:br.x+(br.x-tr.x)*depth,y:br.y+(br.y-tr.y)*depth};
+  const bll={x:bl.x+(bl.x-tl.x)*depth,y:bl.y+(bl.y-tl.y)*depth};
+  const quad=[tl,tr,brr,bll].map(p=>({x:clamp(p.x,.001,.999),y:clamp(p.y,.001,.999)}));
+  if(new Set([tl,tr,br,bl]).size!==4||!validQuad(quad))continue;
+  const touchesEdge=quad.filter(p=>p.x<.006||p.x>.994||p.y<.006||p.y>.994).length;
+  if(touchesEdge>=2)continue; // probably a clipped card, keep original
+  const conf=clamp(.79+(coverage-.24)*.13+(1-Math.abs(ratio-1.59))*.07,0,.96);
+  const quality=tail/N*coverage;
+  if(!best||quality>best.quality)best={quad,confidence:conf,status:'found',reason:'Carta identificata per colore e contorni',quality};
+ }
+ return best;
+}
+/* V48: Conservative card-boundary detector for patterned desks. The older
+ * chroma and paper detectors can lock onto card typography rather than its
+ * external edges. Here we score four physical edge lines together, enforce
+ * actual ISO-card proportions and preserve a safety margin. */
+function detectCenteredCard(source){
+ const {w,h,rgba}=downsample(source,400),N=w*h;
+ if(w<130||h<150)return null;
+ // Optimized for full card photos; no destructive auto-crop if document
+ // is small, touches the frame, or has an implausible aspect ratio.
+ const pixels=new Float32Array(N*3),radius=4;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const k=(y*w+x)*4,z=(y*w+x)*3;
+  pixels[z]=rgba[k];pixels[z+1]=rgba[k+1];pixels[z+2]=rgba[k+2];
+ }
+ const diffH=new Float32Array(N),diffV=new Float32Array(N);
+ for(let y=radius;y<h-radius;y++)for(let x=radius;x<w-radius;x++){
+  const z=(y*w+x)*3, left=z-radius*3,right=z+radius*3,up=z-radius*w*3,down=z+radius*w*3;
+  let hd=0,vd=0;
+  for(let ch=0;ch<3;ch++){
+   hd+=(pixels[left+ch]-pixels[right+ch])**2;
+   vd+=(pixels[up+ch]-pixels[down+ch])**2;
+  }
+  const i=y*w+x;diffH[i]=Math.sqrt(hd/3);diffV[i]=Math.sqrt(vd/3);
+ }
+ // Smooth the edge response perpendicular to each side. This prevents
+ // background texture and isolated text strokes from winning single samples.
+ const smooth=(data,x,y,isX)=>{
+  let sum=0;for(let n=-2;n<=2;n++){
+   let xx=isX?x:x+n, yy=isX?y+n:y;
+   if(xx<radius||xx>=w-radius||yy<radius||yy>=h-radius)continue;
+   sum+=data[yy*w+xx];
+  }
+  return sum/5;
+ };
+ const find=(portrait)=>{
+  const minW=portrait?w*.39:w*.47,maxW=portrait?w*.76:w*.90;
+  const xmid=[.42,.45,.48,.51,.54,.57].map(a=>a*w);
+  const ymid=[.43,.46,.49,.52,.55,.58].map(a=>a*h);
+  const ratios=portrait?[1.54,1.59,1.64]:[1.54,1.59,1.64];
+  let best=null;
+  for(let ww=minW;ww<=maxW;ww+=Math.max(3,w*.015))for(const ratio of ratios){
+   const hh=portrait?ww*ratio:ww/ratio;
+   if(hh>=h*.84||hh<h*.18)continue;
+   for(const cx of xmid)for(const cy of ymid){
+    const xl=Math.round(cx-ww/2),xr=Math.round(cx+ww/2),yt=Math.round(cy-hh/2),yb=Math.round(cy+hh/2);
+    if(xl<Math.round(w*.07)||xr>w*.93||yt<h*.07||yb>h*.93)continue;
+    let sum=0;
+    for(let j=1;j<=13;j++){
+     const f=.11+j*.055;
+     const yy=Math.round(yt+(yb-yt)*f),xx=Math.round(xl+(xr-xl)*f);
+     sum+=smooth(diffH,xl,yy,true)+smooth(diffH,xr,yy,true);
+     sum+=smooth(diffV,xx,yt,false)+smooth(diffV,xx,yb,false);
+    }
+    // Give preference to complete physical edges over text boxes inside a card.
+    const factor=Math.pow((portrait?ww:w*.65)/Math.max(1,w*.54),.70);
+    const score=sum/(13*4)*factor;
+    if(!best||score>best.score)best={score,xl,xr,yt,yb,portrait};
+   }
+  }
+  return best;
+ };
+ const p=find(true),l=find(false);let b=(h>w*1.14&&p&&p.score>=27)?p:((!l||p?.score>l.score)?p:l);
+ if(!b||b.score<26)return null;
+ let {xl,xr,yt,yb}=b;
+ // Prefer extra background to loss of the printed physical edges. The 3%
+ // pad also compensates for the rounded corners of plastic cards.
+ const padX=Math.max(2,(xr-xl)*.13),padY=Math.max(2,(yb-yt)*.115);
+ xl-=padX;xr+=padX;yt-=padY;yb+=padY;
+ let quad=[{x:xl/w,y:yt/h},{x:xr/w,y:yt/h},{x:xr/w,y:yb/h},{x:xl/w,y:yb/h}];
+ if(quad.some(p=>p.x<.01||p.x>.99||p.y<.01||p.y>.99))return null;
+ if(!validQuad(quad)||area(quad)<.09||area(quad)>.76)return null;
+ return {quad,confidence:clamp(.80+(b.score-26)/220, .80,.93),status:'found',reason:'Quattro lati stimati sul bordo esterno della tessera',method:'card-edges'};
+}
+
+/* V49: physical-edge card detector. Unlike the v48 rectangle scorer, it
+ * measures the coloured plastic itself instead of enlarging a guessed box.
+ * Uses a tiny local binary-image morphology algorithm; no third-party upload.
+ * This detector is intentionally specific to cyan/blue ID-style cards on
+ * reasonably neutral backgrounds. Other documents use the existing pipeline. */
+function detectPreciseBlueCard(source){
+ const {w,h,rgba}=downsample(source,420),N=w*h;
+ if(w<110||h<140||h/w<1.15)return null;
+ const mask=new Uint8Array(N);
+ for(let i=0;i<N;i++){
+  const j=i*4,r=rgba[j],g=rgba[j+1],b=rgba[j+2];
+  const highest=Math.max(r,g,b),lowest=Math.min(r,g,b),delta=highest-lowest;
+  // Approx. blue Lab b*, chroma and hue selection; suppress gray desk texture.
+  let hue=0;
+  if(delta>0){if(highest===r)hue=60*((g-b)/delta+((g<b)?6:0));
+   else if(highest===g)hue=60*((b-r)/delta+2);else hue=60*((r-g)/delta+4);}
+  const sat=highest?delta*255/highest:0;
+  const cool=b-(r+g)*.5;
+  mask[i]=+(cool>6.2&&sat>14&&hue>150&&hue<310);
+ }
+ // Binary box morphology using summed area tables. Four constant-time passes.
+ function morph(src,rx,ry,dilate){
+  const stride=w+1,integral=new Int32Array((w+1)*(h+1));
+  for(let y=0;y<h;y++){
+   let row=0;for(let x=0;x<w;x++){row+=src[y*w+x];integral[(y+1)*stride+x+1]=row+integral[y*stride+x+1];}
+  }
+  const out=new Uint8Array(N);
+  for(let y=0;y<h;y++){
+   const y0=Math.max(0,y-ry),y1=Math.min(h-1,y+ry);
+   for(let x=0;x<w;x++){
+    const x0=Math.max(0,x-rx),x1=Math.min(w-1,x+rx),ones=integral[(y1+1)*stride+x1+1]-integral[y0*stride+x1+1]-integral[(y1+1)*stride+x0]+integral[y0*stride+x0];
+    out[y*w+x]=dilate?+(ones>0):+(ones===(2*rx+1)*(2*ry+1));
+   }
+  }
+  return out;
+ }
+ let bin=morph(morph(mask,3,2,false),3,2,true);
+ const closeX=Math.max(8,Math.round(w*.045)),closeY=Math.max(12,Math.round(h*.103));
+ bin=morph(morph(bin,closeX,closeY,true),closeX,closeY,false);
+ // Connected components; ignore thin desk lines or fragments of printed text.
+ const seen=new Uint8Array(N),queue=new Int32Array(N);let best=null;
+ for(let idx=0;idx<N;idx++){
+  if(!bin[idx]||seen[idx])continue;
+  let head=0,tail=1,xmin=w,xmax=0,ymin=h,ymax=0,number=0;queue[0]=idx;seen[idx]=1;
+  while(head<tail){const q=queue[head++],x=q%w,y=(q/w)|0;number++;
+   xmin=Math.min(xmin,x);xmax=Math.max(xmax,x);ymin=Math.min(ymin,y);ymax=Math.max(ymax,y);
+   if(x>0){const v=q-1;if(bin[v]&&!seen[v]){seen[v]=1;queue[tail++]=v;}}
+   if(x+1<w){const v=q+1;if(bin[v]&&!seen[v]){seen[v]=1;queue[tail++]=v;}}
+   if(y>0){const v=q-w;if(bin[v]&&!seen[v]){seen[v]=1;queue[tail++]=v;}}
+   if(y+1<h){const v=q+w;if(bin[v]&&!seen[v]){seen[v]=1;queue[tail++]=v;}}
+  }
+  const bw=xmax-xmin+1,bh=ymax-ymin+1,boxArea=bw*bh;
+  if(bh<h*.34||bw<w*.22||bh<h*.86&&number<.05*N||bh/bw<1.10||bh/bw>3.8||boxArea>.77*N||xmin<w*.065||xmax>w*.95||ymin<h*.045||ymax>h*.94)continue;
+  const score=number/N+boxArea/N*.15;
+  if(!best||score>best.score)best={xmin,xmax,ymin,ymax,number,score};
+ }
+ if(!best)return null;
+ // A reliable portrait ID-1 card has height/width ~= 1.586. The reverse of
+ // an ID can have a largely uncoloured MRZ side, so the blue segmented region
+ // may only cover 70-85% of the actual width; extend toward that uncoloured
+ // side rather than cutting a barcode or the entire MRZ.
+ let {xmin,xmax,ymin,ymax}=best;
+ const bh=ymax-ymin,measuredW=xmax-xmin,expectedW=bh/1.586;
+ const incomplete=best.number/((best.xmax-best.xmin)*(best.ymax-best.ymin))<.64;
+ const expanded=measuredW<expectedW*.91;
+ if(expanded){
+  const extra=expectedW-measuredW;
+  // The right edge on EU card backs is strongly blue while the left can be
+  // neutral white: keep the right edge fixed and reconstruct the left edge.
+  xmin-=extra;
+  ymax+=bh*.11; // Neutral MRZ strip extends below the last blue pixel.
+ }
+ if(incomplete&&!expanded){xmin-=Math.max(0,expectedW-measuredW);ymax+=bh*.11;}
+ if(measuredW>expectedW*1.14)return null;
+ // Tiny inward inset (<0.35% of card width) removes texture immediately
+ // outside the plastic without cutting the security print or MRZ.
+ const inset=Math.max(.2,Math.min(1.0,expectedW*.003));
+ xmin+=inset;xmax-=inset;ymin+=inset;ymax-=inset;
+ if(xmin<w*.018||xmax>w*.985||ymin<h*.015||ymax>h*.985)return null;
+ // Estimate slight camera roll from continuous chromatic side contours.
+ // When the samples are ambiguous, an axis-aligned safe estimate wins.
+ const band=(x0,x1,y0,y1)=>{
+  const pts=[];for(let y=Math.max(0,Math.round(y0));y<Math.min(h,Math.round(y1));y+=3){
+   let bx=-1;for(let x=Math.max(0,Math.round(x0));x<Math.min(w,Math.round(x1));x++){
+    if(mask[y*w+x]){bx=x;break;}}
+   if(bx>=0)pts.push([y,bx]);
+  }return pts;
+ };
+ let slope=0;
+ const side=band(xmin-5,xmin+12,ymin+bh*.17,ymax-bh*.17);
+ if(!expanded&&!incomplete&&side.length>bh*.11){
+  const ys=side.map(p=>p[0]),xs=side.map(p=>p[1]),mx=xs.reduce((a,b)=>a+b,0)/xs.length,my=ys.reduce((a,b)=>a+b,0)/ys.length;
+  let numer=0,denom=0;for(const [y,x] of side){numer+=(y-my)*(x-mx);denom+=(y-my)**2;}
+  if(denom>0){const test=numer/denom;if(Math.abs(test)<.055)slope=test;}
+ }
+ const midY=(ymin+ymax)*.5,midX=(xmin+xmax)*.5;
+ const width=xmax-xmin,height=ymax-ymin;
+ const tl={x:(midX-width/2+slope*(ymin-midY))/w,y:ymin/h};
+ const tr={x:(midX+width/2+slope*(ymin-midY))/w,y:ymin/h};
+ const br={x:(midX+width/2+slope*(ymax-midY))/w,y:ymax/h};
+ const bl={x:(midX-width/2+slope*(ymax-midY))/w,y:ymax/h};
+ const quad=[tl,tr,br,bl];
+ if(!validQuad(quad)||area(quad)<.09||area(quad)>.70)return null;
+ return {quad,confidence:.95,status:'found',cardLikely:true,method:'precise-color',cardBackLike:incomplete,reason:'Bordo fisico della carta identificato senza margine di sfondo'};
+}
+function documentShapeScore(q,w,h){
+ if(!validQuad(q))return 0;
+ const pts=q.map(p=>({x:p.x*w,y:p.y*h})),dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+ const ww=(dist(pts[0],pts[1])+dist(pts[2],pts[3]))/2,hh=(dist(pts[1],pts[2])+dist(pts[3],pts[0]))/2;
+ return Math.max(ww,hh)/Math.max(1,Math.min(ww,hh));
+}
+function detectDocument(source){
+ const exact=detectPreciseBlueCard(source);if(exact)return exact;
+ const color=detectChromaticCard(source),base=detect(source),edge=detectCenteredCard(source);
+ // Reject falsely confident base quadrilaterals when their shape matches
+ // neither a business card nor a sheet. A bad crop is worse than no crop.
+ const rated=[color,edge,base].filter(x=>x&&x.status==='found'&&validQuad(x.quad));
+ for(const candidate of rated){
+  const cardRatio=documentShapeScore(candidate.quad,source.width,source.height);
+  const coverage=area(candidate.quad);
+  if(cardRatio>=1.43&&cardRatio<=1.94&&coverage>=.08&&coverage<=.84)return {...candidate,cardLikely:true};
+ }
+ // The old paper detector is still available for genuine A4 scans, but
+ // only if the rectangle is entirely inside the photo.
+ if(base.status==='found'&&area(base.quad)>.15&&base.quad.every(p=>p.x>.018&&p.x<.982&&p.y>.018&&p.y<.982))return {...base,cardLikely:false};
+ return {quad:defaultQuad(),confidence:0,status:'uncertain',reason:'Contorno ambiguo: mantengo la foto intera per non perdere dati.'};
+}
+
+function detect(source){
+ const {w,h,rgba}=downsample(source);const N=w*h,luma=new Uint8Array(N),hist=new Uint32Array(256),edgeHist=new Uint32Array(256),centerHist=new Uint32Array(256);let edges=0,centers=0;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x,j=i*4,r=rgba[j],g=rgba[j+1],b=rgba[j+2],v=Math.round(.2126*r+.7152*g+.0722*b);luma[i]=v;hist[v]++;if(x<Math.max(3,w*.045)||x>=w-Math.max(3,w*.045)||y<Math.max(3,h*.045)||y>=h-Math.max(3,h*.045)){edgeHist[v]++;edges++}if(x>=w*.25&&x<w*.75&&y>=h*.25&&y<h*.75){centerHist[v]++;centers++}}
+ const edge=histogramMedian(edgeHist,edges),center=histogramMedian(centerHist,centers),global=otsuThreshold(hist,N),bright=center>edge+14,dark=center<edge-25;
+ if(!bright&&!dark)return {quad:defaultQuad(),confidence:0,status:'uncertain',reason:'Foglio e sfondo hanno colori troppo simili. Puoi impostare i quattro angoli manualmente.'};
+ // Only use confident bright-paper segmentation; negative contrast is harder to distinguish from shadow/text.
+ const contrast=Math.abs(center-edge);
+ const threshold=bright?clamp(Math.max(global,edge+Math.max(10,contrast*.30)),edge+8,245):clamp(Math.min(global,edge-Math.max(10,contrast*.30)),10,edge-8);
+ const pixels=new Uint8Array(N);
+ for(let i=0;i<N;i++)pixels[i]=bright?+(luma[i]>=threshold):+(luma[i]<=threshold);
+ // A median-style hole fill bridges print strokes without turning distant background into the page.
+ const mask=new Uint8Array(pixels);for(let y=2;y<h-2;y++)for(let x=2;x<w-2;x++){let i=y*w+x;if(pixels[i])continue;let neighbors=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)neighbors+=pixels[i+dy*w+dx];if(neighbors>=7)mask[i]=1}
+ const visited=new Uint8Array(N),queue=new Int32Array(N);let best=null;const MIN_SIZE=Math.floor(N*.12);
+ for(let origin=0;origin<N;origin++){
+ if(visited[origin]||!mask[origin])continue;let tail=0,head=0;queue[tail++]=origin;visited[origin]=1;let minX=w,maxX=0,minY=h,maxY=0,edgeCount=0;const corners=[null,null,null,null],scores=[Infinity,-Infinity,-Infinity,Infinity];
+ while(head<tail){const p=queue[head++],x=p%w,y=(p/w)|0;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);if(x<3||y<3||x>w-4||y>h-4)edgeCount++;
+ const z=x+y,d=x-y;if(z<scores[0]){scores[0]=z;corners[0]={x,y}}if(d>scores[1]){scores[1]=d;corners[1]={x,y}}if(z>scores[2]){scores[2]=z;corners[2]={x,y}}if(d<scores[3]){scores[3]=d;corners[3]={x,y}};
+ for(const next of [p-1,p+1,p-w,p+w]){if(next<0||next>=N||visited[next]||!mask[next]||(Math.abs(next-p)===1&&((next/w)|0)!==y))continue;visited[next]=1;queue[tail++]=next;}
+ }
+ if(tail<MIN_SIZE)continue;
+ const box=(maxX-minX)*(maxY-minY)/N,filled=tail/N,edgeFrac=edgeCount/tail,quad=normalize(corners,w,h),qa=area(quad),convex=validQuad(quad);
+ const sideLengths=corners.map((p,i)=>Math.hypot(p.x-corners[(i+1)%4].x,p.y-corners[(i+1)%4].y)),minSide=Math.min(...sideLengths);
+ if(!convex||minSide<Math.min(w,h)*.17||qa<.12||qa>.96||filled>.96||box>.97||edgeFrac>.11)continue;
+ const coverage=filled/qa;if(coverage<.42||coverage>1.20)continue;
+ const score=qa*1.5+clamp(coverage,0,1)*.25+Math.min(contrast,90)/200-edgeFrac*2;
+ if(!best||score>best.score)best={quad,qa,box,filled,coverage,score,edgeFrac};
+ }
+ if(!best)return {quad:defaultQuad(),confidence:0,status:'uncertain',reason:'Non ho trovato un contorno chiuso affidabile. Usa i quattro punti per selezionare il foglio.'};
+ const geometry=clamp((best.coverage-.42)/.4,0,1),contrastScore=clamp((contrast-14)/50,0,1),borderScore=clamp(1-best.edgeFrac*10,0,1);
+ const confidence=clamp(.30+geometry*.34+contrastScore*.27+borderScore*.09,0,1);
+ const confident=confidence>=.86 && best.qa>.18 && best.qa<.92;
+ return {quad:best.quad,confidence,status:confident?'found':'uncertain',reason:confident?'Foglio rilevato. Controlla il risultato e, se serve, regola gli angoli.':'Ho trovato un possibile foglio, ma il risultato va controllato. Non applico tagli automatici.'};
+}
+/* Card detector: background-relative chroma segmentation, rather than a
+   single global brightness threshold. This detects separate coloured cards
+   on light desks even when the photo contains two different documents.
+   It is intentionally conservative: ambiguous contours require manual crop. */
+function detectAllLegacy(source){
+ const {w,h,rgba}=downsample(source,420),size=w*h;
+ if(w<65||h<65)return [];
+ const cb=new Float32Array(size),cr=new Float32Array(size);
+ const histCb=new Uint32Array(256),histCr=new Uint32Array(256),margin=Math.max(3,Math.round(Math.min(w,h)*.047));
+ let borderN=0;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const i=y*w+x,k=i*4,r=rgba[k],g=rgba[k+1],b=rgba[k+2];
+  cb[i]=128-.168736*r-.331264*g+.5*b;
+  cr[i]=128+.5*r-.418688*g-.081312*b;
+  if(x<margin||x>=w-margin||y<margin||y>=h-margin){
+   histCb[clamp(Math.round(cb[i]),0,255)]++;
+   histCr[clamp(Math.round(cr[i]),0,255)]++;
+   borderN++;
+  }
+ }
+ const backgroundCb=histogramMedian(histCb,borderN),backgroundCr=histogramMedian(histCr,borderN);
+ const threshold=11.5,original=new Uint8Array(size);
+ for(let i=0;i<size;i++)original[i]=+(Math.hypot(cb[i]-backgroundCb,cr[i]-backgroundCr)>threshold);
+ // A separable close fills text/barcode interruptions without joining cards
+ // separated by a meaningful strip of background.
+ function morphology(bits,radius,dilate){
+  const horizontal=new Uint8Array(size),out=new Uint8Array(size);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   let matches=0;for(let dx=-radius;dx<=radius;dx++)if(bits[y*w+clamp(x+dx,0,w-1)])matches++;
+   horizontal[y*w+x]=dilate?+(matches>0):+(matches===2*radius+1);
+  }
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   let matches=0;for(let dy=-radius;dy<=radius;dy++)if(horizontal[clamp(y+dy,0,h-1)*w+x])matches++;
+   out[y*w+x]=dilate?+(matches>0):+(matches===2*radius+1);
+  }
+  return out;
+ }
+ const closed=morphology(morphology(original,4,true),4,false),seen=new Uint8Array(size),queue=new Int32Array(size),candidates=[];
+ for(let start=0;start<size;start++){
+  if(!closed[start]||seen[start])continue;
+  seen[start]=1;let head=0,tail=1;queue[0]=start;
+  let minX=w,maxX=0,minY=h,maxY=0,borderHits=0,chromatic=0;
+  const extremes=[null,null,null,null],scores=[Infinity,-Infinity,-Infinity,Infinity];
+  while(head<tail){
+   const p=queue[head++],x=p%w,y=(p/w)|0;
+   minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+   if(x<=2||x>=w-3||y<=2||y>=h-3)borderHits++;
+   chromatic+=Math.hypot(cb[p]-backgroundCb,cr[p]-backgroundCr);
+   const sum=x+y,diff=x-y;
+   if(sum<scores[0]){scores[0]=sum;extremes[0]={x,y}}
+   if(diff>scores[1]){scores[1]=diff;extremes[1]={x,y}}
+   if(sum>scores[2]){scores[2]=sum;extremes[2]={x,y}}
+   if(diff<scores[3]){scores[3]=diff;extremes[3]={x,y}}
+   for(const next of [p-1,p+1,p-w,p+w]){
+    if(next<0||next>=size||seen[next]||!closed[next]||(Math.abs(next-p)===1&&((next/w)|0)!==y))continue;
+    seen[next]=1;queue[tail++]=next;
+   }
+  }
+  const bw=maxX-minX+1,bh=maxY-minY+1,rectArea=bw*bh,relative=rectArea/size,coverage=tail/rectArea,ratio=bw/bh;
+  if(relative<.035||relative>.83||coverage<.48||ratio<.48||ratio>2.7||borderHits>tail*.07)continue;
+  // Corner expansion compensates for rounded card edges and imperfect lighting.
+  const center={x:(minX+maxX)/2,y:(minY+maxY)/2};
+  const quad=extremes.map(p=>({x:clamp((center.x+(p.x-center.x)*1.035)/Math.max(1,w-1),0,1),y:clamp((center.y+(p.y-center.y)*1.035)/Math.max(1,h-1),0,1)}));
+  const qa=area(quad);if(!validQuad(quad)||qa<.028)continue;
+  const confidence=clamp(.55+Math.min(.18,(chromatic/tail-12)/85)+Math.min(.18,(coverage-.48)*.50)+Math.min(.07,relative/2),0,.98);
+  candidates.push({quad,confidence,status:confidence>=.69?'found':'uncertain',box:{x:minX/w,y:minY/h,width:bw/w,height:bh/h},relative});
+ }
+ candidates.sort((a,b)=>b.relative-a.relative);
+ const independent=[];
+ for(const item of candidates){
+  if(independent.some(existing=>{
+   const a=item.box,b=existing.box,x=Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)),y=Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y));
+   return x*y/Math.min(a.width*a.height,b.width*b.height)>.48;
+  }))continue;
+  independent.push(item);if(independent.length===8)break;
+ }
+ return independent.sort((a,b)=>a.box.y-b.box.y||a.box.x-b.box.x);
+}
+
+/* Conservative 2026 card grouping. A single connected contour may include two
+   touching cards; reject text fragments and recover their separate rectangles.
+   Never silently split a generic sheet if card geometry is not supported. */
+function detectSolidColorCards(source){
+  const {w,h,rgba}=downsample(source,360),pts=[];
+  // Work against a robust border colour rather than an absolute hue.
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   if(!((x<w*.07||x>w*.93)&&(y<h*.07||y>h*.93)))continue;
+   const i=(y*w+x)*4;pts.push([rgba[i],rgba[i+1],rgba[i+2]]);
+  }
+  if(pts.length<5)return [];
+  const med=values=>{values.sort((a,b)=>a-b);return values[values.length>>1]};
+  const ref=[0,1,2].map(j=>med(pts.map(p=>p[j])));
+  const mask=new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++){const j=i*4,r=rgba[j]-ref[0],g=rgba[j+1]-ref[1],b=rgba[j+2]-ref[2];mask[i]=+(r*r+g*g+b*b>44*44)}
+  const seen=new Uint8Array(w*h),queue=new Int32Array(w*h),boxes=[];
+  for(let pos=0;pos<w*h;pos++){
+   if(!mask[pos]||seen[pos])continue;
+   let head=0,tail=1,minX=w,maxX=0,minY=h,maxY=0,borders=0;queue[0]=pos;seen[pos]=1;
+   while(head<tail){const n=queue[head++],x=n%w,y=(n/w)|0;
+    minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+    if(x<2||y<2||x>=w-2||y>=h-2)borders++;
+    for(const q of [n-1,n+1,n-w,n+w]){if(q<0||q>=w*h||seen[q]||!mask[q]||(Math.abs(q-n)===1&&((q/w)|0)!==y))continue;seen[q]=1;queue[tail++]=q;}
+   }
+   const bw=maxX-minX+1,bh=maxY-minY+1,ratio=bw/bh,coverage=tail/(bw*bh),rel=bw*bh/(w*h);
+   if(rel<.07||rel>.65||coverage<.53||ratio<.42||ratio>2.8||borders>tail*.11)continue;
+   const pad=2.5,x=clamp((minX-pad)/w,0,1),y=clamp((minY-pad)/h,0,1),rx=clamp((maxX+pad)/w,0,1),ry=clamp((maxY+pad)/h,0,1);
+   boxes.push({quad:[{x,y},{x:rx,y},{x:rx,y:ry},{x,y:ry}],confidence:.82,status:'found',box:{x,y,width:rx-x,height:ry-y},size:rel});
+  }
+  return boxes.sort((a,b)=>b.size-a.size).slice(0,5).sort((a,b)=>a.box.y-b.box.y||a.box.x-b.box.x);
+}
+function detectAll(source){
+ const raw=detectAllLegacy(source),w=source.width,h=source.height;
+ const rect=(x,y,rw,rh,confidence=.76)=>{
+  x=clamp(x,0,.99);y=clamp(y,0,.99);rw=clamp(rw,.005,1-x);rh=clamp(rh,.005,1-y);
+  return {quad:[{x,y},{x:x+rw,y},{x:x+rw,y:y+rh},{x,y:y+rh}],confidence,status:'found',box:{x,y,width:rw,height:rh}};
+ };
+ const card=a=>{const bw=a.box.width*w,bh=a.box.height*h,ratio=bw/bh;return a.box.width>.45 && a.box.height>.11 && ratio>1.17 && ratio<2.35 && a.box.width*a.box.height>.09};
+ const valid=raw.filter(card);
+ const colored=detectSolidColorCards(source);
+ if(colored.length>=2)return colored;
+ if(valid.length>=2){
+  const top=valid.slice().sort((a,b)=>b.box.width*b.box.height-a.box.width*a.box.height).slice(0,4);
+  const unique=[];for(const r of top){if(unique.some(q=>{const a=r.box,b=q.box;const dx=Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)),dy=Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y));return dx*dy/Math.min(a.width*a.height,b.width*b.height)>.15}))continue;unique.push(r)}
+  if(unique.length>=2)return unique.sort((a,b)=>a.box.y-b.box.y||a.box.x-b.box.x);
+ }
+ const largest=raw.slice().sort((a,b)=>b.box.width*b.box.height-a.box.width*a.box.height)[0];
+ if(largest){
+  const b=largest.box,bw=b.width*w,bh=b.height*h;
+  // Two landscape cards joined into one vertical contour.
+  if(b.width>.60 && b.height>.36 && bw/bh>.64 && bw/bh<1.13 && b.width*b.height>.28){
+   const cut=b.y+b.height*.48;
+   return [rect(b.x,b.y,b.width,cut-b.y+.002),rect(b.x,cut+.002,b.width,b.y+b.height-cut-.002)];
+  }
+  // Broken segmentation: one complete lower card and only text fragments above.
+  const lower=valid.find(v=>v.box.y>.29&&v.box.width>.67);
+  const above=lower&&raw.filter(r=>r!==lower&&r.box.y+r.box.height<lower.box.y+.04&&r.box.y<lower.box.y);
+  if(lower&&above.length){
+   const box=lower.box,estH=(box.width*w/1.66)/h;
+   const y1=Math.max(.008,box.y-estH);
+   if(box.y-y1>.13)return [rect(box.x, y1,box.width,box.y-y1+.003,.76),lower].sort((a,b)=>a.box.y-b.box.y);
+  }
+ }
+ if(!valid.length){
+  const texture=detectCardByTexture(source);
+  if(texture)return [texture];
+ }
+ return valid;
+}
+function detectCardByTexture(source){
+  // Texture identifies a single horizontal ID card on a near-uniform desk.
+  // It never guesses if the supposed card touches image top/bottom boundaries.
+  const {w,h,rgba}=downsample(source,260);if(h<90||w<70)return null;
+  const rowStd=[],rowEdge=[];
+  for(let y=0;y<h;y++){
+   let sum=0,sumSq=0,edges=0,n=0,last=0;
+   for(let x=Math.round(w*.12);x<Math.round(w*.88);x++){
+    const off=(y*w+x)*4,val=rgba[off]*.299+rgba[off+1]*.587+rgba[off+2]*.114;
+    sum+=val;sumSq+=val*val;if(n)edges+=Math.abs(val-last);last=val;n++;
+   }
+   rowStd[y]=Math.sqrt(Math.max(0,sumSq/n-(sum/n)**2));rowEdge[y]=edges/n;
+  }
+  const med=arr=>{const ordered=arr.slice().sort((a,b)=>a-b);return ordered[Math.floor(ordered.length/2)]||0;};
+  const edges=[...rowStd.slice(0,Math.ceil(h*.15)),...rowStd.slice(Math.floor(h*.85))];
+  const eEdges=[...rowEdge.slice(0,Math.ceil(h*.15)),...rowEdge.slice(Math.floor(h*.85))];
+  const thresholdStd=med(edges)+Math.max(7,med(edges)*.55);
+  const thresholdEdge=med(eEdges)+Math.max(3,med(eEdges)*.9);
+  const scores=rowStd.map((s,i)=>s>thresholdStd||rowEdge[i]>thresholdEdge);
+  let bands=[],begin=-1,last=-1;
+  for(let y=0;y<h;y++){if(!scores[y])continue;if(begin<0)begin=y;else if(y-last>Math.ceil(h*.085)){bands.push([begin,last]);begin=y;}last=y;}
+  if(begin>=0)bands.push([begin,last]);
+  bands=bands.filter(b=>b[1]-b[0]>h*.08).sort((a,b)=>(b[1]-b[0])-(a[1]-a[0]));
+  if(!bands.length)return null;
+  const [start,end]=bands[0],span=(end-start)/h;
+  if(span<.23||start<h*.16||start>h*.43||end>h*.92||source.height/source.width<1.3)return null;
+  const bw=w*.95,bh=(end-start)*source.height/h*(w/source.width);
+  if(bw/(end-start)<.72)return null;
+  const y0=clamp(start/h-.017,.002,.998),y1=clamp(y0+(source.width*.965/1.57)/source.height+.022,.002,.998);
+  if((source.width*.95)/((y1-y0)*source.height)<1.15)return null;
+  const x0=.018,x1=.982;
+  const quad=[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}];
+  return {quad,box:{x:x0,y:y0,width:x1-x0,height:y1-y0},confidence:.82,status:'found'};
+}
+function getCanvas(file,max=2250){return new Promise((resolve,reject)=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{URL.revokeObjectURL(u);const scale=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*scale));c.height=Math.max(1,Math.round(im.naturalHeight*scale));c.getContext('2d',{willReadFrequently:true}).drawImage(im,0,0,c.width,c.height);resolve(c)};im.onerror=()=>{URL.revokeObjectURL(u);reject(Error('Immagine non leggibile.'))};im.src=u})}
+function resize(c,limit){if(Math.max(c.width,c.height)<=limit)return c;let s=limit/Math.max(c.width,c.height),o=document.createElement('canvas');o.width=Math.max(1,Math.round(c.width*s));o.height=Math.max(1,Math.round(c.height*s));o.getContext('2d',{willReadFrequently:true}).drawImage(c,0,0,o.width,o.height);return o}
+function rotate(c,deg){let a=(deg%360+360)%360;if(!a)return c;const o=document.createElement('canvas'),swap=a%180!==0;o.width=swap?c.height:c.width;o.height=swap?c.width:c.height;const ctx=o.getContext('2d',{willReadFrequently:true});ctx.translate(o.width/2,o.height/2);ctx.rotate(a*Math.PI/180);ctx.drawImage(c,-c.width/2,-c.height/2);return o}
+function getMatrix(src,dst){const a=[];for(let i=0;i<4;i++){let {x:u,y:v}=src[i],{x,y}=dst[i];a.push([x,y,1,0,0,0,-u*x,-u*y,u]);a.push([0,0,0,x,y,1,-v*x,-v*y,v])}for(let col=0;col<8;col++){let best=col;for(let r=col+1;r<8;r++)if(Math.abs(a[r][col])>Math.abs(a[best][col]))best=r;if(Math.abs(a[best][col])<1e-9)throw Error('Bordi del foglio non validi');[a[col],a[best]]=[a[best],a[col]];const v=a[col][col];for(let k=col;k<=8;k++)a[col][k]/=v;for(let r=0;r<8;r++)if(r!==col){let factor=a[r][col];for(let k=col;k<=8;k++)a[r][k]-=factor*a[col][k]}}return [...a.map(row=>row[8]),1]}
+function perspective(source,quad,limit=4200){if(!validQuad(quad)||area(quad)<.025)throw Error('Quattro angoli non validi: controlla il ritaglio.');const src=quad.map(p=>({x:p.x*(source.width-1),y:p.y*(source.height-1)})),distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),wide=Math.max(distance(src[0],src[1]),distance(src[2],src[3])),high=Math.max(distance(src[1],src[2]),distance(src[3],src[0]));if(wide<35||high<35)throw Error('Ritaglio troppo piccolo');const s=Math.min(1,limit/Math.max(wide,high)),w=Math.max(1,Math.round(wide*s)),h=Math.max(1,Math.round(high*s));
+ // Do not blur a straight document: native-pixel rectangle instead of perspective resampling.
+ const axis=Math.max(Math.abs(src[0].y-src[1].y),Math.abs(src[2].y-src[3].y),Math.abs(src[0].x-src[3].x),Math.abs(src[1].x-src[2].x));
+ if(axis<.75 && s===1){
+  const x=Math.max(0,Math.ceil(Math.min(src[0].x,src[3].x))),y=Math.max(0,Math.ceil(Math.min(src[0].y,src[1].y)));
+  const right=Math.min(source.width,Math.floor(Math.max(src[1].x,src[2].x))+1),bottom=Math.min(source.height,Math.floor(Math.max(src[2].y,src[3].y))+1);
+  if(right>x+35&&bottom>y+35){const out=document.createElement('canvas');out.width=right-x;out.height=bottom-y;const g=out.getContext('2d',{willReadFrequently:true});g.putImageData(source.getContext('2d',{willReadFrequently:true}).getImageData(x,y,out.width,out.height),0,0);return out}
+ }
+ const dst=[{x:0,y:0},{x:w-1,y:0},{x:w-1,y:h-1},{x:0,y:h-1}],H=getMatrix(src,dst),[a,b,c,d,e,f,g,k]=H,from=source.getContext('2d',{willReadFrequently:true}).getImageData(0,0,source.width,source.height).data,to=document.createElement('canvas');to.width=w;to.height=h;const ctx=to.getContext('2d',{willReadFrequently:true}),image=ctx.createImageData(w,h),out=image.data,W=source.width,Ht=source.height;
+ for(let y=0;y<h;y++){for(let x=0;x<w;x++){const v=g*x+k*y+1,sx=(a*x+b*y+c)/v,sy=(d*x+e*y+f)/v,j=(y*w+x)*4;if(!Number.isFinite(sx)||sx<0||sx>=W-1||sy<0||sy>=Ht-1){out[j]=out[j+1]=out[j+2]=out[j+3]=255;continue}let ix=sx|0,iy=sy|0,rx=sx-ix,ry=sy-iy,i=(iy*W+ix)*4,row=W*4;for(let ch=0;ch<3;ch++)out[j+ch]=from[i+ch]*(1-rx)*(1-ry)+from[i+4+ch]*rx*(1-ry)+from[i+row+ch]*(1-rx)*ry+from[i+row+4+ch]*rx*ry;out[j+3]=255}}ctx.putImageData(image,0,0);return to}
+/* V7: document illumination model. Estimate local paper brightness on a
+   downscaled image using per-cell high percentiles, then interpolate a smooth
+   lighting field. Avoid sharpening halos and preserve dark strokes. */
+function backgroundModel(canvas){
+ const sampled=downsample(canvas,288),{w,h,rgba}=sampled,step=14,nx=Math.ceil(w/step),ny=Math.ceil(h/step),field=new Float32Array(nx*ny);
+ const tones=new Uint8Array(w*h);
+ for(let i=0;i<tones.length;i++){const j=i*4;tones[i]=Math.round(.2126*rgba[j]+.7152*rgba[j+1]+.0722*rgba[j+2]);}
+ for(let cy=0;cy<ny;cy++)for(let cx=0;cx<nx;cx++){
+  const hist=new Uint16Array(256);let n=0;
+  for(let y=cy*step;y<Math.min(h,(cy+1)*step);y++)for(let x=cx*step;x<Math.min(w,(cx+1)*step);x++){hist[tones[y*w+x]]++;n++}
+  let cumulative=0,v=255;const cutoff=n*.88;
+  for(let i=0;i<256;i++){cumulative+=hist[i];if(cumulative>=cutoff){v=i;break}}
+  field[cy*nx+cx]=v;
+ }
+ // Smooth high-percentile estimates to suppress isolated text/picture tiles.
+ let smooth=field;
+ for(let pass=0;pass<3;pass++){
+  const next=new Float32Array(smooth.length);
+  for(let y=0;y<ny;y++)for(let x=0;x<nx;x++){
+   let sum=0,weight=0;
+   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    const xx=clamp(x+dx,0,nx-1),yy=clamp(y+dy,0,ny-1),k=dx===0?(dy===0?4:2):(dy===0?2:1);
+    sum+=smooth[yy*nx+xx]*k;weight+=k;
+   }
+   next[y*nx+x]=sum/weight;
+  }
+  smooth=next;
+ }
+ const sorted=Array.from(smooth).sort((a,b)=>a-b),p10=sorted[Math.floor((sorted.length-1)*.1)],p85=sorted[Math.floor((sorted.length-1)*.85)],p96=sorted[Math.floor((sorted.length-1)*.96)];
+ // Never force an already evenly illuminated photograph to paper white.
+ const target=clamp(p85,175,241),variation=p85-p10;
+ return {w,h,nx,ny,step,field:smooth,target,variation,ambient:p96,
+  sample(x,y){
+   const fx=clamp(x*w/canvas.width/step-.5,0,nx-1),fy=clamp(y*h/canvas.height/step-.5,0,ny-1);
+   const ix=Math.floor(fx),iy=Math.floor(fy),xx=Math.min(nx-1,ix+1),yy=Math.min(ny-1,iy+1),a=fx-ix,b=fy-iy;
+   return smooth[iy*nx+ix]*(1-a)*(1-b)+smooth[iy*nx+xx]*a*(1-b)+smooth[yy*nx+ix]*(1-a)*b+smooth[yy*nx+xx]*a*b;
+  }};
+}
+function filter(c,mode,strength=65){
+ if(mode==='original'||(['smart','shadow'].includes(mode)&&Number(strength)<=0))return c;
+ // Always duplicate the pixels: switching filters must never damage originals.
+ const out=document.createElement('canvas');out.width=c.width;out.height=c.height;
+ const ctx=out.getContext('2d',{willReadFrequently:true});ctx.drawImage(c,0,0);
+ const im=ctx.getImageData(0,0,out.width,out.height),p=im.data;
+ const model=['smart','shadow','bw'].includes(mode)?backgroundModel(out):null;
+ const strength01=clamp(Number(strength)||0,0,100)/100;
+ const power=(mode==='shadow'?.48:.31)+strength01*(mode==='shadow'?.8:.58);
+ const w=out.width,h=out.height;
+ // Expensive illumination interpolation and Math.pow are NOT repeated for every pixel.
+ // The background field is smooth by design: interpolate it every 12 px and use
+ // a 256-entry gain table. Dark text still keeps its per-pixel preservation mask.
+ const correction=mode==='shadow'||mode==='smart';
+ let gainTable=null,need=0,contrast=correction?(mode==='shadow'?1.035:1.015):1;
+ if(correction){
+  need=clamp((model.variation-7)/25,0,1);
+  const maxGain=mode==='shadow'?1.75:1.42;
+  gainTable=new Float32Array(256);
+  for(let value=0;value<256;value++){
+   gainTable[value]=clamp(Math.pow(Math.max(1,model.target/Math.max(value,35)),power)*need+(1-need),1,maxGain);
+  }
+ }
+ const interpolateStep=12;
+ for(let y=0;y<h;y++){
+  let left=0,right=0,slope=0;
+  for(let x=0;x<w;x++){
+   if(model && x%interpolateStep===0){
+    left=model.sample(x,y);right=model.sample(Math.min(w-1,x+interpolateStep),y);
+    slope=(right-left)/interpolateStep;
+   }
+   const i=(y*w+x)*4,r=p[i],g=p[i+1],b=p[i+2],lum=.2126*r+.7152*g+.0722*b;
+   if(mode==='gray'){p[i]=p[i+1]=p[i+2]=Math.round(lum);continue}
+   if(mode==='natural'){
+    p[i]=clamp(Math.round((r-128)*1.025+129),0,255);
+    p[i+1]=clamp(Math.round((g-128)*1.025+129),0,255);
+    p[i+2]=clamp(Math.round((b-128)*1.025+129),0,255);continue;
+   }
+   if(model){
+    const local=left+slope*(x%interpolateStep);
+    if(mode==='bw'){
+     const threshold=clamp(local*.77,95,205),t=clamp((lum-threshold+18)/36,0,1);
+     p[i]=p[i+1]=p[i+2]=Math.round(255*t*t*(3-2*t));continue;
+    }
+    const desired=gainTable[clamp(Math.round(local),0,255)];
+    const ink=clamp((lum-25)/100,.28,1),gain=1+(desired-1)*ink;
+    p[i]=clamp(Math.round((r*gain-128)*contrast+128),0,255);
+    p[i+1]=clamp(Math.round((g*gain-128)*contrast+128),0,255);
+    p[i+2]=clamp(Math.round((b*gain-128)*contrast+128),0,255);
+   }
+  }
+ }
+ ctx.putImageData(im,0,0);return out;
+}
+function process(source,state,limit=1200){
+ // On preview-only crops, sampling the entire decoded photo is unnecessary.
+ // Geometry uses normalized corners, so scaling source first is equivalent
+ // within the preview's resolution and saves bandwidth/allocations.
+ const src=state.crop&&limit<=1300&&Math.max(source.width,source.height)>limit*1.35
+  ?resize(source,Math.round(limit*1.35)):source;
+ let canvas=state.crop?perspective(src,state.quad,limit):resize(src,limit);
+ canvas=rotate(canvas,state.rotation||0);
+ return filter(canvas,state.filter||'original',state.strength??65);
+}
+function analyzeLighting(canvas){const m=backgroundModel(canvas);return {variation:Math.round(m.variation),uneven:m.variation>=18,adequate:m.variation<9};}
+function qualityCanvas(canvas,quality=.96){const opaque=document.createElement('canvas');opaque.width=canvas.width;opaque.height=canvas.height;const ctx=opaque.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,opaque.width,opaque.height);ctx.drawImage(canvas,0,0);return new Promise((resolve,reject)=>opaque.toBlob(blob=>{opaque.width=opaque.height=0;blob?resolve(blob):reject(Error('Esportazione immagine fallita'))},'image/jpeg',quality))}
+window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCenteredCard,documentShapeScore,detectChromaticCard,detectAll,process,getCanvas,qualityCanvas,area,validQuad,defaultQuad,resize,analyzeLighting,backgroundModel};
+})();
+</script><script>/* DocFix 25 — precautionary validation for PDFs before edits.
+ * Heuristic recognition is NOT cryptographic signature verification.
+ * This module only reads local File bytes; no upload, storage or logging.
+ */
+(()=>{'use strict';
+ const cache=new WeakMap();
+ const MAX_BYTES=90*1048576;
+ const validPdf=file=>file && (file.type==='application/pdf'||/\.pdf$/i.test(file.name||''));
+ const latin=new TextDecoder('latin1');
+ function error(code,message){const e=new Error(message);e.code=code;return e}
+ async function inspect(file){
+  if(!validPdf(file))throw error('FORMAT','È necessario un file PDF.');
+  if(file.size<24)throw error('BROKEN','PDF vuoto o incompleto: prova a scaricare nuovamente l’originale.');
+  if(file.size>MAX_BYTES)throw error('SIZE','PDF troppo grande per un controllo sicuro su questo dispositivo.');
+  // The common file sniff also protects direct entries to PDF-only tools.
+  if(window.DocFixSecurity)await window.DocFixSecurity.file(file,{maxBytes:MAX_BYTES});
+  const saved=cache.get(file);if(saved)return saved;
+  const job=(async()=>{
+   const header=latin.decode(await file.slice(0,1024).arrayBuffer());
+   if(!/%PDF-(?:1\.[0-7]|2\.0)\b/.test(header))throw error('BROKEN','Il file non ha un’intestazione PDF valida: potrebbe essere danneggiato o avere un’estensione errata.');
+   const tail=latin.decode(await file.slice(Math.max(0,file.size-8192)).arrayBuffer());
+   if(!/%%EOF(?:\s|\x00)*$/.test(tail))throw error('BROKEN','Il PDF sembra incompleto: manca il marcatore finale. Scarica nuovamente il documento.');
+   const found={signature:false,signatureField:false,encrypted:false,form:false,xfa:false,attachment:false,script:false,incremental:false};
+   let previous='';let eofCount=0;
+   // Streaming scan: bounded memory, catches tokens across chunk boundaries.
+   for(let offset=0;offset<file.size;offset+=256*1024){
+    const block=latin.decode(await file.slice(offset,Math.min(file.size,offset+256*1024)).arrayBuffer());
+    const s=previous+block;
+    if(/\/ByteRange\s*\[\s*\d+\s+\d+\s+\d+\s+\d+\s*\]/.test(s) || /\/SubFilter\s*\/(?:adbe\.pkcs7|ETSI\.(?:CAdES|RFC3161))/.test(s))found.signature=true;
+    if(/\/FT\s*\/Sig\b|\/Type\s*\/Sig\b/.test(s))found.signatureField=true;
+    if(/\/Encrypt\s+(?:\d+\s+\d+\s+R|<<)|\/Filter\s*\/Standard\b/.test(s))found.encrypted=true;
+    if(/\/AcroForm\b/.test(s))found.form=true;
+    if(/\/XFA\b/.test(s))found.xfa=true;
+    if(/\/EmbeddedFiles?\b|\/Type\s*\/EmbeddedFile\b/.test(s))found.attachment=true;
+    if(/\/JavaScript\b|\/OpenAction\b|\/Launch\b/.test(s))found.script=true;
+    // Avoid double-counting the overlapped text from the previous chunk.
+    const start=offset===0?0:Math.max(0,previous.length-8);
+    eofCount+=(s.slice(start).match(/%%EOF\b/g)||[]).length;
+    previous=s.slice(-512);
+    if(offset%(1024*1024)===0)await new Promise(resolve=>setTimeout(resolve,0));
+   }
+   found.incremental=eofCount>1;
+   const signals=[];
+   if(found.signature||found.signatureField)signals.push('firma digitale o campo firma');
+   if(found.encrypted)signals.push('protezione o cifratura');
+   if(found.xfa)signals.push('moduli dinamici XFA');
+   else if(found.form)signals.push('campi modulo');
+   if(found.attachment)signals.push('allegati incorporati');
+   if(found.script)signals.push('azioni interattive');
+   if(found.incremental)signals.push('revisioni incrementali');
+   return Object.freeze({fileName:file.name,signals:Object.freeze(signals),...found});
+  })();
+  cache.set(file,job);
+  try{return await job}catch(e){cache.delete(file);throw e}
+ }
+ async function readable(file){const report=await inspect(file);if(report.encrypted)throw error('ENCRYPTED','PDF protetto o cifrato: questa versione non può aprirlo o modificarlo in sicurezza. Usa una copia non protetta ottenuta con autorizzazione.');return report}
+ async function editable(file,operation='modificare il PDF'){
+  const report=await readable(file);
+  if(report.signature||report.signatureField)throw error('SIGNED','Possibile firma digitale rilevata: modifica bloccata per non invalidarla. Verifica la firma in un lettore dedicato e utilizza una copia non firmata per '+operation+'.');
+  if(report.xfa)throw error('XFA','Modulo dinamico XFA: modifica bloccata perché i dati potrebbero scomparire. Esporta prima una copia piatta con un programma compatibile.');
+  if(report.form||report.attachment||report.script){
+   const details=[report.form?'campi modulo':null,report.attachment?'allegati':null,report.script?'azioni interattive':null].filter(Boolean).join(', ');
+   if(!window.confirm('ATTENZIONE: «'+file.name+'» contiene indizi di '+details+'.\n\nUna nuova copia modificata potrebbe perderli. La validità di eventuali firme NON è verificata automaticamente.\n\nVuoi creare comunque una COPIA? L’originale rimane intatto.'))throw error('CANCELLED','Operazione annullata: il documento originale non è stato modificato.');
+  }
+  return report;
+ }
+ async function allEditable(files,operation){for(const file of files){if(validPdf(file))await editable(file,operation)}}
+ function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
+ window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
+})();
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-onepass.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+   Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
+(()=>{'use strict';
+const $=id=>document.getElementById(id);const zone=$('dropzone'),picker=$('picker'),cards=$('cards'),workspace=$('workspace'),dl=$('download');
+const LIMIT=45*1048576,MAX_PAGES=40,MAX_FILES=12,MAX_TOTAL=100*1048576;
+let entries=[],sourceFiles=[],pending=[],activeSource=null,sourceBytes=0,busy=false,processing=false,exporting=false,sequence=0,currentURL=null,nextSourceId=1,nextLoadBatch=1;
+let completedInBatch=0,totalInBatch=0,lastRemoved=null,lastPdfSize=null,dragSource=-1,manuallyOrdered=false;
+const wait=()=>new Promise(r=>setTimeout(r,0));
+const fmt=n=>n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(2)+' MB';
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+function status(s){$('status').textContent=s}
+function progress(i,total){$('progress-wrap').hidden=false;$('progress-bar').style.width=Math.round(i/Math.max(1,total)*100)+'%'}
+function note(s){const el=$('warnings');el.hidden=false;const p=document.createElement('div');p.textContent=s;el.appendChild(p)}
+function syncActions(){
+ sourceBytes=sourceFiles.reduce((sum,s)=>sum+s.file.size,0);
+ const setState=twoByTwoState(),setThree=threeByTwoState();
+ dl.disabled=busy||pending.length>0||entries.length===0||setState.incomplete||setThree.incomplete;
+ $('queue-count').hidden=!pending.length&&!processing;
+ $('queue-count').textContent=processing?'Elaborazione '+completedInBatch+'/'+Math.max(totalInBatch,1)+' · in attesa: '+pending.length:pending.length+' file in attesa';
+ $('undo-remove').hidden=!lastRemoved;
+ $('reset').disabled=exporting;
+ const sourceOrder=[...new Set(entries.map(e=>e.sourceIndex))];
+ const pairedSet=entries.length===4&&entries.every(e=>e.twoUp&&e.pairLabel)&&sourceOrder.length===2;
+ $('reverse-files').hidden=busy||sourceOrder.length<2;
+ $('reverse-files').disabled=busy||sourceOrder.length<2;
+ $('reverse-files').textContent=pairedSet?'↔ Scambia fronte/retro':'↕ Inverti ordine file';
+ $('sizes').textContent='Originali: '+fmt(sourceBytes)+(lastPdfSize!==null?' · Ultimo PDF: '+fmt(lastPdfSize):' · Il PDF viene creato quando premi Scarica.');
+}
+function reset(){
+ if(exporting){status('Sto completando il PDF: apri una nuova pratica dopo il salvataggio.');return;}
+ if(!$('editor').hidden)closeCorrection();
+ document.body.classList.remove('has-document');sequence++;document.dispatchEvent(new CustomEvent('docfix:reset'));entries=[];sourceFiles=[];pending=[];activeSource=null;sourceBytes=0;busy=false;processing=false;exporting=false;completedInBatch=0;totalInBatch=0;nextSourceId=1;lastRemoved=null;lastPdfSize=null;manuallyOrdered=false;
+ cards.replaceChildren();$('warnings').replaceChildren();$('warnings').hidden=true;workspace.hidden=true;$('progress-wrap').hidden=true;dl.disabled=true;$('sizes').textContent='';$('summary').textContent='';$('review-count').textContent='';if(currentURL){URL.revokeObjectURL(currentURL);currentURL=null}picker.value='';zone.hidden=false;syncActions();
+}
+$('reset').onclick=reset;
+const openPicker=()=>picker.click();
+$('add-more').onclick=openPicker;
+zone.onclick=openPicker;zone.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPicker()}};
+picker.onchange=()=>{const files=Array.from(picker.files||[]);picker.value='';if(files.length)addFiles(files)};
+document.addEventListener('keydown',e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='o'&&!e.altKey){e.preventDefault();openPicker();}
+ if(e.key==='Escape'&&!$('editor').hidden){e.preventDefault();closeCorrection();}
+});
+document.addEventListener('paste',e=>{
+ const items=Array.from(e.clipboardData?.items||[]);
+ const images=items.filter(i=>i.kind==='file'&&/^image\//.test(i.type)).map(i=>i.getAsFile()).filter(Boolean);
+ if(!images.length)return;
+ e.preventDefault();
+ const stamp=new Date().toISOString().replace(/[:.]/g,'-');
+ const files=images.map((f,i)=>new File([f],`Immagine-incollata-${stamp}-${i+1}.${(f.type.split('/')[1]||'png').replace('jpeg','jpg')}`,{type:f.type||'image/png'}));
+ addFiles(files);status(files.length===1?'Immagine incollata dagli Appunti.':'Immagini incollate dagli Appunti.');
+});
+// One drop handler on the entire page: dropping a later photo must never navigate
+// away or discard the existing practice. Also supports repeated batches.
+document.addEventListener('dragenter',e=>{if(e.dataTransfer?.types?.includes('Files'))zone.classList.add('dragging')});
+document.addEventListener('dragover',e=>{if(e.dataTransfer?.types?.includes('Files')){e.preventDefault();e.dataTransfer.dropEffect='copy'}});
+document.addEventListener('dragleave',e=>{if(e.target===document.documentElement)zone.classList.remove('dragging')});
+document.addEventListener('drop',e=>{if(e.dataTransfer?.files?.length){e.preventDefault();zone.classList.remove('dragging');addFiles(Array.from(e.dataTransfer.files))}});
+const supported=f=>/\.(pdf|jpe?g|png|webp)$/i.test(f.name)||f.type==='application/pdf'||/^image\/(jpeg|png|webp)$/.test(f.type);
+function orderedIncoming(files){
+ // Preserve exactly the order received from the picker/drop operation.
+ // Never guess from filename, timestamp or OCR completion time.
+ return Array.from(files||[]);
+}
+let libPromise=null;
+function script(url){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=url;s.onload=resolve;s.onerror=()=>reject(new Error('Componente PDF locale non disponibile.'));document.head.appendChild(s)})}
+async function pdfLib(){if(window.PDFLib)return window.PDFLib;if(!libPromise)libPromise=script('./vendor/pdf-lib/pdf-lib.min.js').then(()=>window.PDFLib).catch(e=>{libPromise=null;throw e});return libPromise}
+const canvas=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));return c};
+async function imageCanvas(file,pagesInBatch=1){let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'});}catch(_){bmp=await new Promise((res,rej)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(url);res(img)};img.onerror=()=>{URL.revokeObjectURL(url);rej(Error('Immagine illeggibile'))};img.src=url})}const ratio=window.DocFixGroup3.inputScale(bmp.width,bmp.height,window.DocFixGroup3.pixelBudget(pagesInBatch)),c=canvas(bmp.width*ratio,bmp.height*ratio);c.docfixDownscaled=ratio<.999;const g=c.getContext('2d',{alpha:false});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(bmp,0,0,c.width,c.height);bmp.close?.();return c}
+function rotate(c,deg){const q=((deg%360)+360)%360;if(!q)return c;const n=canvas(q%180?c.height:c.width,q%180?c.width:c.height),g=n.getContext('2d');g.translate(n.width/2,n.height/2);g.rotate(q*Math.PI/180);g.drawImage(c,-c.width/2,-c.height/2);return n}
+function crop(c,b){const out=canvas(c.width*(b.x1-b.x0),c.height*(b.y1-b.y0));out.getContext('2d').drawImage(c,c.width*b.x0,c.height*b.y0,c.width*(b.x1-b.x0),c.height*(b.y1-b.y0),0,0,out.width,out.height);return out}
+function whiteMarginCrop(c){/* Never crop unless the entire margin looks blank; keep 2% guard. */
+ const s=window.DocFixScanner.resize(c,560),w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;let xs=[],ys=[];
+ for(let y=0;y<h;y++){let ink=0;for(let x=0;x<w;x+=2){let i=4*(y*w+x);if((d[i]+d[i+1]+d[i+2])/3<215)ink++}ys[y]=ink/(w/2)}
+ for(let x=0;x<w;x++){let ink=0;for(let y=0;y<h;y+=2){let i=4*(y*w+x);if((d[i]+d[i+1]+d[i+2])/3<215)ink++}xs[x]=ink/(h/2)}
+ let L=0,R=w-1,T=0,B=h-1;while(L<w*.15&&xs[L]<.012)L++;while(R>w*.85&&xs[R]<.012)R--;while(T<h*.15&&ys[T]<.012)T++;while(B>h*.85&&ys[B]<.012)B--;
+ L=clamp(L-8,0,w);R=clamp(R+8,0,w);T=clamp(T-8,0,h);B=clamp(B+8,0,h);
+ const saved=(L+(w-1-R))/w+(T+(h-1-B))/h;if(saved<.085||R-L<w*.70||B-T<h*.70)return null;
+ return {x0:L/w,x1:(R+1)/w,y0:T/h,y1:(B+1)/h};
+}
+function textLines(c){/* Orientation heuristic: only 90/270 distinction. Never guess upside-down. */
+ const s=window.DocFixScanner.resize(c,350),w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,rows=new Float32Array(h),cols=new Float32Array(w);
+ for(let y=0;y<h;y+=2)for(let x=0;x<w;x+=2){const i=(y*w+x)*4,g=(d[i]+d[i+1]+d[i+2])/3;if(g<160){rows[y]++;cols[x]++}}
+ function variance(a){let mean=0,v=0,n=0;for(const x of a){mean+=x;n++}mean/=n;for(const x of a)v+=(x-mean)**2;return v/n/(mean*mean+3)}
+ const rv=variance(rows),cv=variance(cols);return {rv,cv,vertical:cv>rv*1.9&&cv>0.28,uncertain:!(rv>cv*1.6||cv>rv*1.9)};
+}
+// Optical page orientation is genuinely different from merely checking portrait/landscape.
+// OSD is optional, runs on the user's device, and never uploads images. When offline or
+// when the result is uncertain, we show a review warning rather than guessing 180 degrees.
+let tesseractPromise=null,osdUnavailable=false;
+const deadline=(promise,ms)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(Error('Tempo massimo di riconoscimento superato')),ms))]);
+async function osdWorker(){
+ if(osdUnavailable)throw Error('Riconoscimento orientamento locale non disponibile');
+ if(!tesseractPromise)tesseractPromise=deadline((async()=>{
+  if(!window.Tesseract)await script('./vendor/tesseract/tesseract.min.js');
+  const worker=await window.Tesseract.createWorker('eng',1,{legacyCore:true,legacyLang:true,workerPath:abs('./vendor/tesseract/worker.min.js'),corePath:abs('./vendor/tesseract-core/'),langPath:abs('./vendor/tessdata/'),gzip:true});
+  if(osdUnavailable){await worker.terminate?.();throw Error('Riconoscimento non disponibile')}
+  return worker;
+ })(),7000).catch(e=>{osdUnavailable=true;throw e});
+ return tesseractPromise;
+}
+async function inferTextOrientation(source){
+ // Short ID fields, blank pages and graphics cannot be reliably oriented by OSD.
+ if(Math.min(source.width,source.height)<320)return {angle:0,review:true,trustworthy:false};
+ try{
+  const worker=await Promise.race([osdWorker(),new Promise((_,reject)=>setTimeout(()=>reject(Error('Motore OCR troppo lento')),6500))]);const small=window.DocFixScanner.resize(source,1350);
+  const result=await Promise.race([worker.detect(small),new Promise((_,reject)=>setTimeout(()=>reject(Error('Orientamento non determinato')),4500))]);
+  const data=result?.data||{};const conf=Number(data.orientation_confidence)||0;const angle=((360-(Math.round(Number(data.orientation_degrees)||0)/90)*90)%360+360)%360;
+  if(conf>=15&&[0,90,180,270].includes(angle))return {angle,review:false,trustworthy:true};
+  return {angle:0,review:true,trustworthy:false};
+ }catch(_){return {angle:0,review:true,trustworthy:false}}
+}
+
+/* V49.1: Remove the last slivers of patterned desk that can remain around
+ * rounded plastic cards after a four-corner perspective transform. Analyze
+ * the blue material itself; never change printed fields or redraw a card. */
+function trimCardBackground(c,backLike=false){
+ const small=window.DocFixScanner.resize(c,780),w=small.width,h=small.height,im=small.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+ const row=new Float32Array(h),col=new Float32Array(w),dark=new Float32Array(h),x0=Math.floor(w*.18),x1=Math.ceil(w*.82),y0=Math.floor(h*.18),y1=Math.ceil(h*.82);
+ const isBlue=(r,g,b)=>{
+  const hi=Math.max(r,g,b),lo=Math.min(r,g,b),d=hi-lo;
+  if(d<9||hi===0||d*255/hi<16||b-(r+g)*.5<6.0)return false;
+  let hue=0;if(hi===r)hue=60*((g-b)/d+(g<b?6:0));else if(hi===g)hue=60*((b-r)/d+2);else hue=60*((r-g)/d+4);
+  return hue>=148&&hue<=310;
+ };
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const k=(y*w+x)*4;if(x>=w*.11&&x<w*.90&&(im[k]*.299+im[k+1]*.587+im[k+2]*.114)<78)dark[y]++;
+  if(!isBlue(im[k],im[k+1],im[k+2]))continue;
+  if(x>=x0&&x<x1)row[y]++;
+  if(y>=y0&&y<y1)col[x]++;
+ }
+ for(let y=0;y<h;y++)row[y]/=(x1-x0);
+ for(let x=0;x<w;x++)col[x]/=(y1-y0);
+ const search=(arr,threshold,lo,hi,reverse=false)=>{
+  const run=4;
+  if(!reverse){for(let p=lo;p+run<=hi;p++){let n=0;for(let k=0;k<run;k++)n+=(arr[p+k]>threshold);if(n===run)return p;}}
+  else{for(let p=hi-1;p-run+1>=lo;p--){let n=0;for(let k=0;k<run;k++)n+=(arr[p-k]>threshold);if(n===run)return p;}}
+  return null;
+ };
+ const top=search(row,.26,0,Math.floor(h*.12)),bottom=search(row,.19,Math.ceil(h*.87),h,true);
+ if(top===null||bottom===null||top>h*.084||bottom<h*.90)return c;
+ const left=search(col,.32,0,Math.floor(w*.10)),right=search(col,.30,Math.floor(w*.90),w,true);
+ const isBack=backLike||(left!==null&&left>w*.028);
+ let t=Math.min(h*.075,top+(isBack?Math.round(h*.009):2));
+ let b=Math.min(h,bottom+2);
+ if(isBack){let last=0;for(let yy=Math.round(h*.78);yy<h;yy++)if(dark[yy]/(w*.79)>.035)last=yy;
+  if(last>h*.84)b=Math.min(h,Math.max(b,last+Math.round(h*.025)));else b=Math.min(h,bottom+Math.round(h*.030));}
+ let l=left!==null?left+2:Math.round(w*.018);
+ let r=right!==null&&right>w*.965?Math.min(w,right+2):w-Math.round(w*.016);
+ if(isBack)r=Math.min(r,l+1.665*(b-t));
+ if(b-t<h*.79||r-l<w*.76)return c;
+ // Exact sampling on the full-resolution canvas; keeps source detail intact.
+ const x=Math.max(0,Math.round(l/w*c.width)),y=Math.max(0,Math.round(t/h*c.height));
+ const xe=Math.min(c.width,Math.round(r/w*c.width)),ye=Math.min(c.height,Math.round(b/h*c.height));
+ const out=canvas(xe-x,ye-y),g=out.getContext('2d',{alpha:false});
+ // Rounded security-card corners should contain white page, not patterned desk.
+ // The clip only affects ~3% near the physical corner, never text or MRZ.
+ g.fillStyle='#fff';g.fillRect(0,0,out.width,out.height);
+ const radius=Math.min(out.width,out.height)*.042;
+ g.beginPath();g.roundRect(0,0,out.width,out.height,radius);g.clip();
+ g.drawImage(c,x,y,out.width,out.height,0,0,out.width,out.height);
+ return out;
+}
+function photoNormalize(original){
+ const scan=window.DocFixScanner;let processed=original,confidence=0,how='Foto completa',review=false,cardLikely=false,sourceQuad=null,precise=false,backLike=false;
+ // Single photo = one document. Multi-contour analysis can confuse a card with a
+ // shadow or with the inner printed area and crop off the actual edges.
+ const found=scan.detectDocument(original),area=found.status==='found'?scan.area(found.quad):0;
+ // 1.7: avoid a second destructive crop when the source is already a tightly
+ // cropped ISO card or A-series page. In those cases inner frames/text boxes can
+ // otherwise be mistaken for the physical document edge.
+ const photoShape=Math.max(original.width,original.height)/Math.max(1,Math.min(original.width,original.height));
+ const tightCard=photoShape>=1.50&&photoShape<=1.73;
+ const tightPage=photoShape>=1.36&&photoShape<=1.47;
+ const alreadyDocumentShape=tightCard||tightPage;
+ const unsafeInnerCrop=alreadyDocumentShape&&area<.86;
+ if(found.status==='found'&&found.confidence>=.79&&area>.09&&area<.88&&!unsafeInnerCrop&&scan.validQuad(found.quad)){
+  const quad=found.quad.map(p=>({...p}));
+  processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
+  confidence=found.confidence;sourceQuad=quad;precise=String(found.method||'').includes('fine')||found.method==='precise-color';backLike=found.cardBackLike===true;how=precise?'Bordi del documento rifiniti':'Bordi del documento ritagliati';
+  const pts=quad.map(pt=>({x:pt.x*original.width,y:pt.y*original.height}));
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),ww=(dist(pts[0],pts[1])+dist(pts[2],pts[3]))/2,hh=(dist(pts[1],pts[2])+dist(pts[3],pts[0]))/2;
+  const shape=Math.max(ww,hh)/Math.max(1,Math.min(ww,hh));cardLikely=found.cardLikely===true||(shape>=1.43&&shape<=1.94);
+  // 1.7: after a safe perspective crop, remove only proven blue desk/card slivers.
+  // trimCardBackground returns the same canvas when the colour evidence is weak,
+  // so licences, paper documents and already-clean cards are left untouched.
+  if(cardLikely){
+   const cleaned=trimCardBackground(processed,backLike);
+   if(cleaned!==processed){processed=cleaned;how+=' · sfondo residuo rimosso';}
+  }
+ }else{
+  // Group 1 safety fallback: no inferred crop if the outer contour is not proven.
+  processed=original;review=true;
+  how=unsafeInnerCrop?(tightCard?'Tessera già pronta · nessun doppio ritaglio':'Pagina già pronta · nessun doppio ritaglio'):'Foto conservata · controlla i 4 bordi';
+ }
+ return {processed,confidence,how,review,cardLikely,sourceQuad,precise,backLike};
+}
+// The same normalization path is used by photos and scanned PDF pages.
+// Never skip 180-degree detection for ID cards: landscape proportions tell us
+// nothing about which side is up (particularly on the reverse with MRZ).
+function qualityAudit(c,sourceQuad=null){
+ const sample=window.DocFixScanner.resize(c,520),w=sample.width,h=sample.height,ctx=sample.getContext('2d',{willReadFrequently:true}),d=ctx.getImageData(0,0,w,h).data;
+ let sum=0,sum2=0,n=0,lapSum=0,lap2=0,lapN=0,edge=0;
+ const gray=new Float32Array(w*h);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const k=(y*w+x)*4,g=.299*d[k]+.587*d[k+1]+.114*d[k+2];gray[y*w+x]=g;sum+=g;sum2+=g*g;n++}
+ for(let y=1;y<h-1;y+=2)for(let x=1;x<w-1;x+=2){
+  const i=y*w+x,g=gray[i],lap=gray[i-1]+gray[i+1]+gray[i-w]+gray[i+w]-4*g,grad=Math.abs(gray[i+1]-gray[i-1])+Math.abs(gray[i+w]-gray[i-w]);
+  lapSum+=lap;lap2+=lap*lap;lapN++;if(grad>58)edge++;
+ }
+ const mean=sum/Math.max(1,n),stdev=Math.sqrt(Math.max(0,sum2/Math.max(1,n)-mean*mean));
+ const lapMean=lapSum/Math.max(1,lapN),lapVar=Math.max(0,lap2/Math.max(1,lapN)-lapMean*lapMean),edgeDensity=edge/Math.max(1,lapN);
+ const issues=[];
+ if(Math.min(c.width,c.height)<500||c.width*c.height<480000)issues.push('Risoluzione bassa');
+ if(stdev>28&&lapVar<42&&edgeDensity<.018)issues.push('Foto molto sfocata');
+ if(mean<52&&stdev<70)issues.push('Foto molto scura');
+ if(mean>246&&stdev<16)issues.push('Foto sovraesposta');
+ if(sourceQuad&&sourceQuad.some(p=>p.x<.008||p.y<.008||p.x>.992||p.y>.992))issues.push('Documento troppo vicino al bordo della foto');
+ return {review:issues.length>0,issues,metrics:{mean:Math.round(mean),stdev:Math.round(stdev),lapVar:Math.round(lapVar),edgeDensity:Number(edgeDensity.toFixed(3)),width:c.width,height:c.height}};
+}
+async function normalizeRaster(original){
+ const before=window.DocFixGroup2.recognizeMRZOrientation(original);
+ const norm=photoNormalize(original);let processed=norm.processed,rotation=0;
+ // G2: aspect ratio never determines if 90° or 270° is correct.
+ // If an automatic crop hides an otherwise detectable MRZ, keep all source
+ // pixels rather than pretending to have recognized the physical card edge.
+ let mrz=window.DocFixGroup2.recognizeMRZOrientation(processed);
+ let preservedSource=false;
+ if(before.trustworthy&&!mrz.trustworthy&&processed!==original){
+  processed=original;mrz=before;preservedSource=true;
+ }
+ if(mrz.trustworthy){rotation=mrz.angle;processed=rotate(processed,rotation);}
+ // G1: never trim again after a perspective crop: that deletes MRZ and card edges.
+ const osd=mrz.trustworthy?{angle:0,review:false,trustworthy:true}:await inferTextOrientation(processed);
+ if(!mrz.trustworthy&&osd.trustworthy&&osd.angle){processed=rotate(processed,osd.angle);rotation=(rotation+osd.angle)%360;}
+ const geometryReview=norm.review||preservedSource;
+ const orientationReview=!mrz.trustworthy&&!osd.trustworthy&&(norm.cardLikely||textLines(processed).vertical);
+ const sourceQuad=preservedSource?null:norm.sourceQuad,quality=qualityAudit(processed,sourceQuad),qualityReview=quality.review;
+ const review=geometryReview||orientationReview||qualityReview;
+ const method=mrz.trustworthy?'Verso verificato dalla zona MRZ':osd.trustworthy?'Verso verificato dal testo':'Orientamento non confermato';
+ const cropNote=preservedSource?'Ritaglio non sicuro: foto integra · verifica i bordi':norm.how;
+ const qualityNote=quality.issues.length?' · '+quality.issues.join(' · '):'';
+ const how=cropNote+' · '+method+qualityNote+(review?' · Verifica consigliata':'');
+ return {processed,rotation,review,geometryReview,orientationReview,qualityReview,qualityIssues:quality.issues,qualityMetrics:quality.metrics,cropped:norm.processed!==original&&!preservedSource,sourceQuad,how};
+}
+function quadBounds(q){const xs=q.map(p=>p.x),ys=q.map(p=>p.y);return {x:Math.min(...xs),y:Math.min(...ys),width:Math.max(...xs)-Math.min(...xs),height:Math.max(...ys)-Math.min(...ys)}}
+function quadCardRatio(q,w,h){const p=q.map(z=>({x:z.x*w,y:z.y*h})),d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),ww=(d(p[0],p[1])+d(p[2],p[3]))/2,hh=(d(p[1],p[2])+d(p[3],p[0]))/2;return Math.max(ww,hh)/Math.max(1,Math.min(ww,hh))}
+function overlapFraction(a,b){const x=Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)),y=Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y));return x*y/Math.max(.0001,Math.min(a.width*a.height,b.width*b.height))}
+function crossOverlap(a,b,axis){if(axis==='x'){const n=Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x));return n/Math.max(.0001,Math.min(a.width,b.width))}const n=Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y));return n/Math.max(.0001,Math.min(a.height,b.height))}
+function stackedCardCandidatesByGap(original){
+ const scan=window.DocFixScanner,portrait=original.height/Math.max(1,original.width);
+ if(portrait<1.16||portrait>2.45)return [];
+ const s=scan.resize(original,360),w=s.width,h=s.height;
+ if(h<220||w<180)return [];
+ const d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+ const scores=new Float32Array(h),x0=Math.round(w*.06),x1=Math.round(w*.94);
+ for(let y=0;y<h;y++){
+  let sum=0,sum2=0,grad=0,n=0,last=0;
+  for(let x=x0;x<x1;x++){
+   const k=(y*w+x)*4,v=d[k]*.299+d[k+1]*.587+d[k+2]*.114;
+   sum+=v;sum2+=v*v;if(n)grad+=Math.abs(v-last);last=v;n++;
+  }
+  const mean=sum/Math.max(1,n),std=Math.sqrt(Math.max(0,sum2/Math.max(1,n)-mean*mean));
+  scores[y]=std+1.35*grad/Math.max(1,n-1);
+ }
+ const smooth=new Float32Array(h),rad=4;
+ for(let y=0;y<h;y++){let total=0,n=0;for(let k=-rad;k<=rad;k++){total+=scores[Math.max(0,Math.min(h-1,y+k))];n++}smooth[y]=total/n}
+ const ordered=Array.from(smooth).sort((a,b)=>a-b),median=ordered[ordered.length>>1]||0,threshold=Math.max(12,median*.42);
+ const lo=Math.round(h*.25),hi=Math.round(h*.75),runs=[];let start=-1;
+ for(let y=lo;y<=hi;y++){
+  const on=y<hi&&smooth[y]<threshold;
+  if(on&&start<0)start=y;
+  if(start>=0&&(!on||y===hi)){
+   const end=on?y:y-1,len=end-start+1;
+   if(len>=Math.max(10,h*.035)&&len<=h*.19){
+    let avg=0;for(let k=start;k<=end;k++)avg+=smooth[k];avg/=len;
+    runs.push({start,end,len,avg});
+   }
+   start=-1;
+  }
+ }
+ if(!runs.length)return [];
+ runs.sort((a,b)=>b.len-a.len||a.avg-b.avg);
+ const gap=runs[0],pad=Math.max(2,Math.round(h*.008)),topEnd=Math.min(h-1,gap.start+pad),bottomStart=Math.max(0,gap.end-pad);
+ const topH=topEnd/h,bottomH=(h-bottomStart)/h;
+ const ratioTop=w/Math.max(1,topEnd),ratioBottom=w/Math.max(1,h-bottomStart);
+ if(topH<.24||topH>.56||bottomH<.24||bottomH>.56||ratioTop<1.22||ratioTop>2.12||ratioBottom<1.22||ratioBottom>2.12)return [];
+ const medianRange=(a,b)=>{const vals=Array.from(smooth.slice(Math.max(0,a),Math.min(h,b))).sort((x,y)=>x-y);return vals[vals.length>>1]||0};
+ const topActivity=medianRange(Math.round(h*.06),Math.max(Math.round(h*.18),gap.start-Math.round(h*.06)));
+ const bottomActivity=medianRange(Math.min(h-1,gap.end+Math.round(h*.06)),Math.round(h*.94));
+ const gapActivity=gap.avg;
+ if(topActivity<Math.max(22,gapActivity*1.45)||bottomActivity<Math.max(22,gapActivity*1.45))return [];
+ const gapSamples=[[],[],[]];
+ for(let y=gap.start;y<=gap.end;y+=2)for(let x=0;x<w;x+=2){const k=(y*w+x)*4;gapSamples[0].push(d[k]);gapSamples[1].push(d[k+1]);gapSamples[2].push(d[k+2]);}
+ const med=v=>{v.sort((a,b)=>a-b);return v[v.length>>1]||0},ref=gapSamples.map(med),noise=[];
+ for(let y=gap.start;y<=gap.end;y+=3)for(let x=0;x<w;x+=3){const k=(y*w+x)*4;noise.push(Math.hypot(d[k]-ref[0],d[k+1]-ref[1],d[k+2]-ref[2]));}
+ noise.sort((a,b)=>a-b);const colorThreshold=Math.max(44,(noise[Math.floor(noise.length*.85)]||20)*1.7);
+ const xBounds=(ay0,ay1)=>{
+  const frac=new Float32Array(w),step=2,total=Math.max(1,Math.ceil((ay1-ay0)/step));
+  for(let x=0;x<w;x++){let active=0;for(let y=ay0;y<ay1;y+=step){const k=(y*w+x)*4;if(Math.hypot(d[k]-ref[0],d[k+1]-ref[1],d[k+2]-ref[2])>colorThreshold)active++;}frac[x]=active/total;}
+  const sm=new Float32Array(w),rr=4;for(let x=0;x<w;x++){let sum=0,n=0;for(let k=-rr;k<=rr;k++){sum+=frac[Math.max(0,Math.min(w-1,x+k))];n++}sm[x]=sum/n}
+  const run=4,find=(reverse=false)=>{
+   if(!reverse){for(let x=0;x<=w-run;x++){let ok=0;for(let k=0;k<run;k++)ok+=sm[x+k]>.30;if(ok===run)return x;}}
+   else{for(let x=w-1;x-run+1>=0;x--){let ok=0;for(let k=0;k<run;k++)ok+=sm[x-k]>.30;if(ok===run)return x;}}
+   return null;
+  };
+  let l=find(false),r=find(true);if(l===null||r===null||r-l<w*.72)return {x0:0,x1:1};
+  const p=Math.max(2,Math.round(w*.006));l=Math.max(0,l-p);r=Math.min(w-1,r+p);
+  if(l<w*.018)l=0;if(r>w*.982)r=w-1;
+  return {x0:l/w,x1:(r+1)/w};
+ };
+ const topX=xBounds(0,topEnd),bottomX=xBounds(bottomStart,h);
+ const rect=(x0,y0,x1,y1)=>({quad:[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}],confidence:.86,status:'found',method:'stacked-gap-color',box:{x:x0,y:y0,width:x1-x0,height:y1-y0}});
+ return [rect(topX.x0,0,topX.x1,topEnd/h),rect(bottomX.x0,bottomStart/h,bottomX.x1,1)];
+}
+function stackedCardCandidatesRecovery(original){
+ const scan=window.DocFixScanner,portrait=original.height/Math.max(1,original.width);
+ if(portrait<1.18||portrait>2.45)return [];
+ const s=scan.resize(original,340),w=s.width,h=s.height;if(h<220||w<170)return [];
+ const d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+ const row=new Float32Array(h),x0=Math.round(w*.04),x1=Math.round(w*.96);
+ for(let y=0;y<h;y++){let sum=0,sum2=0,grad=0,n=0,last=0;
+  for(let x=x0;x<x1;x++){const k=(y*w+x)*4,v=.299*d[k]+.587*d[k+1]+.114*d[k+2];sum+=v;sum2+=v*v;if(n)grad+=Math.abs(v-last);last=v;n++}
+  const mean=sum/Math.max(1,n),std=Math.sqrt(Math.max(0,sum2/Math.max(1,n)-mean*mean));row[y]=std+grad/Math.max(1,n-1);
+ }
+ const sm=new Float32Array(h);for(let y=0;y<h;y++){let z=0,n=0;for(let k=-5;k<=5;k++){z+=row[Math.max(0,Math.min(h-1,y+k))];n++}sm[y]=z/n}
+ const lo=Math.round(h*.30),hi=Math.round(h*.70),win=Math.max(8,Math.round(h*.045));let best=null;
+ for(let y=lo;y<=hi-win;y++){let z=0;for(let k=0;k<win;k++)z+=sm[y+k];z/=win;if(!best||z<best.avg)best={start:y,end:y+win-1,avg:z}}
+ if(!best)return [];
+ const med=(a,b)=>{const v=Array.from(sm.slice(Math.max(0,a),Math.min(h,b))).sort((x,y)=>x-y);return v[v.length>>1]||0};
+ const top=med(Math.round(h*.05),Math.max(Math.round(h*.20),best.start-Math.round(h*.05)));
+ const bottom=med(Math.min(h-1,best.end+Math.round(h*.05)),Math.round(h*.95));
+ if(top<18||bottom<18||best.avg>Math.min(top,bottom)*.72)return [];
+ const pad=Math.max(2,Math.round(h*.01)),topEnd=Math.min(h-1,best.start+pad),bottomStart=Math.max(0,best.end-pad);
+ const ht=topEnd/h,hb=(h-bottomStart)/h,rt=w/Math.max(1,topEnd),rb=w/Math.max(1,h-bottomStart);
+ if(ht<.24||ht>.59||hb<.24||hb>.59||rt<1.18||rt>2.18||rb<1.18||rb>2.18)return [];
+ const rect=(y0,y1)=>({quad:[{x:0,y:y0},{x:1,y:y0},{x:1,y:y1},{x:0,y:y1}],confidence:.72,status:'found',method:'stacked-recovery',box:{x:0,y:y0,width:1,height:y1-y0}});
+ return [rect(0,topEnd/h),rect(bottomStart/h,1)];
+}
+function multiCardCandidates(original){
+ const scan=window.DocFixScanner,stacked=stackedCardCandidatesByGap(original);
+ if(stacked.length===2)return stacked;
+ const raw=(scan.detectAll?.(original)||[]).filter(c=>c?.status==='found'&&c.confidence>=.70&&scan.validQuad(c.quad));
+ const good=raw.map(c=>({...c,box:c.box||quadBounds(c.quad)})).filter(c=>{
+  const a=scan.area(c.quad),r=quadCardRatio(c.quad,original.width,original.height);
+  return a>=.075&&a<=.54&&r>=1.22&&r<=2.05&&c.box.width>=.44&&c.box.width<=1&&c.box.height>=.14&&c.box.height<=.58;
+ });
+ let best=null;
+ for(let i=0;i<good.length;i++)for(let j=i+1;j<good.length;j++){
+  const a=good[i],b=good[j];if(overlapFraction(a.box,b.box)>.15)continue;
+  const vertical=crossOverlap(a.box,b.box,'x')>=.58&&crossOverlap(a.box,b.box,'y')<=.13;
+  const horizontal=crossOverlap(a.box,b.box,'y')>=.58&&crossOverlap(a.box,b.box,'x')<=.13;
+  if(!vertical&&!horizontal)continue;
+  const score=(a.confidence||0)+(b.confidence||0)+scan.area(a.quad)+scan.area(b.quad);
+  if(!best||score>best.score)best={pair:[a,b],score};
+ }
+ if(best)return best.pair.sort((x,y)=>(x.box.y+x.box.height/2)-(y.box.y+y.box.height/2)||(x.box.x+x.box.width/2)-(y.box.x+y.box.width/2));
+ return stackedCardCandidatesByGap(original);
+}
+function medianNumber(values){values.sort((a,b)=>a-b);return values[values.length>>1]||0}
+function warmBackgroundReference(source){
+ const s=window.DocFixScanner.resize(source,420),w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,values=[[],[],[]],m=Math.max(4,Math.round(Math.min(w,h)*.07));
+ for(let y=0;y<h;y+=2)for(let x=0;x<w;x+=2){if(!(x<m||x>=w-m||y<m||y>=h-m))continue;const k=(y*w+x)*4;values[0].push(d[k]);values[1].push(d[k+1]);values[2].push(d[k+2]);}
+ return values.map(medianNumber);
+}
+function warmVerticalTrim(canvas,ref){
+ const scan=window.DocFixScanner,s=scan.resize(canvas,520),w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+ const rb=ref[0]-ref[2],rg=ref[0]-ref[1];if(rb<30||rg<10)return {y0:0,y1:1,used:false};
+ const trb=Math.max(26,rb*.48),trg=Math.max(9,rg*.38),rows=new Float32Array(h);
+ for(let y=0;y<h;y++){let warm=0,n=0;for(let x=0;x<w;x+=2){const k=(y*w+x)*4,r=d[k],g=d[k+1],b=d[k+2];warm+=((r-b)>trb&&(r-g)>trg);n++;}rows[y]=warm/Math.max(1,n)}
+ const sm=new Float32Array(h),rad=5;for(let y=0;y<h;y++){let sum=0,n=0;for(let k=-rad;k<=rad;k++){sum+=rows[Math.max(0,Math.min(h-1,y+k))];n++}sm[y]=sum/n}
+ let best=null,start=-1;
+ for(let y=0;y<=h;y++){const on=y<h&&sm[y]<.55;if(on&&start<0)start=y;if(start>=0&&(!on||y===h)){const end=on?y:y-1,len=end-start+1;if(len>=Math.max(20,h*.25)&&(!best||len>best.len))best={start,end,len};start=-1}}
+ if(!best)return {y0:0,y1:1,used:false};
+ const pad=Math.max(3,Math.round(h*.012)),a=Math.max(0,best.start-pad),b=Math.min(h-1,best.end+pad);
+ if(a>h*.20||b<h*.80)return {y0:0,y1:1,used:false};
+ return {y0:a/h,y1:(b+1)/h,used:a>1||b<h-2};
+}
+function verticalTrimQuad(q,t0,t1){const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});return [lerp(q[0],q[3],t0),lerp(q[1],q[2],t0),lerp(q[1],q[2],t1),lerp(q[0],q[3],t1)]}
+function expandQuadSafe(q,pad=.025){
+ const cx=q.reduce((s,p)=>s+p.x,0)/4,cy=q.reduce((s,p)=>s+p.y,0)/4;
+ return q.map(p=>({x:Math.max(0,Math.min(1,cx+(p.x-cx)*(1+pad*2))),y:Math.max(0,Math.min(1,cy+(p.y-cy)*(1+pad*2)))}));
+}
+function safeRefineMultiQuad(original,sourceQuad){
+ const scan=window.DocFixScanner,expanded=expandQuadSafe(sourceQuad,.018),fine=window.DocFixGroup1?.refineQuad?.(original,expanded);
+ if(!fine?.refined||!scan.validQuad(fine.quad))return expanded;
+ const a0=scan.area(expanded),a1=scan.area(fine.quad),ratio=a1/Math.max(.0001,a0);
+ if(ratio<.88||ratio>1.06)return expanded;
+ let maxMove=0;
+ for(let i=0;i<4;i++)maxMove=Math.max(maxMove,Math.hypot(fine.quad[i].x-expanded[i].x,fine.quad[i].y-expanded[i].y));
+ if(maxMove>.045)return expanded;
+ return expandQuadSafe(fine.quad,.012);
+}
+function bilinearMapQuad(outer,inner){
+ const mix=(p,u,v)=>{
+  const top={x:outer[0].x+(outer[1].x-outer[0].x)*u,y:outer[0].y+(outer[1].y-outer[0].y)*u};
+  const bottom={x:outer[3].x+(outer[2].x-outer[3].x)*u,y:outer[3].y+(outer[2].y-outer[3].y)*u};
+  return {x:top.x+(bottom.x-top.x)*v,y:top.y+(bottom.y-top.y)*v};
+ };
+ return inner.map(p=>mix(p,p.x,p.y));
+}
+function tightenSeparatedCardCanvas(coarse,{cardKind='generic'}={}){
+ const scan=window.DocFixScanner,candidates=[];
+ const add=(candidate,extra={})=>{if(candidate?.status==='found'&&scan.validQuad(candidate.quad))candidates.push({...candidate,...extra})};
+ add(scan.detectDocument?.(coarse));
+ // Independent physical-border detector, robust when the card almost fills the crop.
+ add(window.DocFixPhysicalEdges?.detect?.(coarse));
+ for(const c of (scan.detectAll?.(coarse)||[]))add(c);
+ // Codice fiscale / tessera sanitaria: the strongest blue-card detector is
+ // orientation-sensitive. Run it once on a temporary 90° view and map the
+ // physical quad back to the original landscape crop.
+ if(cardKind==='cf'){
+  const turned=rotate(coarse,90),rot=scan.detectDocument?.(turned);
+  if(rot?.status==='found'&&scan.validQuad(rot.quad)){
+   const m=rot.quad.map(p=>({x:p.y,y:1-p.x}));
+   const mapped=[m[1],m[2],m[3],m[0]];
+   if(scan.validQuad(mapped))add({...rot,quad:mapped},{rotatedProbe:true,method:'cf-'+(rot.method||'physical-edge')});
+  }
+  turned.width=turned.height=1;
+ }
+ let best=null;
+ for(const candidate of candidates){
+  const a=scan.area(candidate.quad),r=quadCardRatio(candidate.quad,coarse.width,coarse.height),conf=Number(candidate.confidence)||0;
+  if(a<.18||a>.993||r<1.40||r>1.90||conf<.68)continue;
+  let q=candidate.quad.map(p=>({...p}));
+  const fine=candidate.physicalLines?null:window.DocFixGroup1?.refineQuad?.(coarse,q);
+  if(fine?.refined&&scan.validQuad(fine.quad)){
+   const af=scan.area(fine.quad),ratio=af/Math.max(.0001,a);
+   if(ratio>=.82&&ratio<=1.08)q=fine.quad;
+  }
+  const method=String(candidate.method||'card-edge');
+  const trustedOuter=/physical-outer-boundaries|precise-color|cf-physical|cf-precise/i.test(method);
+  // CF generic card-edge boxes are allowed to be slightly looser rather than
+  // cutting barcode/bottom text. Trusted physical edges get only a tiny pad.
+  const pad=candidate.physicalLines?.004:(cardKind==='cf'?(trustedOuter ? .010 : .026):.012);
+  q=expandQuadSafe(q,pad);
+  const qa=scan.area(q),qr=quadCardRatio(q,coarse.width,coarse.height);
+  if(qa<.17||qa>.997||qr<1.40||qr>1.90)continue;
+  const methodBonus=candidate.physicalLines?2.2:(trustedOuter?1.25:(/card-edges?/i.test(method)?-.35:0));
+  const cfBonus=(cardKind==='cf'&&candidate.rotatedProbe)?0.75:0;
+  const score=conf*1.8+(1-Math.abs(qr-1.586)/.25)+Math.min(.75,qa)+methodBonus+cfBonus;
+  if(!best||score>best.score)best={quad:q,score,confidence:Math.max(conf,.72),method,backLike:candidate.cardBackLike===true,trustedOuter};
+ }
+ if(!best)return {canvas:coarse,tightened:false,quad:null,confidence:0,method:'safe-zone'};
+ const out=scan.process(coarse,{crop:true,quad:best.quad,rotation:0,filter:'original',strength:0},4200);
+ const ratio=Math.max(out.width,out.height)/Math.max(1,Math.min(out.width,out.height));
+ if(out.width<260||out.height<160||ratio<1.40||ratio>1.90){out.width=out.height=1;return {canvas:coarse,tightened:false,quad:null,confidence:0,method:'safe-zone'}}
+ return {canvas:out,tightened:true,quad:best.quad,confidence:best.confidence,method:best.method,backLike:best.backLike,trustedOuter:best.trustedOuter};
+}
+function estimateFineDeskew(source,{cardKind='generic'}={}){
+ const scan=window.DocFixScanner,s=scan.resize(source,520),w=s.width,h=s.height;
+ if(w<220||h<130)return {angle:0,confidence:0,applied:false,method:'too-small'};
+ const d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,g=new Float32Array(w*h),grads=[];
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const k=(y*w+x)*4;g[y*w+x]=.299*d[k]+.587*d[k+1]+.114*d[k+2]}
+ const x0=Math.round(w*.06),x1=Math.round(w*.94),y0=Math.round(h*.07),y1=Math.round(h*.93);
+ for(let y=y0+1;y<y1-1;y+=2)for(let x=x0;x<x1;x+=2){const v=Math.abs(g[(y+1)*w+x]-g[(y-1)*w+x]);if(v>7)grads.push(v)}
+ if(grads.length<200){if(s!==source)s.width=s.height=1;return {angle:0,confidence:0,applied:false,method:'few-edges'}}
+ grads.sort((a,b)=>a-b);const threshold=Math.max(15,grads[Math.floor(grads.length*.72)]||15),points=[];
+ for(let y=y0+1;y<y1-1;y+=2)for(let x=x0;x<x1;x+=2){
+  const v=Math.abs(g[(y+1)*w+x]-g[(y-1)*w+x]);
+  if(v>=threshold)points.push([x,y,Math.min(100,v)]);
+ }
+ if(points.length<150){if(s!==source)s.width=s.height=1;return {angle:0,confidence:0,applied:false,method:'few-strong-edges'}}
+ const cy=h/2,cx=w/2;
+ const bestFor=(list)=>{
+  const scoreAt=deg=>{
+   const tan=Math.tan(deg*Math.PI/180),hist=new Float32Array(h+50),off=25;let total=0;
+   for(const [x,y,wt] of list){const yy=Math.round(y-cy-tan*(x-cx)+cy)+off;if(yy>=0&&yy<hist.length){hist[yy]+=wt;total+=wt}}
+   let score=0;for(const v of hist)score+=v*v;
+   return score/Math.max(1,total*total);
+  };
+  const zero=scoreAt(0);let angle=0,score=zero;
+  for(let a=-4;a<=4.0001;a+=.20){if(Math.abs(a)<.001)continue;const z=scoreAt(a);if(z>score){score=z;angle=Number(a.toFixed(2))}}
+  return {angle,improvement:(score-zero)/Math.max(1e-9,zero),score,zero};
+ };
+ const all=bestFor(points),upper=bestFor(points.filter(p=>p[1]<cy)),lower=bestFor(points.filter(p=>p[1]>=cy));
+ const bandAgree=Math.abs(upper.angle-lower.angle)<=.8&&Math.abs(upper.angle)>=.45&&Math.abs(lower.angle)>=.45;
+ const bandAngle=bandAgree?(upper.angle+lower.angle)/2:all.angle;
+ const chosen=Math.abs(all.angle-bandAngle)<=1.0?((all.angle*2+bandAngle)/3):all.angle;
+ const bandConf=(upper.improvement+lower.improvement)/2;
+ const cfStrong=Math.abs(chosen)>=.50&&Math.abs(chosen)<=4&&((all.improvement>=.012)||(bandAgree&&bandConf>=.006));
+ const genericStrong=Math.abs(chosen)>=.55&&Math.abs(chosen)<=4&&all.improvement>=.030;
+ const applied=cardKind==='cf'?cfStrong:genericStrong;
+ if(s!==source)s.width=s.height=1;
+ return {angle:Number(chosen.toFixed(2)),confidence:Math.max(all.improvement,bandConf),applied,method:bandAgree?'projection-bands':'projection-all',upper:upper.angle,lower:lower.angle};
+}
+function rotateFineCanvas(source,deg){
+ const rad=deg*Math.PI/180,cs=Math.abs(Math.cos(rad)),sn=Math.abs(Math.sin(rad)),nw=Math.ceil(source.width*cs+source.height*sn),nh=Math.ceil(source.height*cs+source.width*sn);
+ const out=canvas(nw,nh),g=out.getContext('2d',{alpha:false});g.fillStyle='#fff';g.fillRect(0,0,nw,nh);g.translate(nw/2,nh/2);g.rotate(rad);g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(source,-source.width/2,-source.height/2);return out;
+}
+function fineDeskewCard(source,{cardKind='generic'}={}){
+ const before=estimateFineDeskew(source,{cardKind});
+ if(!before.applied)return {canvas:source,applied:false,angle:0,confidence:before.confidence,residual:Math.abs(before.angle||0),verified:true};
+ const baseAbs=Math.abs(before.angle),offsets=cardKind==='cf'?[0,-.35,.35]:[0],candidates=[];
+ for(const offset of offsets){
+  const angle=Math.max(-4,Math.min(4,before.angle+offset));
+  if(Math.abs(angle)<.35)continue;
+  const turned=rotateFineCanvas(source,-angle),tight=tightenSeparatedCardCanvas(turned,{cardKind});
+  if(!tight.tightened||!tight.canvas||tight.canvas===turned){turned.width=turned.height=1;continue}
+  const ratio=Math.max(tight.canvas.width,tight.canvas.height)/Math.max(1,Math.min(tight.canvas.width,tight.canvas.height));
+  if(ratio<1.40||ratio>1.90){
+   if(tight.canvas!==turned)tight.canvas.width=tight.canvas.height=1;
+   turned.width=turned.height=1;continue;
+  }
+  const after=estimateFineDeskew(tight.canvas,{cardKind});
+  const residual=Math.abs(after.angle||0);
+  const improved=residual<=.45||residual<=Math.max(0,baseAbs-.45);
+  const shapePenalty=Math.abs(ratio-1.586)*.12,score=residual+shapePenalty;
+  if(improved)candidates.push({canvas:tight.canvas,angle,residual,score,confidence:before.confidence,method:tight.method||'fine-deskew',after});
+  else tight.canvas.width=tight.canvas.height=1;
+  turned.width=turned.height=1;
+ }
+ if(!candidates.length)return {canvas:source,applied:false,angle:0,confidence:before.confidence,residual:baseAbs,verified:false};
+ candidates.sort((a,b)=>a.score-b.score);
+ const best=candidates[0];for(let i=1;i<candidates.length;i++)candidates[i].canvas.width=candidates[i].canvas.height=1;
+ return {canvas:best.canvas,applied:true,angle:best.angle,confidence:best.confidence,residual:best.residual,verified:true,method:best.method};
+}
+// Licence-only deskew. This NEVER runs on CF and never trims after rotating:
+// retain the full plastic-card outline even when the detected text is tilted.
+function straightenLicenceWithoutCutting(source){
+ const before=estimateFineDeskew(source,{cardKind:'generic'});
+ if(!before.applied||Math.abs(before.angle)<.55||Math.abs(before.angle)>4)
+  return {canvas:source,applied:false,angle:0,residual:Math.abs(before.angle||0),verified:false};
+ const rotated=rotateFineCanvas(source,-before.angle);
+ const after=estimateFineDeskew(rotated,{cardKind:'generic'});
+ const residual=Math.abs(after.angle||0),improved=residual<=.55||residual<Math.abs(before.angle)-.55;
+ if(!improved){rotated.width=rotated.height=1;return {canvas:source,applied:false,angle:0,residual:Math.abs(before.angle),verified:false};}
+ return {canvas:rotated,applied:true,angle:before.angle,residual,verified:true};
+}
+function multiCropHealthy(canvas){
+ if(!canvas||canvas.width<240||canvas.height<140)return false;
+ const r=Math.max(canvas.width,canvas.height)/Math.max(1,Math.min(canvas.width,canvas.height));
+ if(r<1.22||r>2.05)return false;
+ try{
+  const s=window.DocFixScanner.resize(canvas,320),g=s.getContext('2d',{willReadFrequently:true}),d=g.getImageData(0,0,s.width,s.height).data;
+  let sum=0,sum2=0,n=0,dark=0,light=0;
+  for(let i=0;i<d.length;i+=16){const y=.2126*d[i]+.7152*d[i+1]+.0722*d[i+2];sum+=y;sum2+=y*y;n++;dark+=y<45;light+=y>245}
+  const mean=sum/Math.max(1,n),variance=sum2/Math.max(1,n)-mean*mean;
+  if(s!==canvas)s.width=s.height=1;
+  return variance>180&&dark/Math.max(1,n)<.88&&light/Math.max(1,n)<.96;
+ }catch{return false}
+}
+async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSafe=false,cardKind='generic',sourceVerified=false,orientationKnown=false}={}){
+ const scan=window.DocFixScanner;
+ const fine=multiSafe?null:window.DocFixGroup1?.refineQuad?.(original,sourceQuad);
+ const baseQuad=multiSafe?sourceQuad:(fine?.refined?fine.quad:sourceQuad);
+ let quad=baseQuad.map(p=>({...p})),processed=null,tightened=false,tightMethod='',physicalVerified=!multiSafe;
+ if(multiSafe&&sourceVerified){
+  // Verified physical contours on the untouched original: exactly one perspective warp.
+  quad=sourceQuad.map(p=>({...p}));
+  processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
+  tightened=true;physicalVerified=true;tightMethod='segmentazione sfondo originale';
+ }else if(multiSafe){
+  // Older fallbacks only for scans where texture segmentation cannot decide.
+  const found=window.DocFixOnePass?.detect?.(original,sourceQuad)||null;
+  if(found?.verified&&scan.validQuad(found.quad)){
+   quad=found.quad;
+   processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
+   tightened=true;physicalVerified=true;tightMethod='unico ritaglio dai 4 bordi originali';
+   confidence=Math.max(confidence,found.confidence||.81);
+  }else{
+   // Keep a reversible location-only preview. Do not claim the document was cropped.
+   quad=sourceQuad.map(p=>({...p}));
+   processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
+   physicalVerified=false;tightMethod='bordi non verificati, nessun ritaglio definitivo';
+   confidence=0;
+  }
+ }else{
+  const rough=scan.process(original,{crop:true,quad:baseQuad,rotation:0,filter:'original',strength:0},4200),ref=warmBackgroundReference(original),trim=warmVerticalTrim(rough,ref);
+  quad=trim.used?verticalTrimQuad(baseQuad,trim.y0,trim.y1):baseQuad.map(p=>({...p}));
+  rough.width=rough.height=1;
+  processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
+ }
+ if(!processed)processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
+ let rotation=0;
+ // The 90-degree camera layout is not proof that text is readable.
+ // On three-up scans verify identity-card MRZ (including 180-degree reversals),
+ // but avoid slow OCR on CF/licence already normalized by the photo layout.
+ const mrz=orientationKnown&&cardKind!=='identity'
+  ?{angle:0,trustworthy:false,method:'layout-only'}
+  :window.DocFixGroup2.recognizeMRZOrientation(processed);
+ const osd=mrz.trustworthy?{angle:0,review:false,trustworthy:true}
+  :orientationKnown?{angle:0,review:false,trustworthy:false}
+  :await inferTextOrientation(processed);
+ if(mrz.trustworthy&&mrz.angle){rotation=mrz.angle;processed=rotate(processed,rotation)}
+ else if(osd.trustworthy&&osd.angle){rotation=osd.angle;processed=rotate(processed,rotation)}
+ // A perspective-corrected card must not be re-deskewed or cropped again.
+ const deskew=multiSafe?(cardKind==='licence'?straightenLicenceWithoutCutting(processed):{canvas:processed,applied:false,angle:0,residual:0,verified:true}):fineDeskewCard(processed,{cardKind});
+ if(deskew.applied)processed=deskew.canvas;
+ const orientationReview=!mrz.trustworthy&&!osd.trustworthy&&textLines(processed).vertical;
+ const geometryReview=!physicalVerified||confidence<.78,quality=qualityAudit(processed,tightened?null:quad),qualityReview=quality.review,review=geometryReview||orientationReview||qualityReview;
+ const method=orientationKnown?'Foto ruotata di 90° per normalizzare le tessere':mrz.trustworthy?'Verso verificato dalla zona MRZ':osd.trustworthy?'Verso verificato dal testo':'Orientamento non confermato';
+ const qualityNote=quality.issues.length?' · '+quality.issues.join(' · '):'';
+ const cropNote=multiSafe?(physicalVerified?'4 bordi rilevati sull’originale · prospettiva corretta una volta':'CONTROLLARE I BORDI · il ritaglio automatico non è riuscito'):fine?.refined?'bordi rifiniti':'';
+ const deskewNote=deskew.applied?' · raddrizzato '+Math.abs(deskew.angle).toFixed(1)+'° · residuo '+Math.abs(deskew.residual||0).toFixed(1)+'°':(!deskew.verified&&cardKind==='cf'?' · raddrizzamento non applicato: nessun miglioramento verificato':'');
+ return {processed,rotation,review,cropVerified:physicalVerified,geometryReview,orientationReview,qualityReview,qualityIssues:quality.issues,qualityMetrics:quality.metrics,cropped:physicalVerified,sourceQuad:quad,deskewAngle:deskew.applied?deskew.angle:0,how:label+(cropNote?' · '+cropNote:'')+(tightMethod&&tightened?' · '+tightMethod:'')+deskewNote+' · '+method+qualityNote+(review?' · Verifica consigliata':'')};
+}
+// Never let an earlier 2-up success hide a third independently confirmed card.
+function chooseMultiCardMode(sourceCards,triple){
+ const scan=window.DocFixScanner;
+ const two=Array.isArray(sourceCards)&&sourceCards.length===2&&sourceCards.every(c=>c.confidence>=.80&&scan.validQuad(c.quad));
+ const three=triple?.verified===true&&triple.cards?.length===3&&triple.cards.every(c=>c.confidence>=.80&&scan.validQuad(c.quad));
+ if(!three)return {mode:two?'two':'fallback',conflict:false};
+ if(!two)return {mode:'three',conflict:false};
+ const thirds=triple.cards,used=new Set();
+ const matched=sourceCards.every(c=>{
+  const candidate=thirds.map((t,i)=>({i,overlap:overlapFraction(quadBounds(c.quad),quadBounds(t.quad))}))
+   .filter(x=>!used.has(x.i)).sort((a,b)=>b.overlap-a.overlap)[0];
+  if(!candidate||candidate.overlap<.53)return false;
+  used.add(candidate.i);return true;
+ });
+ const extra=thirds.find((c,i)=>!used.has(i));
+ const separate=extra&&sourceCards.every(c=>overlapFraction(quadBounds(extra.quad),quadBounds(c.quad))<.12);
+ const kinds=triple.materialVerified===true
+  &&new Set(thirds.map(c=>c.kind)).size===3
+  &&['cf','licence','identity'].every(k=>thirds.some(c=>c.kind===k));
+ if(matched&&separate&&kinds&&thirds.every(c=>c.confidence>=.83))
+  return {mode:'three',conflict:false,reason:'terza tessera verificata'};
+ return {mode:'two',conflict:true,reason:'possibile terza tessera: controlla che non manchi una pagina'};
+}
+async function makeImageEntries(file,index,total=1,meta={}){
+ const original=await imageCanvas(file,total);
+ // A portrait image containing two landscape cards is analyzed in one pass.
+ const portrait=original.height/Math.max(1,original.width);
+ const sourceCards=portrait>1.12?window.DocFixRealCrop?.detect?.(original)?.cards:null;
+ // Two detection engines are independent; a strong 2-up result must not
+ // prevent the check for a third card on the same source photograph.
+ const tripleRaw=portrait>1.18?window.DocFixThreeUp?.detect?.(original):null;
+ const triple=tripleRaw?.verified?(window.DocFixThreeUpPolish?.refine?.(original,tripleRaw)||tripleRaw):tripleRaw;
+ const decision=chooseMultiCardMode(sourceCards,triple);
+ const verified=decision.mode==='two';
+ if(decision.mode==='three'){
+  const out=[];
+  for(let i=0;i<3;i++){
+   const c=triple.cards[i];
+   const fixed=await normalizeKnownCard(original,c.quad,'3 tessere riconosciute · tessera '+(i+1),c.confidence,
+    {multiSafe:true,sourceVerified:true,orientationKnown:triple.orientation==='left',cardKind:c.kind||'generic'});
+   if(!multiCropHealthy(fixed.processed)){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · Verifica consigliata';}
+   if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
+   fixed.how+=' · DocFix 1.9.13 · '+(c.materialVerified?('classificato '+(c.kind||'tessera')+' / '+(c.sideGuess||'verso incerto')):'tipo e verso da verificare');
+   if(c.geometryReview){fixed.geometryReview=true;fixed.review=true;fixed.how+=' · bordo da verificare';}
+   out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),
+    sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,
+    splitSlot:i,splitCount:3,threeUp:true,twoUp:false,docType:c.kind||null,photoSide:c.sideGuess||'indefinito',materialVerified:c.materialVerified===true,cfDarkness:Number.isFinite(c.darkFraction)?c.darkFraction:null});
+  }
+  return out;
+ }
+ const multi=verified?sourceCards:multiCardCandidates(original);
+ if(multi.length===2){
+  const out=[];
+  for(let i=0;i<multi.length;i++){
+   const fixed=await normalizeKnownCard(original,multi[i].quad,'2 tessere rilevate · tessera '+(i+1),multi[i].confidence,{multiSafe:true,sourceVerified:verified,cardKind:meta.batchSize===2?(i===0?'cf':'ci'):'generic'});
+   if(!multiCropHealthy(fixed.processed)){
+    fixed.review=true;fixed.geometryReview=true;
+    fixed.how+=' · Ritaglio prudente: controlla i bordi';
+   }
+   if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
+   if(decision.conflict){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · '+decision.reason;}
+   out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:i,splitCount:2,twoUp:true});
+  }
+  return out;
+ }
+ const fixed=await normalizeRaster(original);
+ if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
+ return [{kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false}];
+}
+window.DocFixDesktopDiagnostics=Object.freeze({
+ multiCardCandidates,stackedCardCandidatesByGap,stackedCardCandidatesRecovery,chooseMultiCardMode,
+ pairedFourCards,regroupTwoFileFourCards,regroupLatestTwoUpSources,planSixCardOrder,regroupSixCards,manualOrderState:()=>manuallyOrdered,
+ twoByTwoCandidateMeta,twoByTwoState,threeByTwoState,rebuildSourceAsTwoUp,
+ safeRefineMultiQuad,tightenSeparatedCardCanvas,estimateFineDeskew,fineDeskewCard,straightenLicenceWithoutCutting,
+ warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
+ safeMultiCropPreview:(original,candidate)=>window.DocFixScanner.process(original,{crop:true,quad:expandQuadSafe(candidate.quad,.028),rotation:0,filter:'original',strength:0},2200),
+ orderedIncoming,reverseFileOrder,detectPhysicalLines:(c)=>window.DocFixPhysicalEdges?.detect?.(c),detectOriginalCard:(c,q)=>window.DocFixOnePass?.detect?.(c,q),detectTextureCards:(c)=>window.DocFixRealCrop?.detect?.(c),detectThreeCards:(c)=>window.DocFixThreeUp?.detect?.(c),polishThreeCards:(c,r)=>window.DocFixThreeUpPolish?.refine?.(c,r),refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.9.13'
+});
+function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
+ // The page's existing /Rotate is already applied in pdf.js previews.
+ const visible=(best+((pageRotate||0)/90))%4;return {chars,rotate:dominance>=.88&&chars>=45?((4-visible)%4)*90:0,dominance};}
+async function renderPdfPage(page,scale,pageCount=1){const v0=page.getViewport({scale:1});const limit=Math.min(3600,Math.round(Math.sqrt(48_000_000/Math.max(1,pageCount))*1.3));const s=Math.min(scale,limit/Math.max(v0.width,v0.height)),v=page.getViewport({scale:s});const out=canvas(v.width,v.height),g=out.getContext('2d',{alpha:false});g.fillStyle='#fff';g.fillRect(0,0,out.width,out.height);await page.render({canvasContext:g,viewport:v}).promise;return out}
+async function makePdfEntries(file,idx,token){if(window.DocFixPDFGuard)await window.DocFixPDFGuard.editable(file,'ottimizzare il documento');const data=await file.arrayBuffer();const engine=await deadline(window.DocFixPdfEngine.load(),12000);const job=await deadline(engine.getDocument({data:data.slice(0)}).promise,20000);try{if(job.numPages>MAX_PAGES)throw Error('Il PDF ha troppe pagine (limite '+MAX_PAGES+').');const results=[];for(let i=1;i<=job.numPages;i++){if(token!==sequence)throw Error('Operazione interrotta');status('Sistema il PDF: pagina '+i+' di '+job.numPages+'…');const p=await job.getPage(i),items=(await p.getTextContent()).items,orient=textRotation(items,p.rotate),raw=await renderPdfPage(p,3.0,job.numPages);let processed=raw,review=false,how='',rotation=orient.rotate;
+ if(orient.chars>=45){processed=rotate(raw,rotation);review=orient.dominance<.88;how=review?'Orientamento del testo da verificare':rotation?'Testo orientato automaticamente':'Testo già orientato';// Keep searchable vector text and original formatting.
+ const box=(rotation===0&&(p.rotate||0)%360===0)?whiteMarginCrop(raw):null;
+ if(box){processed=crop(processed,box);how+=' · Margini bianchi ridotti'}
+ results.push({kind:'vector',original:raw,processed,rotation,review,how,cropped:false,vectorCrop:box,embeddedText:items.map(x=>x.str||'').join(' ').replace(/\s+/g,' ').trim(),source:file.name,title:file.name+' · pagina '+i,sourceBytes:data,sourcePageIndex:i-1,sourceIndex:idx});
+ }else{
+ // Scanned PDFs must use exactly the same crop, perspective and rotation
+ // pipeline as a standalone image. Prior versions rotated the page while
+ // reusing quadrilateral coordinates from the unrotated raster.
+ const fixed=await normalizeRaster(raw);
+ results.push({kind:'raster',original:raw,...fixed,source:file.name,title:file.name+' · pagina '+i,sourceIndex:idx});
+ }
+ if(i%3===0)await wait();}
+ return results}finally{await job.destroy?.()}}
+const thumbsCache=new WeakMap();
+function thumb(c){
+ if(!c||!c.width||!c.height)throw Error('Anteprima non valida: immagine mancante');
+ const existing=thumbsCache.get(c);if(existing)return existing;
+ const s=window.DocFixScanner.resize(c,650);
+ try{
+  const url=s.toDataURL('image/jpeg',.90);
+  if(!url||url==='data:,')throw Error('Anteprima non generata');
+  thumbsCache.set(c,url);return url;
+ }finally{if(s!==c)s.width=s.height=1;}
+}
+function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
+ const item=document.createElement('article');item.className='page-card'+(e.review?' needs-check':'');
+ const pv=document.createElement('button');pv.type='button';pv.className='preview';pv.onclick=()=>openCorrection(i);pv.title='Apri pagina '+(i+1)+' per controllarla';
+ const img=document.createElement('img');img.src=thumb(e.processed);img.alt='Anteprima pagina '+(i+1);
+ const tag=document.createElement('span');tag.className='tag'+(e.review?' warning':'');tag.textContent=e.cropVerified===false?'Bordi da correggere':e.qualityReview?'Qualità da controllare':e.review?'Verifica consigliata':'Elaborata';
+ const count=document.createElement('span');count.className='page-number';count.textContent='Pagina '+(i+1);pv.append(img,tag,count);
+ const info=document.createElement('div');info.className='card-info';const name=document.createElement('strong');name.textContent=e.title;name.title=e.title;
+ const desc=document.createElement('small');desc.textContent=e.how;
+ const controls=document.createElement('div');controls.className='card-controls';const fix=document.createElement('button');fix.type='button';fix.textContent='✎ Correggi';fix.onclick=()=>openCorrection(i);
+ const turnL=document.createElement('button');turnL.type='button';turnL.textContent='↶ 90°';turnL.setAttribute('aria-label','Ruota la pagina '+(i+1)+' a sinistra');turnL.onclick=()=>turnEntry(i,270);
+  const turnR=document.createElement('button');turnR.type='button';turnR.textContent='↷ 90°';turnR.setAttribute('aria-label','Ruota la pagina '+(i+1)+' a destra');turnR.onclick=()=>turnEntry(i,90);
+  const flip=document.createElement('button');flip.type='button';flip.textContent='↻ 180°';flip.setAttribute('aria-label','Capovolgi pagina '+(i+1));flip.onclick=()=>turnEntry(i,180);
+  controls.append(turnL,turnR,flip,fix);
+  const order=document.createElement('div');order.className='card-order';
+  const up=document.createElement('button');up.type='button';up.textContent='↑ Prima';up.title='Sposta pagina '+(i+1)+' verso l’inizio';up.disabled=busy||i===0;up.onclick=()=>moveEntry(i,i-1);
+  const down=document.createElement('button');down.type='button';down.textContent='↓ Dopo';down.title='Sposta pagina '+(i+1)+' verso la fine';down.disabled=busy||i===entries.length-1;down.onclick=()=>moveEntry(i,i+1);
+  const del=document.createElement('button');del.type='button';del.className='delete-page';del.textContent='✕ Elimina';del.setAttribute('aria-label','Elimina pagina '+(i+1));del.disabled=busy;del.onclick=()=>removeEntry(i);
+  for(const b of [fix,turnL,turnR,flip])b.disabled=busy;
+  order.append(up,down,del);info.append(name,desc,controls,order);item.append(pv,info);cards.append(item);
+  // Desktop drag reorder. Buttons above stay usable on touch devices and with keyboards.
+  item.draggable=!busy;item.addEventListener('dragstart',ev=>{if(busy){ev.preventDefault();return}dragSource=i;item.classList.add('drag-sort');ev.dataTransfer.effectAllowed='move';ev.dataTransfer.setData('text/plain',String(i))});
+  item.addEventListener('dragover',ev=>{if(dragSource>=0&&!busy)ev.preventDefault()});
+  item.addEventListener('drop',ev=>{if(dragSource>=0&&!busy){ev.preventDefault();moveEntry(dragSource,i)}dragSource=-1});
+  item.addEventListener('dragend',()=>{dragSource=-1;item.classList.remove('drag-sort')});
+ });const completeFour=entries.length===4&&entries.every(e=>e.pairLabel),setState=twoByTwoState(),setThree=threeByTwoState(),sixOrder=setThree.complete?planSixCardOrder(entries.filter(e=>e.threeUp&&e.splitCount===3)):null;
+ $('summary').textContent=setThree.complete?(manuallyOrdered?'6 tessere · ordine manuale confermato':sixOrder?.ok?'6 tessere · ordine corretto 6/6':'6 tessere · ordine da verificare'):setThree.incomplete?('Set incompleto '+setThree.count+'/6'):completeFour?'4 tessere · set completo 4/4':setState.incomplete?('Set incompleto '+setState.count+'/4'):entries.length+' '+(entries.length===1?'pagina':'pagine')+(pending.length?' · '+pending.length+' in attesa':'');const reviewN=entries.filter(e=>e.review).length,qualityN=entries.filter(e=>e.qualityReview).length;$('review-count').textContent=reviewN?(reviewN+' da verificare'+(qualityN?' · '+qualityN+' qualità':'')):'Tutto pronto';syncActions();document.dispatchEvent(new CustomEvent('docfix:repaint',{detail:{entries:entries.slice()}}));}
+function moveEntry(from,to){if(busy||from===to||from<0||to<0||from>=entries.length||to>=entries.length)return;
+ const [item]=entries.splice(from,1);entries.splice(to,0,item);manuallyOrdered=true;lastPdfSize=null;repaint();status('Ordine delle pagine aggiornato: il PDF seguirà questo ordine.');}
+function discardUnusedSource(id){if(id===activeSource||pending.some(x=>x.id===id)||entries.some(e=>e.sourceIndex===id))return;sourceFiles=sourceFiles.filter(s=>s.id!==id)}
+function removeEntry(index){if(busy||index<0||index>=entries.length)return;
+ const [entry]=entries.splice(index,1),source=sourceFiles.find(s=>s.id===entry.sourceIndex);
+ lastRemoved={entry,index,source};discardUnusedSource(entry.sourceIndex);lastPdfSize=null;repaint();status('Pagina eliminata. Puoi annullare la rimozione.');}
+function undoRemove(){if(busy||!lastRemoved)return;const {entry,index,source}=lastRemoved;
+ if(!sourceFiles.some(s=>s.id===source.id)){
+  if(sourceFiles.length>=MAX_FILES||sourceFiles.reduce((a,s)=>a+s.file.size,0)+source.file.size>MAX_TOTAL){note('Impossibile annullare: limite massimo di file raggiunto.');return;}
+  sourceFiles.push(source);
+ }
+ if(entries.length>=MAX_PAGES){note('Impossibile annullare: massimo 40 pagine.');return;}
+ entries.splice(Math.min(index,entries.length),0,entry);lastRemoved=null;lastPdfSize=null;repaint();status('Pagina ripristinata.');}
+$('undo-remove').onclick=undoRemove;
+function reverseFileOrder(){
+ if(busy)return;
+ const order=[...new Set(entries.map(e=>e.sourceIndex))];
+ if(order.length<2)return;
+ manuallyOrdered=true;
+ const reversed=[...order].reverse(),rank=new Map(reversed.map((id,i)=>[id,i]));
+ entries=entries.map((e,i)=>({e,i})).sort((a,b)=>(rank.get(a.e.sourceIndex)-rank.get(b.e.sourceIndex))||(a.i-b.i)).map(x=>x.e);
+ sourceFiles=sourceFiles.map((s,i)=>({s,i})).sort((a,b)=>{
+   const ar=rank.has(a.s.id)?rank.get(a.s.id):reversed.length+a.i;
+   const br=rank.has(b.s.id)?rank.get(b.s.id):reversed.length+b.i;
+   return ar-br;
+ }).map(x=>x.s);
+ for(const e of entries){if(e.twoUp){e.pairGroup=null;e.pairLabel=null;e.title=e.source+' · tessera '+(Number(e.splitSlot||0)+1)}}
+ regroupLatestTwoUpSources();
+ lastPdfSize=null;repaint();status(entries.length===4&&entries.every(e=>e.pairLabel)?'Fronte e retro scambiati. Le 4 tessere sono state riordinate.':'Ordine dei file invertito. Il PDF seguirà questo ordine.');
+}
+$('reverse-files').onclick=reverseFileOrder;
+window.DocFixOcrHost=Object.freeze({entries:()=>entries.slice(),indexOf:e=>entries.indexOf(e),repaint:()=>repaint(),isBusy:()=>busy||processing||exporting});
+// The *only* editing panel, hidden until someone explicitly requests it.
+let editIndex=-1,editRotation=0,editQuad=null,editSource=null;
+// Rotate a selection with the photo, preserving its four physical corners.
+// Previously pressing Rotate reset every point to a default box and could
+// silently replace a good automatic crop with a cut-off document.
+function rotatedQuad(points,deg){
+ const q=((deg%360)+360)%360;
+ if(q===0)return points.map(p=>({...p}));
+ const turn=(p)=>q===90?{x:1-p.y,y:p.x}:q===180?{x:1-p.x,y:1-p.y}:{x:p.y,y:1-p.x};
+ const list=points.map(turn);
+ return (q===90?[list[3],list[0],list[1],list[2]]:q===180?[list[2],list[3],list[0],list[1]]:[list[1],list[2],list[3],list[0]]);
+}
+function turnEntry(index,angle){
+ if(busy)return;
+ const e=entries[index],turn=window.DocFixGroup2.normalizedAngle(angle);
+ e.processed=rotate(e.processed,turn);e.rotation=(e.rotation+turn)%360;
+ e.orientationReview=false;e.review=Boolean(e.geometryReview||e.qualityReview);
+ lastPdfSize=null;e.how=(e.how||'Documento').replace(/ · (Verso verificato dalla zona MRZ|Verso verificato dal testo|Orientamento non confermato)/g,'').replace(/ · Verso corretto manualmente/g,'').replace(/ · Verifica consigliata/g,'')+' · Verso corretto manualmente'+(e.geometryReview?' · Verifica i bordi':'')+(e.qualityIssues?.length?' · '+e.qualityIssues.join(' · '):'');
+ repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}));
+}
+function openCorrection(index){
+ if(busy)return;
+ editIndex=index;const e=entries[index];editRotation=e.rotation||0;editSource=rotate(e.original,editRotation);
+ if(e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))editQuad=rotatedQuad(e.sourceQuad,editRotation);
+ else{
+  editQuad=window.DocFixScanner.defaultQuad();const found=window.DocFixScanner.detectDocument(editSource);
+  if(found.status==='found'&&found.confidence>=.79)editQuad=found.quad.map(p=>({...p}));
+ }
+ $('edit-title').textContent='Pagina '+(index+1);$('editor').hidden=false;updateEditor();document.body.classList.add('dialog-open');
+}
+function closeCorrection(){$('editor').hidden=true;document.body.classList.remove('dialog-open');editIndex=-1;}
+$('edit-close').onclick=closeCorrection;$('edit-cancel').onclick=closeCorrection;
+$('editor').onclick=e=>{if(e.target===$('editor'))closeCorrection()};
+function updateEditor(){const img=$('editor-image');img.src=thumb(editSource);const handles=$('corners');handles.querySelectorAll('.corner').forEach(el=>el.remove());for(const [i,p] of editQuad.entries()){
+  const handle=document.createElement('button');handle.type='button';handle.className='corner';handle.style.left=(p.x*100)+'%';handle.style.top=(p.y*100)+'%';handle.setAttribute('aria-label','Angolo '+(i+1));
+  handle.onpointerdown=ev=>{ev.preventDefault();handle.setPointerCapture(ev.pointerId);};
+  handle.onpointermove=ev=>{if(!handle.hasPointerCapture(ev.pointerId))return;const r=handles.getBoundingClientRect();p.x=clamp((ev.clientX-r.left)/r.width,.005,.995);p.y=clamp((ev.clientY-r.top)/r.height,.005,.995);handle.style.left=(p.x*100)+'%';handle.style.top=(p.y*100)+'%';drawFrame()};handles.append(handle)
+ }drawFrame();}
+function drawFrame(){const poly=$('frame-poly');poly.setAttribute('points',editQuad.map(p=>(p.x*100)+','+(p.y*100)).join(' '));}
+function editorTurn(delta){if(editIndex<0)return;editRotation=(editRotation+delta+360)%360;editQuad=rotatedQuad(editQuad,delta);editSource=rotate(entries[editIndex].original,editRotation);updateEditor()}
+$('edit-rotate').onclick=()=>editorTurn(90);
+$('edit-left').onclick=()=>editorTurn(270);
+$('edit-flip').onclick=()=>editorTurn(180);
+$('edit-full').onclick=()=>{if(editIndex<0)return;const e=entries[editIndex];e.rotation=editRotation;e.processed=editSource;e.cropped=false;e.sourceQuad=null;e.vectorCrop=null;e.geometryReview=false;e.orientationReview=false;const q=qualityAudit(e.processed,null);e.qualityReview=q.review;e.qualityIssues=q.issues;e.qualityMetrics=q.metrics;e.review=q.review;e.how='Pagina completa · Verso confermato'+(q.issues.length?' · '+q.issues.join(' · '):'');lastPdfSize=null;closeCorrection();repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}))};
+$('edit-apply').onclick=()=>{if(editIndex<0)return;if(!window.DocFixScanner.validQuad(editQuad)){alert('Gli angoli si incrociano. Riprova.');return}
+ const e=entries[editIndex];e.rotation=editRotation;e.processed=window.DocFixScanner.process(editSource,{crop:true,quad:editQuad,rotation:0,filter:'original',strength:0},4200);e.cropped=true;e.geometryReview=false;e.orientationReview=false;e.sourceQuad=rotatedQuad(editQuad,(360-editRotation)%360);const q=qualityAudit(e.processed,e.sourceQuad);e.qualityReview=q.review;e.qualityIssues=q.issues;e.qualityMetrics=q.metrics;e.review=q.review;e.how='Ritaglio verificato'+(q.issues.length?' · '+q.issues.join(' · '):'');lastPdfSize=null;closeCorrection();repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}))};
+function addFiles(files){
+ const incoming=orderedIncoming(files);if(!incoming.length)return;
+ workspace.hidden=false;document.body.classList.add('has-document');zone.hidden=false;
+ let added=0,rejected=0;const batchId=nextLoadBatch++,accepted=[];
+ for(const f of incoming){
+  if(!supported(f)){note('«'+f.name+'»: formato non supportato (usa JPG, PNG, WebP, PDF).');rejected++;continue}
+  if(f.size>LIMIT){note('«'+f.name+'»: oltre il limite di 45 MB.');rejected++;continue}
+  if(sourceFiles.length>=MAX_FILES){note('«'+f.name+'»: limite di 12 file raggiunto. Elimina prima una pagina o avvia una nuova pratica.');rejected++;continue}
+  if(sourceFiles.reduce((n,s)=>n+s.file.size,0)+f.size>MAX_TOTAL){note('«'+f.name+'»: limite totale di 100 MB raggiunto.');rejected++;continue}
+  if(entries.length+pending.length>=MAX_PAGES){note('«'+f.name+'»: limite di 40 pagine raggiunto.');rejected++;continue}
+  const item={file:f,id:nextSourceId++,batchId,batchPos:accepted.length,batchSize:0};accepted.push(item);sourceFiles.push(item);pending.push(item);added++;
+ }
+ for(const item of accepted)item.batchSize=accepted.length;
+ if(added){lastPdfSize=null;dl.disabled=true;if(processing)totalInBatch+=added;status(added+' '+(added===1?'file aggiunto':'file aggiunti')+' alla coda. Puoi aggiungere altre foto; il PDF aspetta tutti i file.');}
+ else if(rejected)status('Nessun nuovo file aggiunto. Controlla gli avvisi.');
+ repaint();syncActions();
+ if(!processing&&!exporting&&pending.length)void drainPending();
+}
+// Pure, testable ordering decision. Fail explicitly when evidence is ambiguous.
+function planSixCardOrder(group){
+ if(group.length!==6||group.some(e=>!e.threeUp||e.splitCount!==3))return {ok:false,reason:'non sono state riconosciute sei tessere'};
+ const sources=[...new Set(group.map(e=>e.sourceIndex))];
+ if(sources.length!==2)return {ok:false,reason:'le tessere non provengono da due foto'};
+ const bySource=sources.map(id=>group.filter(e=>e.sourceIndex===id));
+ const types=['cf','licence','identity'];
+ if(bySource.some(g=>g.length!==3||types.some(type=>g.filter(e=>e.docType===type&&e.materialVerified===true).length!==1)))
+  return {ok:false,reason:'tipo di documento da verificare in almeno una foto'};
+ let sides=null,how='';
+ const labels=bySource.map(g=>{
+  const candidates=[...new Set(g.map(e=>e.photoSide))];
+  return candidates.length===1&&['fronte','retro'].includes(candidates[0])?candidates[0]:null;
+ });
+ // Two independent signals must not silently contradict each other.
+ // If they disagree, leave the order for manual confirmation.
+ const frontBackLabels=labels.includes('fronte')&&labels.includes('retro');
+ const darkA=bySource[0].find(e=>e.docType==='cf').cfDarkness;
+ const darkB=bySource[1].find(e=>e.docType==='cf').cfDarkness;
+ const bandOrder=Number.isFinite(darkA)&&Number.isFinite(darkB)&&Math.abs(darkA-darkB)>.12
+    ?(darkA<darkB?['fronte','retro']:['retro','fronte']):null;
+ if(frontBackLabels&&bandOrder&&bandOrder.some((side,i)=>side!==labels[i]))
+  return {ok:false,reason:'indicatori fronte/retro discordanti: controlla le tessere sanitarie'};
+ if(frontBackLabels){sides=labels;how='etichette';}
+ else if(bandOrder){sides=bandOrder;how='confronto banda nera CF';}
+ if(!sides)return {ok:false,reason:'fronte e retro non distinguibili con sicurezza'};
+ const titles={cf:'Codice fiscale',licence:'Patente',identity:'Carta identità'};
+ const ordered=[],names=[];
+ for(const type of types)for(const side of ['fronte','retro']){
+  const groupIndex=sides.indexOf(side);if(groupIndex<0)return {ok:false,reason:'verso assente'};
+  const e=bySource[groupIndex].find(item=>item.docType===type);
+  if(!e)return {ok:false,reason:'tessera mancante: '+type+' '+side};
+  ordered.push(e);names.push(titles[type]+' · '+side);
+ }
+ return {ok:true,ordered,names,how};
+}
+function regroupSixCards(){
+ if(manuallyOrdered)return false; // The operator's confirmed page order wins on export.
+ const group=entries.filter(e=>e.threeUp&&e.splitCount===3),plan=planSixCardOrder(group);
+ if(!plan.ok)return false;
+ const slots=[];entries.forEach((e,i)=>{if(group.includes(e))slots.push(i)});
+ if(slots.length!==6)return false;
+ const already=slots.every((slot,i)=>entries[slot]===plan.ordered[i]&&entries[slot].pairLabel===plan.names[i]);
+ if(already)return false;
+ for(let i=0;i<6;i++){
+  const e=plan.ordered[i];e.pairLabel=plan.names[i];e.title=plan.names[i]+' · '+e.source;entries[slots[i]]=e;
+ }
+ return true;
+}
+function pairedFourCards(group){
+ if(group.length!==4||!group.every(e=>e.twoUp&&e.splitCount===2))return [];
+ const sources=[...new Set(group.map(e=>e.sourceIndex))];
+ if(sources.length!==2)return [];
+ const sourceRank=new Map(sources.map((id,i)=>[id,i]));
+ const by=(sourcePos,slot)=>group.find(e=>sourceRank.get(e.sourceIndex)===sourcePos&&e.splitSlot===slot);
+ const ordered=[by(0,0),by(1,0),by(0,1),by(1,1)];
+ return ordered.some(x=>!x)?[]:ordered;
+}
+function applyFourCardLabels(ordered,slots){
+ const labels=['Codice fiscale · fronte','Codice fiscale · retro','Carta identità · fronte','Carta identità · retro'];
+ ordered.forEach((e,i)=>{e.pairLabel=labels[i];e.title=labels[i]+' · '+e.source;entries[slots[i]]=e});
+}
+function regroupTwoFileFourCards(batchId){
+ if(batchId==null)return false;
+ const group=entries.filter(e=>e.loadBatch===batchId),ordered=pairedFourCards(group);
+ if(ordered.length!==4)return false;
+ const slots=[];entries.forEach((e,i)=>{if(e.loadBatch===batchId)slots.push(i)});
+ if(slots.length!==4)return false;
+ applyFourCardLabels(ordered,slots);return true;
+}
+function regroupLatestTwoUpSources(){
+ const ids=[...new Set(entries.filter(e=>e.twoUp).map(e=>e.sourceIndex))];
+ if(ids.length<2)return false;
+ const a=ids[ids.length-2],b=ids[ids.length-1],group=entries.filter(e=>e.sourceIndex===a||e.sourceIndex===b);
+ const ordered=pairedFourCards(group);if(ordered.length!==4)return false;
+ if(group.every(e=>e.pairGroup===a+'|'+b))return false;
+ const slots=[];entries.forEach((e,i)=>{if(e.sourceIndex===a||e.sourceIndex===b)slots.push(i)});
+ if(slots.length!==4)return false;
+ ordered.forEach(e=>e.pairGroup=a+'|'+b);applyFourCardLabels(ordered,slots);return true;
+}
+function twoByTwoCandidateMeta(counts,sameTwoFileBatch,portraitTwoUp){
+ const complete=counts[0]===2&&counts[1]===2,hasTwo=counts.includes(2),onePlusOne=counts[0]===1&&counts[1]===1;
+ return complete||hasTwo||(onePlusOne&&sameTwoFileBatch&&portraitTwoUp);
+}
+function threeByTwoState(){
+ const imageSources=sourceFiles.filter(s=>!/\.pdf$/i.test(s.file.name)&&s.file.type!=='application/pdf');
+ if(imageSources.length!==2)return {candidate:false,incomplete:false,complete:false,count:0,counts:[]};
+ const ids=imageSources.map(s=>s.id),group=entries.filter(e=>ids.includes(e.sourceIndex));
+ const counts=ids.map(id=>group.filter(e=>e.sourceIndex===id).length);
+ const complete=counts.every(n=>n===3),candidate=complete||counts.includes(3);
+ return {candidate,complete,incomplete:candidate&&!complete,count:group.length,counts};
+}
+function twoByTwoState(){
+ const imageSources=sourceFiles.filter(s=>!/\.pdf$/i.test(s.file.name)&&s.file.type!=='application/pdf');
+ if(imageSources.length!==2)return {candidate:false,incomplete:false,complete:false,count:0,ids:[],counts:[]};
+ const ids=imageSources.map(s=>s.id),group=entries.filter(e=>ids.includes(e.sourceIndex));
+ const counts=ids.map(id=>group.filter(e=>e.sourceIndex===id).length),complete=counts[0]===2&&counts[1]===2,hasTwo=counts.includes(2);
+ const sameTwoFileBatch=imageSources[0].batchId!=null&&imageSources[0].batchId===imageSources[1].batchId&&imageSources.every(s=>s.batchSize===2);
+ const originals=ids.map(id=>group.find(e=>e.sourceIndex===id)?.original);
+ const portraitTwoUp=originals.length===2&&originals.every(o=>{if(!o)return false;const r=o.height/Math.max(1,o.width);return r>=1.16&&r<=2.45});
+ const candidate=twoByTwoCandidateMeta(counts,sameTwoFileBatch,portraitTwoUp);
+ return {candidate,complete,incomplete:candidate&&!complete,count:group.length,ids,counts,sameTwoFileBatch,portraitTwoUp};
+}
+async function rebuildSourceAsTwoUp(sourceId,sourcePos){
+ const oldIndex=entries.findIndex(e=>e.sourceIndex===sourceId),old=entries[oldIndex];
+ if(oldIndex<0||!old?.original)return false;
+ const texture=window.DocFixRealCrop?.detect?.(old.original)?.cards;
+ const verified=texture?.length===2&&texture.every(c=>c.confidence>=.80&&window.DocFixScanner.validQuad(c.quad));
+ let candidates=verified?texture:stackedCardCandidatesByGap(old.original);
+ if(candidates.length!==2)candidates=stackedCardCandidatesRecovery(old.original);
+ if(candidates.length!==2)return false;
+ const made=[];
+ for(let i=0;i<2;i++){
+  const fixed=await normalizeKnownCard(old.original,candidates[i].quad,'Recupero 2x2 · tessera '+(i+1),candidates[i].confidence,{multiSafe:true,sourceVerified:verified,cardKind:i===0?'cf':'ci'});
+  if(!multiCropHealthy(fixed.processed)){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · Ritaglio prudente: controlla i bordi'}
+  made.push({kind:'raster',original:old.original,...fixed,source:old.source,title:old.source+' · tessera '+(i+1),sourceIndex:sourceId,loadBatch:old.loadBatch??null,batchPos:old.batchPos??sourcePos,batchSize:2,splitSlot:i,splitCount:2,twoUp:true,recoveredTwoUp:true});
+ }
+ entries.splice(oldIndex,1,...made);
+ document.dispatchEvent(new CustomEvent('docfix:entries-added',{detail:{entries:made.slice()}}));
+ return true;
+}
+async function recoverIncompleteTwoByTwo(){
+ let state=twoByTwoState();if(!state.incomplete)return false;
+ let changed=false;
+ for(let pos=0;pos<state.ids.length;pos++){
+  if(state.counts[pos]!==1)continue;
+  const ok=await rebuildSourceAsTwoUp(state.ids[pos],pos);
+  changed=changed||ok;
+  state=twoByTwoState();
+ }
+ if(!changed)return false;
+ const paired=regroupLatestTwoUpSources()||regroupTwoFileFourCards(entries.find(e=>e.loadBatch!=null)?.loadBatch);
+ if(paired)status('Recupero automatico riuscito: set completo 4/4.');
+ return paired;
+}
+async function drainPending(){
+ if(processing||exporting||!pending.length)return;
+ const token=sequence;processing=true;busy=true;completedInBatch=0;totalInBatch=pending.length;dl.disabled=true;
+ try{
+  $('progress-wrap').hidden=false;progress(0,totalInBatch);repaint();
+  while(token===sequence&&pending.length){
+   const item=pending.shift(),f=item.file;activeSource=item.id;
+   try{
+    // The source id is global across all selections: two different PDFs
+    // must never share the same pdf-lib copy-source cache key.
+    const batch=(/\.pdf$/i.test(f.name)||f.type==='application/pdf')
+      ?await makePdfEntries(f,item.id,token)
+      :await makeImageEntries(f,item.id,Math.max(1,entries.length+pending.length+1),item);
+    if(token!==sequence)return;
+    if(entries.length+batch.length>MAX_PAGES)throw Error('Limite di 40 pagine raggiunto; questo file non è stato aggiunto.');
+    entries.push(...batch);
+    const paired=regroupTwoFileFourCards(item.batchId)||regroupLatestTwoUpSources();
+    const sixPaired=regroupSixCards();
+    document.dispatchEvent(new CustomEvent('docfix:entries-added',{detail:{entries:batch.slice()}}));
+    if(sixPaired)status('6 tessere ordinate: CF, patente e carta identità · fronte e retro.');
+    else if(paired)status('4 tessere separate: CF fronte/retro · CI fronte/retro.');
+   }catch(err){
+    if(token!==sequence)return;
+    note('«'+f.name+'»: '+String(err?.message||err));
+    sourceFiles=sourceFiles.filter(s=>s.id!==item.id);
+   }finally{if(token===sequence){activeSource=null;completedInBatch++;progress(completedInBatch,totalInBatch);repaint();await wait()}}
+  }
+ }finally{
+  if(token===sequence){
+   // Recovery is best-effort: one bad card must never lock the whole UI.
+   try{await recoverIncompleteTwoByTwo();}
+   catch(err){console.warn('DocFix recupero multiplo',err);note('Recupero automatico non riuscito: controlla la tessera evidenziata. Le altre pagine restano disponibili.');}
+   // Final guarantee: the pairing is checked again after EVERY input is processed.
+   const sixGrouped=manuallyOrdered?false:regroupSixCards();
+   processing=false;busy=false;activeSource=null;$('progress-wrap').hidden=true;
+   const setState=twoByTwoState(),setThree=threeByTwoState();
+   if(setThree.incomplete)status('Set incompleto '+setThree.count+'/6 · mancano '+(6-setThree.count)+' tessere: controlla le foto.');
+   else if(setThree.complete){
+    if(manuallyOrdered){status('Set completo 6/6 · ordine manuale conservato nel PDF.');}
+    else {const six=planSixCardOrder(entries.filter(e=>e.threeUp&&e.splitCount===3));
+    status(six.ok?'Set completo 6/6 · CF, patente e carta identità in ordine fronte/retro.':'6 tessere individuate · ordine da verificare: '+six.reason+'.');}
+   }
+   else if(setState.incomplete)status('Set incompleto '+setState.count+'/4 · manca un ritaglio: controlla la foto evidenziata.');
+   else if(setState.complete)status('Set completo 4/4 · controlla le anteprime e scarica il PDF.');
+   else if(entries.length){status(entries.some(e=>e.review)?'Tutte le foto elaborate. Controlla le pagine evidenziate prima del PDF.':'Tutte le foto caricate. Controlla l’ordine e scarica il PDF.');}
+   else status('Nessuna pagina disponibile. Aggiungi foto o controlla gli avvisi.');
+   repaint();
+   // Late batches added while leaving the processing loop are processed too.
+   if(pending.length)void drainPending();
+  }
+ }
+}
+async function jpegBytes(c){return window.DocFixGroup3.encodeJPEG(c,$('pdf-quality').value)}
+// Gruppo 5: keep one offline raster encoder for all raster pages and A4 print layout.
+// When vector preservation is unavailable offline, export from the previews
+// with an explicit note instead of abandoning the practice.
+const exportLayout=()=>$('pdf-layout').value==='a4'?'a4':'document';
+function downloadBlob(blob){
+ window.DocFixGroup5.validate(blob,entries.length);
+ if(currentURL)URL.revokeObjectURL(currentURL);
+ currentURL=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=currentURL;
+ a.download=window.DocFixGroup5.filename(entries);
+ document.body.appendChild(a);a.click();a.remove();
+ lastPdfSize=blob.size;syncActions();
+}
+async function exportRasterOffline(){
+ return window.DocFixGroup5.create(entries,{
+  encodeJPEG:jpegBytes,mode:exportLayout(),onProgress:progress,yieldFn:wait
+ });
+}
+async function exportPdf(){
+ if(busy||pending.length||!entries.length||twoByTwoState().incomplete||threeByTwoState().incomplete)return;
+ // Never export a stale source order if the last recognition finished between UI events.
+ if(threeByTwoState().complete&&!manuallyOrdered){
+  regroupSixCards();
+  const order=planSixCardOrder(entries.filter(e=>e.threeUp&&e.splitCount===3));
+  if(!order.ok)note('Sei tessere rilevate, ma ordine da controllare: '+order.reason+'. Puoi usare Prima/Dopo per riordinarle prima di scaricare.');
+  repaint();
+ }
+ exporting=true;busy=true;dl.disabled=true;
+ status('Preparo il PDF, senza tagliare i bordi…');
+ $('progress-wrap').hidden=false;progress(0,entries.length);
+ try{
+  let blob;
+  const containsVector=entries.some(e=>e.kind==='vector'&&!e.cropped);
+  // A4 always uses the same containing placement, including vector previews.
+  // This is displayed as an image-based print copy, not a searchable original.
+  if(!containsVector||exportLayout()==='a4'){
+   blob=await exportRasterOffline();
+   if(containsVector)note('Impaginazione A4: le pagine PDF importate sono state inserite come immagini, quindi il loro testo non è selezionabile.');
+  }else{
+   try{
+    const lib=await deadline(pdfLib(),9000);
+    const doc=await lib.PDFDocument.create(),loaded=new Map();let i=0;
+    for(const e of entries){
+     if(e.kind==='vector'&&!e.cropped){
+      const key=e.sourceIndex;let source=loaded.get(key);
+      if(!source){source=await lib.PDFDocument.load(e.sourceBytes,{ignoreEncryption:false});loaded.set(key,source)}
+      const pages=await doc.copyPages(source,[e.sourcePageIndex]);const page=doc.addPage(pages[0]);
+      const old=page.getRotation().angle||0;page.setRotation(lib.degrees((old+e.rotation)%360));
+      if(e.vectorCrop&&old===0&&e.rotation===0){
+       const b=e.vectorCrop,r=page.getSize(),x=r.width*b.x0,y=r.height*(1-b.y1);
+       page.setCropBox(x,y,r.width*(b.x1-b.x0),r.height*(b.y1-b.y0));
+       // MediaBox may intentionally exceed CropBox; viewers honor CropBox.
+      }
+     }else{
+      const jpg=await doc.embedJpg(await jpegBytes(e.processed));
+      const b=window.DocFixGroup5.layout(jpg.width,jpg.height,'document');
+      const page=doc.addPage([b.pageW,b.pageH]);page.drawImage(jpg,{x:b.x,y:b.y,width:b.w,height:b.h});
+     }
+     progress(++i,entries.length);if(i%2===0)await wait();
+    }
+    const bytes=await doc.save({useObjectStreams:true});
+    blob=new Blob([bytes],{type:'application/pdf'});
+    window.DocFixGroup5.validate(blob,entries.length);
+   }catch(err){
+    // PDF-lib is an optional external dependency in this historic v49 build.
+    // Fail safe: user's pages still download, but selectable vector text is lost.
+    note('Motore PDF vettoriale non disponibile: creo una copia fotografica senza perdere le pagine. Il testo di PDF importati non sarà selezionabile.');
+    blob=await exportRasterOffline();
+   }
+  }
+  downloadBlob(blob);
+  status('PDF pronto e scaricato · '+entries.length+' '+(entries.length===1?'pagina':'pagine')+' · '+fmt(blob.size)+'.');
+ }catch(e){
+  const message=String(e?.message||e);
+  status('PDF non scaricato: '+message);
+  note('Foto e correzioni restano qui. Puoi riprovare o scegliere «PDF più leggero».');
+ }finally{
+  exporting=false;busy=false;$('progress-wrap').hidden=true;repaint();
+  if(pending.length)void drainPending();
+ }
+}
+dl.onclick=exportPdf;
+
+})();
+</script><script src="./stability.js"></script><script src="./ocr-max.js"></script></body></html>
