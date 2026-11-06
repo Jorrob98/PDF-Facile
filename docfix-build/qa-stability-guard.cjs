@@ -11,6 +11,7 @@ const physical=read('app/card-physical-edges.js');
 const cards3=read('app/card-threeup.js');
 const cards2=read('app/card-texture-crop.js');
 const pdfCode=read('app/group5-export.js');
+const ocrCode=read('app/ocr-max.js');
 const between=(text,start,end)=>{
  const a=text.indexOf(start);const b=text.indexOf(end,a+start.length);
  assert.ok(a>=0&&b>a,'Missing regression anchor '+start);
@@ -100,5 +101,59 @@ const ids=x=>x.map(e=>e.id).join(',');
    'versioned PDF should not collide with previous Downloads');
  await assert.rejects(()=>exportAPI.create([{processed:{width:0,height:0}}],{encodeJPEG:async()=>fakeJPEG}),
    /non valida/,'invalid canvas must never produce a PDF');
+
+ // Simulate OCR worker startup failure: no temporary canvas may leak.
+ {
+  const localCode=between(ocrCode,'async function localMultiPass(source){','async function canvasBase64(');
+  const temp=[{width:1400,height:850},{width:1400,height:850},{width:1400,height:850}];
+  let releases=0;
+  const local=new Function('variants','worker','releaseWorkerNow',localCode+';return localMultiPass;')(
+    ()=>({natural:temp[0],contrast:temp[1],bw:temp[2]}),
+    async()=>{throw Error('synthetic worker startup failure')},()=>{releases++;});
+  await assert.rejects(()=>local({}),/synthetic worker startup failure/);
+  assert.ok(temp.every(x=>x.width===1&&x.height===1),'OCR canvas leak on worker failure');
+  assert.equal(releases,1,'failed worker must be reset');
+ }
+ // Conversion for OCR cloud: temporary downscale freed, input untouched.
+ {
+  const base64Code=between(ocrCode,'async function canvasBase64(canvas,quality=.94){','function providerLabel(');
+  let copy;
+  const convert=new Function('makeCanvas','btoa',base64Code+';return canvasBase64;')(
+    (src,w,h)=>{
+      copy={width:Math.round(w),height:Math.round(h),toBlob(cb){cb(new Blob([new Uint8Array(180)]));}};
+      return copy;
+    },text=>Buffer.from(text,'binary').toString('base64'));
+  const original={width:3400,height:2200};
+  assert.ok((await convert(original,.93)).length>0);
+  assert.equal(original.width,3400,'original OCR image changed');
+  assert.equal(copy.width,1,'scaled OCR image leaked');
+ }
+ // Simulate a user editing a document before slow OCR finishes.
+ {
+  const asyncCode=between(ocrCode,'async function analyzeEntry(entry,force=false){','function enqueue(entry,force=false){');
+  let resume;
+  const pendingOCR=new Promise(resolve=>{resume=resolve});
+  const entry={processed:{width:880,height:520},ocrRevision:0};
+  const analyze=new Function('host','repaint','localMultiPass','cloudStatus',
+    'getCloudStatus','signals','clamp','console',asyncCode+';return analyzeEntry;')(
+    ()=>({indexOf:()=>0}),()=>{},()=>pendingOCR,
+    {google:{configured:false},azure:{configured:false}},async()=>({}),()=>({}),
+    (x,low,high)=>Math.max(low,Math.min(high,x)),console);
+  const running=analyze(entry,false);
+  entry.ocrRevision=1;
+  resume({best:{text:'OLD',score:.91,confidence:91},results:[],
+    variants:{natural:{width:900,height:550}}});
+  await running;
+  assert.equal(entry.ocrResult,undefined,'outdated OCR saved over edited document');
+  assert.equal(entry.ocrState,'queued','fresh OCR request was skipped');
+ }
+ // Cleanup must remain active even when recovery fails.
+ {
+  const flow=between(index,'async function drainPending(){','async function jpegBytes(');
+  assert.ok(flow.includes("try{await recoverIncompleteTwoByTwo();}"),
+    'recovery exception must be caught before resetting busy state');
+  assert.ok(flow.includes('processing=false;busy=false;'),
+    'busy flag must clear on error');
+ }
  console.log('DocFix stability guard PASS: canvas ownership, manual sort, 2x2/3x2 order, output integrity, failed checks');
 })().catch(e=>{console.error('DocFix stability guard FAILED:',e);process.exitCode=1});
