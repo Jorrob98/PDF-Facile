@@ -1470,7 +1470,17 @@ async function makePdfEntries(file,idx,token){if(window.DocFixPDFGuard)await win
  }
  if(i%3===0)await wait();}
  return results}finally{await job.destroy?.()}}
-function thumb(c){const s=window.DocFixScanner.resize(c,650);return s.toDataURL('image/jpeg',.90)}
+const thumbsCache=new WeakMap();
+function thumb(c){
+ if(!c||!c.width||!c.height)throw Error('Anteprima non valida: immagine mancante');
+ const existing=thumbsCache.get(c);if(existing)return existing;
+ const s=window.DocFixScanner.resize(c,650);
+ try{
+  const url=s.toDataURL('image/jpeg',.90);
+  if(!url||url==='data:,')throw Error('Anteprima non generata');
+  thumbsCache.set(c,url);return url;
+ }finally{if(s!==c)s.width=s.height=1;}
+}
 function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
  const item=document.createElement('article');item.className='page-card'+(e.review?' needs-check':'');
  const pv=document.createElement('button');pv.type='button';pv.className='preview';pv.onclick=()=>openCorrection(i);pv.title='Apri pagina '+(i+1)+' per controllarla';
