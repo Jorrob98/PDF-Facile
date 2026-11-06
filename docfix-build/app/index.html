@@ -1398,18 +1398,41 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
  const deskewNote=deskew.applied?' · raddrizzato '+Math.abs(deskew.angle).toFixed(1)+'° · residuo '+Math.abs(deskew.residual||0).toFixed(1)+'°':(!deskew.verified&&cardKind==='cf'?' · raddrizzamento non applicato: nessun miglioramento verificato':'');
  return {processed,rotation,review,cropVerified:physicalVerified,geometryReview,orientationReview,qualityReview,qualityIssues:quality.issues,qualityMetrics:quality.metrics,cropped:physicalVerified,sourceQuad:quad,deskewAngle:deskew.applied?deskew.angle:0,how:label+(cropNote?' · '+cropNote:'')+(tightMethod&&tightened?' · '+tightMethod:'')+deskewNote+' · '+method+qualityNote+(review?' · Verifica consigliata':'')};
 }
+// Never let an earlier 2-up success hide a third independently confirmed card.
+function chooseMultiCardMode(sourceCards,triple){
+ const scan=window.DocFixScanner;
+ const two=Array.isArray(sourceCards)&&sourceCards.length===2&&sourceCards.every(c=>c.confidence>=.80&&scan.validQuad(c.quad));
+ const three=triple?.verified===true&&triple.cards?.length===3&&triple.cards.every(c=>c.confidence>=.80&&scan.validQuad(c.quad));
+ if(!three)return {mode:two?'two':'fallback',conflict:false};
+ if(!two)return {mode:'three',conflict:false};
+ const thirds=triple.cards,used=new Set();
+ const matched=sourceCards.every(c=>{
+  const candidate=thirds.map((t,i)=>({i,overlap:overlapFraction(quadBounds(c.quad),quadBounds(t.quad))}))
+   .filter(x=>!used.has(x.i)).sort((a,b)=>b.overlap-a.overlap)[0];
+  if(!candidate||candidate.overlap<.53)return false;
+  used.add(candidate.i);return true;
+ });
+ const extra=thirds.find((c,i)=>!used.has(i));
+ const separate=extra&&sourceCards.every(c=>overlapFraction(quadBounds(extra.quad),quadBounds(c.quad))<.12);
+ const kinds=triple.materialVerified===true
+  &&new Set(thirds.map(c=>c.kind)).size===3
+  &&['cf','licence','identity'].every(k=>thirds.some(c=>c.kind===k));
+ if(matched&&separate&&kinds&&thirds.every(c=>c.confidence>=.83))
+  return {mode:'three',conflict:false,reason:'terza tessera verificata'};
+ return {mode:'two',conflict:true,reason:'possibile terza tessera: controlla che non manchi una pagina'};
+}
 async function makeImageEntries(file,index,total=1,meta={}){
  const original=await imageCanvas(file,total);
  // A portrait image containing two landscape cards is analyzed in one pass.
  const portrait=original.height/Math.max(1,original.width);
  const sourceCards=portrait>1.12?window.DocFixRealCrop?.detect?.(original)?.cards:null;
- const verified=sourceCards?.length===2&&sourceCards.every(c=>c.confidence>=.80&&window.DocFixScanner.validQuad(c.quad));
- // Preserve the proven two-card engine unchanged. If it has not positively
- // matched two cards, look for three physically separate portrait-oriented cards.
- const tripleRaw=!verified&&portrait>1.18?window.DocFixThreeUp?.detect?.(original):null;
- const triple=tripleRaw?.verified?window.DocFixThreeUpPolish?.refine?.(original,tripleRaw)||tripleRaw:tripleRaw;
- const threeVerified=triple?.verified===true&&triple.cards?.length===3&&triple.cards.every(c=>c.confidence>=.80&&window.DocFixScanner.validQuad(c.quad));
- if(threeVerified){
+ // Two detection engines are independent; a strong 2-up result must not
+ // prevent the check for a third card on the same source photograph.
+ const tripleRaw=portrait>1.18?window.DocFixThreeUp?.detect?.(original):null;
+ const triple=tripleRaw?.verified?(window.DocFixThreeUpPolish?.refine?.(original,tripleRaw)||tripleRaw):tripleRaw;
+ const decision=chooseMultiCardMode(sourceCards,triple);
+ const verified=decision.mode==='two';
+ if(decision.mode==='three'){
   const out=[];
   for(let i=0;i<3;i++){
    const c=triple.cards[i];
@@ -1435,6 +1458,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
     fixed.how+=' · Ritaglio prudente: controlla i bordi';
    }
    if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
+   if(decision.conflict){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · '+decision.reason;}
    out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:i,splitCount:2,twoUp:true});
   }
   return out;
@@ -1444,7 +1468,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
  return [{kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false}];
 }
 window.DocFixDesktopDiagnostics=Object.freeze({
- multiCardCandidates,stackedCardCandidatesByGap,stackedCardCandidatesRecovery,
+ multiCardCandidates,stackedCardCandidatesByGap,stackedCardCandidatesRecovery,chooseMultiCardMode,
  pairedFourCards,regroupTwoFileFourCards,regroupLatestTwoUpSources,planSixCardOrder,regroupSixCards,manualOrderState:()=>manuallyOrdered,
  twoByTwoCandidateMeta,twoByTwoState,threeByTwoState,rebuildSourceAsTwoUp,
  safeRefineMultiQuad,tightenSeparatedCardCanvas,estimateFineDeskew,fineDeskewCard,straightenLicenceWithoutCutting,
