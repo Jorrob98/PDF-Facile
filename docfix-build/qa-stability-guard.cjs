@@ -128,6 +128,17 @@ const ids=x=>x.map(e=>e.id).join(',');
   assert.equal(before.width,900,'thumbnail conversion must not destroy source');
  }
 
+
+ // Export and new-practice operations must never race.
+ {
+  const resetCode=between(index,'function reset(){',"'reset').onclick=reset;");
+  assert.ok(resetCode.includes("if(exporting){status("),
+    'reset must be gated while PDF export is running');
+  assert.ok(resetCode.includes("if(!$('editor').hidden)closeCorrection();"),
+    'reset must close manual correction editor to prevent stale image access');
+  assert.ok(index.includes("$('reset').disabled=exporting;"),
+    'reset UI must reflect active export lock');
+ }
  // The verified two-card engine must not hide a third independent document.
  {
   const geometry=between(index,'function quadBounds(q){','function crossOverlap(');
