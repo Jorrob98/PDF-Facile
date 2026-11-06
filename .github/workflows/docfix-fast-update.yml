@@ -138,6 +138,8 @@ jobs:
           grep -F "physicalNoFalseCrop" verify/main.js
           grep -F "card-physical-edges.js" verify/app/index.html
           grep -F "card-onepass.js" verify/app/index.html
+          grep -F "Bordi da correggere" verify/app/index.html
+          grep -F "cropVerified:physicalVerified" verify/app/index.html
           grep -F "onePassPhysicalOriginal" verify/main.js
           grep -F "onePassBlankRejected" verify/main.js
           grep -F "physical-outer-boundaries-lines" verify/app/card-physical-edges.js
