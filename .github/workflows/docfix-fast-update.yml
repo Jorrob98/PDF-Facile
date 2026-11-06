@@ -157,7 +157,7 @@ jobs:
           grep -F "sixCardDarknessRecovery" verify/main.js
           grep -F "sixCardUncertainSafe" verify/main.js
           grep -F "straightenLicenceWithoutCutting" verify/app/index.html
-          grep -F "cardKind===\u0027licence\u0027" verify/app/index.html
+          grep -F "straightenLicenceWithoutCutting(processed)" verify/app/index.html
           grep -F "sixPageUniqueExport" verify/main.js
           grep -F "DocFix-1.9.12-6-tessere.pdf" verify/app/group5-export.js
           grep -F "q[2].y+7/h" verify/app/card-threeup-polish.js
