@@ -12,6 +12,9 @@ const cards3=read('app/card-threeup.js');
 const cards2=read('app/card-texture-crop.js');
 const pdfCode=read('app/group5-export.js');
 const ocrCode=read('app/ocr-max.js');
+const desktopMain=read('main.js');
+const preload=read('preload.js');
+const updateUI=read('app/stability.js');
 const between=(text,start,end)=>{
  const a=text.indexOf(start);const b=text.indexOf(end,a+start.length);
  assert.ok(a>=0&&b>a,'Missing regression anchor '+start);
@@ -177,6 +180,35 @@ const ids=x=>x.map(e=>e.id).join(',');
     'recovery exception must be caught before resetting busy state');
   assert.ok(flow.includes('processing=false;busy=false;'),
     'busy flag must clear on error');
+ }
+
+ // Update installer launch is not installation success: verify version on next startup.
+ {
+  const receiptSource=between(desktopMain,'function updateReceiptPath(){','function versionParts(v){');
+  const disk=new Map();
+  const fakeFs={existsSync:p=>disk.has(p),mkdirSync(){},
+    writeFileSync:(p,s)=>disk.set(p,String(s)),
+    readFileSync:p=>disk.get(p),unlinkSync:p=>disk.delete(p)};
+  let version='1.9.12';
+  const app={getPath:()=>'/tmp/docfix-test',getVersion:()=>version};
+  const api=new Function('fs','path','app','log','isNewerVersion','SELF_TEST',
+    receiptSource+'return {writeUpdateReceipt,inspectUpdateReceipt,updateReceiptPath};')(
+    fakeFs,path,app,()=>{},
+    (target,current)=>target.split('.').map(Number).join(',')>current.split('.').map(Number).join(','),false);
+  api.writeUpdateReceipt('1.9.13');
+  assert.equal(api.inspectUpdateReceipt().status,'pending','new update remains pending');
+  version='1.9.13';
+  assert.equal(api.inspectUpdateReceipt().status,'confirmed','installed version must be confirmed');
+  assert.equal(disk.size,0,'confirmed receipt removed');
+  version='1.9.12';
+  api.writeUpdateReceipt('1.9.13');
+  disk.set(api.updateReceiptPath(),JSON.stringify({target:'1.9.13',created:Date.now()-150000}));
+  assert.equal(api.inspectUpdateReceipt().status,'unconfirmed','failed silent install detected');
+  assert.equal(disk.size,0,'failed receipt cleared to avoid repeated alerts');
+  assert.ok(preload.includes('docfix:update:last-result'),'update receipt exposed to UI');
+  assert.ok(updateUI.includes("r?.status==='unconfirmed'"),'UI warns about uninstalled update');
+  assert.ok(!updateUI.includes("percent:100,message:'Aggiornamento applicato'"),
+    'UI must not report 100% before actual installation');
  }
  console.log('DocFix stability guard PASS: canvas ownership, manual sort, 2x2/3x2 order, output integrity, failed checks');
 })().catch(e=>{console.error('DocFix stability guard FAILED:',e);process.exitCode=1});
