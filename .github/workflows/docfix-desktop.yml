@@ -101,6 +101,9 @@ jobs:
           if($main -notmatch 'twoByTwoGate'){ throw 'Self-test blocco set incompleto mancante' }
           if($main -notmatch 'onePlusOneRecovery'){ throw 'Self-test recupero 1+1 mancante' }
           if($main -notmatch 'tightSeparatedCard'){ throw 'Self-test rifinitura bordo tessera mancante' }
+          if($main -notmatch 'cfPhysicalCrop'){ throw 'Self-test bordo codice fiscale mancante' }
+          if($index -notmatch "cardKind='cf'"){ throw 'Modalità dedicata codice fiscale mancante' }
+          if($index -notmatch 'rotatedProbe'){ throw 'Sonda ruotata codice fiscale mancante' }
           if($index -notmatch 'tightenSeparatedCardCanvas'){ throw 'Secondo ritaglio fisico tessera mancante' }
           if($index -notmatch 'bordo fisico rifinito'){ throw 'Stato bordo fisico rifinito mancante' }
           if($index -notmatch 'twoByTwoCandidateMeta'){ throw 'Decisione recupero 1+1 mancante' }
