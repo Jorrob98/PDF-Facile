@@ -15,7 +15,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.9.7',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.9.8',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -24,7 +24,7 @@ function log(...parts){
   console.log(line.trim());
 }
 function requiredStartupFiles(){
-  return ['index.html','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
+  return ['index.html','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
 }
 function requiredEngineFiles(){
   return [
@@ -149,7 +149,7 @@ async function runSelfTest(){
       (async()=>{
         const out={};
         out.ui=!!document.querySelector('#dropzone')&&!!document.querySelector('#download')&&!!document.querySelector('#picker');
-        out.modules=!!window.DocFixGroup1&&!!window.DocFixGroup2&&!!window.DocFixGroup3&&!!window.DocFixGroup5&&!!window.DocFixStability&&!!window.DocFixPhysicalEdges&&!!window.DocFixOnePass;
+        out.modules=!!window.DocFixGroup1&&!!window.DocFixGroup2&&!!window.DocFixGroup3&&!!window.DocFixGroup5&&!!window.DocFixStability&&!!window.DocFixPhysicalEdges&&!!window.DocFixOnePass&&!!window.DocFixRealCrop;
         const c=document.createElement('canvas');c.width=800;c.height=500;
         const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.fillStyle='#111';g.font='40px Arial';g.fillText('DOCFIX SELF TEST 123',70,180);g.strokeRect(40,40,720,420);
         const jpg=await window.DocFixGroup3.encodeJPEG(c,'high');
@@ -171,16 +171,33 @@ async function runSelfTest(){
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.7':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.8':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         out.updaterHiddenWhenNoUpdate=document.querySelector('#docfix-update-button')?.hidden===true;
-        out.ocrModule=window.DocFixOCRMax?.version==='1.9.7';
+        out.ocrModule=window.DocFixOCRMax?.version==='1.9.8';
         const cloudTest=window.DocFixOCRCloud?.selfTest?await window.DocFixOCRCloud.selfTest():null;
         out.ocrCloudLogic=!!cloudTest&&cloudTest.identity===true&&cloudTest.structured===true&&cloudTest.agreement===true;
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
         for(const y of [230,620]){mg.fillStyle='#d9eef0';mg.fillRect(130,y,640,360);mg.fillStyle='#1b6380';mg.fillRect(130,y,640,80);mg.fillStyle='#fff';mg.fillRect(170,y+120,560,70);mg.fillStyle='#111';for(let x=190;x<700;x+=12)mg.fillRect(x,y+135,5,40);mg.fillStyle='#222';mg.font='32px Arial';mg.fillText('DOCFIX TEST',190,y+250);}
         const multi=window.DocFixDesktopDiagnostics?.multiCardCandidates(mc)||[];
         out.multiCard=multi.length===2&&multi.every(x=>x.status==='found');
+        // Privacy-safe synthetic texture regression: no customer documents are
+        // included in the repository or GitHub Actions artifacts.
+        const tex=document.createElement('canvas');tex.width=600;tex.height=800;
+        const tx=tex.getContext('2d'),gtex=tx.createLinearGradient(0,0,600,800);
+        gtex.addColorStop(0,'rgb(138,120,139)');gtex.addColorStop(1,'rgb(132,131,155)');
+        tx.fillStyle=gtex;tx.fillRect(0,0,600,800);
+        tx.fillStyle='rgb(200,230,232)';tx.fillRect(90,100,400,260);
+        tx.fillStyle='rgb(28,89,139)';tx.fillRect(90,100,400,35);
+        tx.fillStyle='#f7f7f7';tx.fillRect(115,210,349,18);
+        tx.fillStyle='rgb(215,205,212)';tx.fillRect(95,450,401,257);
+        tx.fillStyle='#604f65';for(let z=0;z<5;z++)tx.fillRect(130,530+z*29,325,3);
+        const textureTest=window.DocFixRealCrop?.detect?.(tex)||{cards:[]};
+        out.textureTwoCards=textureTest.cards?.length===2
+          &&textureTest.cards[0].quad[0].x>.10&&textureTest.cards[0].quad[0].x<.18
+          &&textureTest.cards[0].quad[0].y>.09&&textureTest.cards[0].quad[0].y<.16
+          &&textureTest.cards[1].quad[0].y>.52&&textureTest.cards[1].quad[0].y<.61;
+
         // Both cards must be detected independently on the same untouched scan.
         const sourceFirst=multi.length===2?multi.map(c=>window.DocFixDesktopDiagnostics?.detectOriginalCard?.(mc,c.quad)):[],
               sourceCenter=r=>r?.quad?.reduce((sum,p)=>sum+p.y,0)/4;
@@ -269,7 +286,7 @@ async function runSelfTest(){
         const verifiedDeskew=skew?window.DocFixDesktopDiagnostics?.fineDeskewCard?.(skew,{cardKind:'cf'}):null;
         const verifiedResidual=verifiedDeskew?.canvas?window.DocFixDesktopDiagnostics?.estimateFineDeskew?.(verifiedDeskew.canvas,{cardKind:'cf'}):null;
         out.deskewResidualVerified=!!verifiedDeskew?.applied&&verifiedDeskew.verified===true&&verifiedDeskew.residual<=.5&&(!verifiedResidual?.applied||Math.abs(verifiedResidual.angle)<=.5);
-        out.diagnosticsCoverage=['tightenSeparatedCardCanvas','estimateFineDeskew','fineDeskewCard','twoByTwoCandidateMeta','detectPhysicalLines','detectOriginalCard'].every(k=>typeof window.DocFixDesktopDiagnostics?.[k]==='function');
+        out.diagnosticsCoverage=['tightenSeparatedCardCanvas','estimateFineDeskew','fineDeskewCard','twoByTwoCandidateMeta','detectPhysicalLines','detectOriginalCard','detectTextureCards'].every(k=>typeof window.DocFixDesktopDiagnostics?.[k]==='function');
         const orderTest=window.DocFixDesktopDiagnostics?.orderedIncoming?.([
           new File(['b'],'WhatsApp Image 2026-11-05 at 15.10.11.jpeg',{type:'image/jpeg',lastModified:2}),
           new File(['a'],'WhatsApp Image 2026-11-05 at 15.10.10.jpeg',{type:'image/jpeg',lastModified:1})
@@ -318,7 +335,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.9.7','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.9.8','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
