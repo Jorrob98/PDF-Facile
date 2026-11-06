@@ -1233,12 +1233,12 @@ function tightenSeparatedCardCanvas(coarse,{cardKind='generic'}={}){
   const trustedOuter=/physical-outer-boundaries|precise-color|cf-physical|cf-precise/i.test(method);
   // CF generic card-edge boxes are allowed to be slightly looser rather than
   // cutting barcode/bottom text. Trusted physical edges get only a tiny pad.
-  const pad=cardKind==='cf'?(trustedOuter?.010:.026):.012;
+  const pad=cardKind==='cf'?(trustedOuter ? .010 : .026):.012;
   q=expandQuadSafe(q,pad);
   const qa=scan.area(q),qr=quadCardRatio(q,coarse.width,coarse.height);
   if(qa<.17||qa>.95||qr<1.40||qr>1.84)continue;
   const methodBonus=trustedOuter?1.25:(/card-edges?/i.test(method)?-.35:0);
-  const cfBonus=cardKind==='cf'&&candidate.rotatedProbe?.75:0;
+  const cfBonus=(cardKind==='cf'&&candidate.rotatedProbe)?0.75:0;
   const score=conf*1.8+(1-Math.abs(qr-1.586)/.25)+Math.min(.75,qa)+methodBonus+cfBonus;
   if(!best||score>best.score)best={quad:q,score,confidence:Math.max(conf,.72),method,backLike:candidate.cardBackLike===true,trustedOuter};
  }
