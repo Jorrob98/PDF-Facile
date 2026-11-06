@@ -60,7 +60,7 @@ body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,tr
 <section id="dropzone" role="button" tabindex="0" aria-label="Carica foto o PDF" class="dropzone"><span class="upload-icon">↥</span><h2>Trascina qui i documenti</h2><p>Oppure selezionali dal dispositivo</p><div class="choose">+ Aggiungi foto o PDF</div><small>JPG, PNG, WebP, PDF · più file insieme · Ctrl+O per aprire · Ctrl+V per incollare una foto</small></section><input hidden id="picker" type="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp" multiple>
 <section id="workspace" class="workspace" hidden><div class="result-header"><div><div class="eyebrow">RISULTATO</div><h2>Le tue pagine</h2></div><span id="summary" class="pill"></span></div><p id="status" role="status" class="status" aria-live="polite"></p><div id="progress-wrap" class="progress-wrap" hidden><div id="progress-bar" class="progress-bar"></div></div><div class="review-row"><span>Controlla le anteprime; usa le frecce per scegliere l’ordine delle pagine.</span><strong id="review-count"></strong></div><div class="batch-toolbar"><button type="button" id="add-more" class="add-more">＋ Aggiungi altre foto o PDF</button><button type="button" id="reverse-files" class="add-more" hidden>↕ Inverti ordine file</button><span id="queue-count" role="status" aria-live="polite" hidden></span><button type="button" id="undo-remove" class="undo-remove" hidden>↶ Annulla eliminazione</button></div><div id="cards" class="pages"></div><div id="warnings" class="warnings" hidden></div><details class="advanced-options"><summary>Opzioni PDF</summary><div class="quality-choice"><label for="pdf-quality">Qualità del PDF</label><select id="pdf-quality" aria-label="Qualità del PDF"><option value="high" selected>Alta qualità · consigliata</option><option value="compact">PDF più leggero</option></select><small>Alta qualità preserva maggiormente scritte e dettagli; foto già sfocate non possono essere recuperate.</small></div><div class="layout-choice"><label for="pdf-layout">Impaginazione</label><select id="pdf-layout" aria-label="Impaginazione PDF"><option value="document" selected>Forma originale del documento</option><option value="a4">A4 per stampare · documento intero centrato</option></select><small>Il PDF rispetta sempre le proporzioni e non taglia i bordi. L’opzione A4 aggiunge margini bianchi per la stampa.</small></div></details><div class="action-bar"><button type="button" id="download" disabled class="download">↓ Scarica PDF pronto</button><button type="button" id="reset" class="reset">+ Nuovo documento</button></div><p id="sizes" class="sizes"></p></section>
 <div class="bottom"><div class="bottom-icon">♧</div><div><strong>Privacy sotto controllo</strong><span>PDF e correzioni restano sul PC. Se attivi OCR MAX Cloud, solo le immagini necessarie all’OCR vengono inviate ai provider cloud che hai configurato.</span></div></div></main>
-<footer>DocFix Desktop · Versione 1.9.3 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
+<footer>DocFix Desktop · Versione 1.9.4 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
 <div id="editor" class="editor-overlay" hidden><div class="editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-title"><div class="editor-head"><div><span class="eyebrow">CORREZIONE</span><h2 id="edit-title">Pagina</h2></div><button type="button" id="edit-close" aria-label="Chiudi">×</button></div><p>Sposta i quattro punti se il bordo è sbagliato. Qui trovi solo ciò che serve.</p><div class="editor-frame"><img id="editor-image" alt="Documento da correggere"><div id="corners" class="corners"><svg class="quad" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon id="frame-poly" points=""/></svg></div></div><div class="editor-actions"><button type="button" id="edit-left">↶ Sinistra 90°</button><button type="button" id="edit-rotate">↷ Destra 90°</button><button type="button" id="edit-flip">↻ Capovolgi 180°</button><button type="button" id="edit-full">Usa pagina completa</button><button type="button" id="edit-cancel">Annulla</button><button type="button" id="edit-apply" class="confirm">✓ Applica ritaglio</button></div></div></div>
 <script src="./group3-quality.js"></script><script src="./group5-export.js"></script><script>/* DocFix 37 — single, hardened PDF.js engine for every PDF operation. */
 'use strict';
@@ -1248,43 +1248,49 @@ function tightenSeparatedCardCanvas(coarse,{cardKind='generic'}={}){
  if(out.width<260||out.height<160||ratio<1.40||ratio>1.84){out.width=out.height=1;return {canvas:coarse,tightened:false,quad:null,confidence:0,method:'safe-zone'}}
  return {canvas:out,tightened:true,quad:best.quad,confidence:best.confidence,method:best.method,backLike:best.backLike,trustedOuter:best.trustedOuter};
 }
-function estimateFineDeskew(source){
+function estimateFineDeskew(source,{cardKind='generic'}={}){
  const scan=window.DocFixScanner,s=scan.resize(source,520),w=s.width,h=s.height;
- if(w<220||h<130)return {angle:0,confidence:0,applied:false};
+ if(w<220||h<130)return {angle:0,confidence:0,applied:false,method:'too-small'};
  const d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,g=new Float32Array(w*h),grads=[];
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const k=(y*w+x)*4;g[y*w+x]=.299*d[k]+.587*d[k+1]+.114*d[k+2]}
- const x0=Math.round(w*.08),x1=Math.round(w*.92),y0=Math.round(h*.10),y1=Math.round(h*.90);
- for(let y=y0+1;y<y1-1;y+=2)for(let x=x0;x<x1;x+=2){const v=Math.abs(g[(y+1)*w+x]-g[(y-1)*w+x]);if(v>8)grads.push(v)}
- if(grads.length<240){s.width=s.height=1;return {angle:0,confidence:0,applied:false}}
- grads.sort((a,b)=>a-b);const threshold=Math.max(18,grads[Math.floor(grads.length*.78)]||18),points=[];
+ const x0=Math.round(w*.06),x1=Math.round(w*.94),y0=Math.round(h*.07),y1=Math.round(h*.93);
+ for(let y=y0+1;y<y1-1;y+=2)for(let x=x0;x<x1;x+=2){const v=Math.abs(g[(y+1)*w+x]-g[(y-1)*w+x]);if(v>7)grads.push(v)}
+ if(grads.length<200){s.width=s.height=1;return {angle:0,confidence:0,applied:false,method:'few-edges'}}
+ grads.sort((a,b)=>a-b);const threshold=Math.max(15,grads[Math.floor(grads.length*.72)]||15),points=[];
  for(let y=y0+1;y<y1-1;y+=2)for(let x=x0;x<x1;x+=2){
   const v=Math.abs(g[(y+1)*w+x]-g[(y-1)*w+x]);
-  if(v>=threshold)points.push([x,y,Math.min(90,v)]);
+  if(v>=threshold)points.push([x,y,Math.min(100,v)]);
  }
- if(points.length<180){s.width=s.height=1;return {angle:0,confidence:0,applied:false}}
- const cy=h/2,cx=w/2,scoreAt=deg=>{
-  const tan=Math.tan(deg*Math.PI/180),hist=new Float32Array(h+40),off=20;let total=0;
-  for(const [x,y,wt] of points){const yy=Math.round(y-cy-tan*(x-cx)+cy)+off;if(yy>=0&&yy<hist.length){hist[yy]+=wt;total+=wt}}
-  let score=0;for(const v of hist)score+=v*v;
-  return score/Math.max(1,total*total);
+ if(points.length<150){s.width=s.height=1;return {angle:0,confidence:0,applied:false,method:'few-strong-edges'}}
+ const cy=h/2,cx=w/2;
+ const bestFor=(list)=>{
+  const scoreAt=deg=>{
+   const tan=Math.tan(deg*Math.PI/180),hist=new Float32Array(h+50),off=25;let total=0;
+   for(const [x,y,wt] of list){const yy=Math.round(y-cy-tan*(x-cx)+cy)+off;if(yy>=0&&yy<hist.length){hist[yy]+=wt;total+=wt}}
+   let score=0;for(const v of hist)score+=v*v;
+   return score/Math.max(1,total*total);
+  };
+  const zero=scoreAt(0);let angle=0,score=zero;
+  for(let a=-4;a<=4.0001;a+=.20){if(Math.abs(a)<.001)continue;const z=scoreAt(a);if(z>score){score=z;angle=Number(a.toFixed(2))}}
+  return {angle,improvement:(score-zero)/Math.max(1e-9,zero),score,zero};
  };
- let bestAngle=0,bestScore=scoreAt(0),zeroScore=bestScore;
- for(let a=-4;a<=4.0001;a+=.25){
-  if(Math.abs(a)<.001)continue;
-  const score=scoreAt(a);
-  if(score>bestScore){bestScore=score;bestAngle=Number(a.toFixed(2))}
- }
- const improvement=(bestScore-zeroScore)/Math.max(1e-9,zeroScore);
+ const all=bestFor(points),upper=bestFor(points.filter(p=>p[1]<cy)),lower=bestFor(points.filter(p=>p[1]>=cy));
+ const bandAgree=Math.abs(upper.angle-lower.angle)<=.8&&Math.abs(upper.angle)>=.45&&Math.abs(lower.angle)>=.45;
+ const bandAngle=bandAgree?(upper.angle+lower.angle)/2:all.angle;
+ const chosen=Math.abs(all.angle-bandAngle)<=1.0?((all.angle*2+bandAngle)/3):all.angle;
+ const bandConf=(upper.improvement+lower.improvement)/2;
+ const cfStrong=Math.abs(chosen)>=.50&&Math.abs(chosen)<=4&&((all.improvement>=.012)||(bandAgree&&bandConf>=.006));
+ const genericStrong=Math.abs(chosen)>=.55&&Math.abs(chosen)<=4&&all.improvement>=.030;
+ const applied=cardKind==='cf'?cfStrong:genericStrong;
  s.width=s.height=1;
- const minAngle=.55,minImprovement=.035;
- return {angle:bestAngle,confidence:improvement,applied:Math.abs(bestAngle)>=minAngle&&Math.abs(bestAngle)<=4&&improvement>=minImprovement};
+ return {angle:Number(chosen.toFixed(2)),confidence:Math.max(all.improvement,bandConf),applied,method:bandAgree?'projection-bands':'projection-all',upper:upper.angle,lower:lower.angle};
 }
 function rotateFineCanvas(source,deg){
  const rad=deg*Math.PI/180,cs=Math.abs(Math.cos(rad)),sn=Math.abs(Math.sin(rad)),nw=Math.ceil(source.width*cs+source.height*sn),nh=Math.ceil(source.height*cs+source.width*sn);
  const out=canvas(nw,nh),g=out.getContext('2d',{alpha:false});g.fillStyle='#fff';g.fillRect(0,0,nw,nh);g.translate(nw/2,nh/2);g.rotate(rad);g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(source,-source.width/2,-source.height/2);return out;
 }
 function fineDeskewCard(source,{cardKind='generic'}={}){
- const est=estimateFineDeskew(source);
+ const est=estimateFineDeskew(source,{cardKind});
  if(!est.applied)return {canvas:source,applied:false,angle:0,confidence:est.confidence};
  const turned=rotateFineCanvas(source,-est.angle),tight=tightenSeparatedCardCanvas(turned,{cardKind});
  if(!tight.tightened||!tight.canvas||tight.canvas===turned){
@@ -1368,9 +1374,13 @@ async function makeImageEntries(file,index,total=1,meta={}){
  return [{kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false}];
 }
 window.DocFixDesktopDiagnostics=Object.freeze({
- multiCardCandidates,stackedCardCandidatesByGap,stackedCardCandidatesRecovery,pairedFourCards,regroupTwoFileFourCards,regroupLatestTwoUpSources,twoByTwoState,rebuildSourceAsTwoUp,safeRefineMultiQuad,warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
+ multiCardCandidates,stackedCardCandidatesByGap,stackedCardCandidatesRecovery,
+ pairedFourCards,regroupTwoFileFourCards,regroupLatestTwoUpSources,
+ twoByTwoCandidateMeta,twoByTwoState,rebuildSourceAsTwoUp,
+ safeRefineMultiQuad,tightenSeparatedCardCanvas,estimateFineDeskew,fineDeskewCard,
+ warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
  safeMultiCropPreview:(original,candidate)=>window.DocFixScanner.process(original,{crop:true,quad:expandQuadSafe(candidate.quad,.028),rotation:0,filter:'original',strength:0},2200),
- orderedIncoming,reverseFileOrder,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.9.3'
+ orderedIncoming,reverseFileOrder,refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.9.4'
 });
 function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
  // The page's existing /Rotate is already applied in pdf.js previews.
