@@ -138,7 +138,7 @@
          document.querySelector('.docfix-update-modal')?.remove();
          return;
        }
-       view?.update({percent:100,message:'Aggiornamento applicato',etaSeconds:1});
+       view?.update({percent:99,message:'Installer avviato · verifico la nuova versione al prossimo avvio',etaSeconds:null});
      }finally{setTimeout(()=>{try{unsubscribe()}catch{}},10000)}
    }catch(e){
      console.error(e);progressView()?.error(e?.message||e);
@@ -160,6 +160,10 @@
      update.addEventListener('click',()=>handleUpdate(update));
      tools.append(version,badge,update);top.appendChild(tools);
      window.DocFixUpdater?.currentVersion?.().then(v=>{if(v)version.textContent='v'+v}).catch(()=>{});
+     window.DocFixUpdater?.lastResult?.().then(r=>{
+       if(r?.status==='unconfirmed')toast('Aggiornamento '+r.target+' non confermato: è ancora installata la versione '+r.current+'. Riprova dal pulsante aggiornamento.','error');
+       else if(r?.status==='confirmed')toast('Aggiornamento verificato: versione '+r.current+' installata.','ok');
+     }).catch(e=>console.warn('Controllo installazione',e));
      setTimeout(()=>refreshUpdateButton(update),900);
      setInterval(()=>refreshUpdateButton(update),30*60*1000);
    }
