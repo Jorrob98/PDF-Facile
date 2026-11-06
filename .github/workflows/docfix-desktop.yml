@@ -122,6 +122,9 @@ jobs:
           if($main -notmatch 'threeCardPolish'){ throw 'Self-test rifinitura brevetto mancante' }
           if($index -notmatch 'planSixCardOrder'){ throw 'Nuovo ordinamento delle 6 tessere mancante' }
           if($main -notmatch 'sixCardActualOrder'){ throw 'Test ordine documenti mancante' }
+          if($index -notmatch 'straightenLicenceWithoutCutting'){ throw 'Correzione patente mancante' }
+          if($index -notmatch "cardKind==='licence'"){ throw 'Passaggio patente disattivato' }
+          if($main -notmatch 'sixPageUniqueExport'){ throw 'Test nome PDF unico mancante' }
           if($main -notmatch 'sixCardDarknessRecovery'){ throw 'Test fronte-retro su foto scura mancante' }
           if($main -notmatch 'sixCardUncertainSafe'){ throw 'Test verso incerto mancante' }
           if($main -notmatch 'sixCardGrouping'){ throw 'Self-test ordine 6 pagine mancante' }
