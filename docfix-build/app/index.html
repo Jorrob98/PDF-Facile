@@ -1376,7 +1376,15 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
  }
  if(!processed)processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
  let rotation=0;
- const mrz=orientationKnown?{angle:0,trustworthy:true}:window.DocFixGroup2.recognizeMRZOrientation(processed),osd=mrz.trustworthy?{angle:0,review:false,trustworthy:true}:await inferTextOrientation(processed);
+ // The 90-degree camera layout is not proof that text is readable.
+ // On three-up scans verify identity-card MRZ (including 180-degree reversals),
+ // but avoid slow OCR on CF/licence already normalized by the photo layout.
+ const mrz=orientationKnown&&cardKind!=='identity'
+  ?{angle:0,trustworthy:false,method:'layout-only'}
+  :window.DocFixGroup2.recognizeMRZOrientation(processed);
+ const osd=mrz.trustworthy?{angle:0,review:false,trustworthy:true}
+  :orientationKnown?{angle:0,review:false,trustworthy:false}
+  :await inferTextOrientation(processed);
  if(mrz.trustworthy&&mrz.angle){rotation=mrz.angle;processed=rotate(processed,rotation)}
  else if(osd.trustworthy&&osd.angle){rotation=osd.angle;processed=rotate(processed,rotation)}
  // A perspective-corrected card must not be re-deskewed or cropped again.
@@ -1406,7 +1414,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
   for(let i=0;i<3;i++){
    const c=triple.cards[i];
    const fixed=await normalizeKnownCard(original,c.quad,'3 tessere riconosciute · tessera '+(i+1),c.confidence,
-    {multiSafe:true,sourceVerified:true,orientationKnown:triple.orientation==='left',cardKind:c.kind==='licence'?'licence':'generic'});
+    {multiSafe:true,sourceVerified:true,orientationKnown:triple.orientation==='left',cardKind:c.kind||'generic'});
    if(!multiCropHealthy(fixed.processed)){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · Verifica consigliata';}
    if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
    fixed.how+=' · DocFix 1.9.12 · '+(c.materialVerified?('classificato '+(c.kind||'tessera')+' / '+(c.sideGuess||'verso incerto')):'tipo e verso da verificare');
