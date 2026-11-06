@@ -4,7 +4,7 @@ const http=require('http'),https=require('https'),fs=require('fs'),path=require(
 const {spawn}=require('child_process');
 const {registerOcrHandlers}=require('./ocr-cloud-main');
 
-let server=null, mainWindow=null, logFile=null, quitting=false, pendingSecondInstance=false;
+let server=null, mainWindow=null, logFile=null, quitting=false, pendingSecondInstance=false, updateReceiptStatus=null;
 const SELF_TEST=process.argv.includes('--self-test');
 const root=path.join(__dirname,'app');
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.wasm':'application/wasm','.gz':'application/gzip','.pdf':'application/pdf'};
@@ -399,6 +399,32 @@ async function runSelfTest(){
 }
 
 const UPDATE_API='https://api.github.com/repos/Jorrob98/PDF-Facile/releases/latest';
+function updateReceiptPath(){return path.join(app.getPath('userData'),'updates','install-receipt.json');}
+function writeUpdateReceipt(version){
+ const file=updateReceiptPath();fs.mkdirSync(path.dirname(file),{recursive:true});
+ fs.writeFileSync(file,JSON.stringify({target:version,created:Date.now()}),'utf8');
+}
+function clearUpdateReceipt(){try{fs.unlinkSync(updateReceiptPath())}catch{}}
+function inspectUpdateReceipt(){
+ if(SELF_TEST)return null;
+ const file=updateReceiptPath();if(!fs.existsSync(file))return null;
+ try{
+  const state=JSON.parse(fs.readFileSync(file,'utf8')),target=String(state.target||''),
+   current=app.getVersion(),age=Date.now()-Number(state.created||0);
+  if(!/^\d+\.\d+\.\d+$/.test(target)){clearUpdateReceipt();return null}
+  if(current===target||isNewerVersion(current,target)){
+   log('UPDATE_INSTALL_CONFIRMED',target,'running='+current);
+   clearUpdateReceipt();return {status:'confirmed',current,target};
+  }
+  if(age>120000){
+   log('UPDATE_INSTALL_NOT_CONFIRMED',target,'running='+current,'age_ms='+age);
+   clearUpdateReceipt();return {status:'unconfirmed',current,target};
+  }
+  log('UPDATE_INSTALL_PENDING',target,'running='+current);
+  return {status:'pending',current,target};
+ }catch(e){log('UPDATE_RECEIPT_INVALID',e);clearUpdateReceipt();return null;}
+}
+
 
 function versionParts(v){return String(v||'0').replace(/^v/i,'').split('.').map(x=>parseInt(x,10)||0).slice(0,3)}
 function isNewerVersion(candidate,current){
@@ -498,14 +524,16 @@ function launchVerifiedUpdater(updater){
 }
 
 ipcMain.handle('docfix:update:version',()=>app.getVersion());
+ipcMain.handle('docfix:update:last-result',()=>updateReceiptStatus);
 ipcMain.handle('docfix:update:check',async()=>{try{return {ok:true,...await checkForUpdates()}}catch(e){log('UPDATE_CHECK_FAIL',e);return {ok:false,error:e.message||String(e)}}});
 ipcMain.handle('docfix:update:install',async(event)=>{
   try{
     const r=await downloadVerifiedUpdate(event.sender);
     if(!r.available)return {ok:true,...r};
     sendUpdateProgress(event.sender,{phase:'install',percent:98,message:'Applico aggiornamento…',etaSeconds:4});
-    await launchVerifiedUpdater(r.updater);
-    sendUpdateProgress(event.sender,{phase:'restart',percent:99,message:'Completo aggiornamento…',etaSeconds:2});
+    writeUpdateReceipt(r.latest);
+    try{await launchVerifiedUpdater(r.updater)}catch(e){clearUpdateReceipt();throw e}
+    sendUpdateProgress(event.sender,{phase:'restart',percent:99,message:'Installer avviato · versione da verificare al prossimo avvio',etaSeconds:null});
     return {ok:true,...r,launching:true};
   }catch(e){
     sendUpdateProgress(event.sender,{phase:'error',percent:0,message:e.message||String(e)});
@@ -537,6 +565,7 @@ if(!gotLock){app.quit();}else{
   app.whenReady().then(async()=>{
     app.setAppUserModelId?.('it.jorrob.docfix');
     initLog();
+    updateReceiptStatus=inspectUpdateReceipt();
     registerOcrHandlers({ipcMain,app,log});
     try{if(SELF_TEST)await runSelfTest();else await createWindow({show:true,selfTest:false});}
     catch(e){fatalStartup(e);}
