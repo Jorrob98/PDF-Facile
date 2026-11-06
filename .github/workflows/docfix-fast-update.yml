@@ -164,10 +164,14 @@ jobs:
         shell: bash
         working-directory: docfix-build
         run: |
+          version=$(node -p "require('./package.json').version")
+          short=$(echo "$version" | cut -d. -f1,2)
+          updater="DocFix_Aggiornamento_${short}.exe"
+          shafile="DocFix_Aggiornamento_${short}.sha256"
           cat > update.nsi <<'NSI'
           Unicode true
           Name "Aggiornamento DocFix 1.9.0"
-          OutFile "DocFix_Aggiornamento_1.8.exe"
+          OutFile "__UPDATER_EXE__"
           RequestExecutionLevel user
           SetCompressor /SOLID lzma
           SetCompressorDictSize 64
@@ -299,18 +303,20 @@ jobs:
             done:
           SectionEnd
           NSI
-          sed -i "s/__SIZE__/$APP_ASAR_SIZE/g" update.nsi
+          sed -i "s/__SIZE__/$APP_ASAR_SIZE/g; s/__UPDATER_EXE__/$updater/g" update.nsi
           makensis -V2 update.nsi
 
-          test -f DocFix_Aggiornamento_1.8.exe
-          size=$(stat -c%s DocFix_Aggiornamento_1.8.exe)
+          test -f "$updater"
+          size=$(stat -c%s "$updater")
           if [ "$size" -lt 5000000 ]; then echo "Updater troppo piccolo: $size"; exit 1; fi
 
-          sha=$(sha256sum DocFix_Aggiornamento_1.8.exe | awk '{print $1}')
-          echo "$sha  DocFix_Aggiornamento_1.8.exe" > DocFix_Aggiornamento_1.8.sha256
+          sha=$(sha256sum "$updater" | awk '{print $1}')
+          echo "$sha  $updater" > "$shafile"
+          echo "UPDATER_FILE=$updater" >> "$GITHUB_ENV"
+          echo "UPDATER_SHA_FILE=$shafile" >> "$GITHUB_ENV"
           echo "UPDATER_SIZE=$size"
           echo "UPDATER_SHA=$sha"
-          file DocFix_Aggiornamento_1.8.exe | grep -Ei 'PE32|MS Windows'
+          file "$updater" | grep -Ei 'PE32|MS Windows'
 
       - name: Publish verified DocFix 1.9.0 simplified update
         shell: bash
@@ -319,28 +325,32 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag='v1.9.0'
-          title='DocFix Desktop 1.9.0'
+          version=$(node -p "require('./package.json').version")
+          short=$(echo "$version" | cut -d. -f1,2)
+          updater="DocFix_Aggiornamento_${short}.exe"
+          shafile="DocFix_Aggiornamento_${short}.sha256"
+          tag="v$version"
+          title="DocFix Desktop $version"
           notes='DocFix 1.9.0 copre anche il caso 1+1: se due immagini verticali caricate insieme producono erroneamente una sola anteprima ciascuna, DocFix le considera comunque un set 2x2 incompleto, torna agli originali e tenta il recupero di tutte e quattro le tessere prima di abilitare il PDF.'
 
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" DocFix_Aggiornamento_1.8.exe DocFix_Aggiornamento_1.8.sha256 --clobber
+            gh release upload "$tag" "$updater" "$shafile" --clobber
             gh release edit "$tag" --title "$title" --notes "$notes" --latest
           else
-            gh release create "$tag" DocFix_Aggiornamento_1.8.exe DocFix_Aggiornamento_1.8.sha256 --title "$title" --notes "$notes" --latest
+            gh release create "$tag" "$updater" "$shafile" --title "$title" --notes "$notes" --latest
           fi
 
           latest=$(gh api repos/Jorrob98/PDF-Facile/releases/latest --jq .tag_name)
           test "$latest" = "$tag"
-          gh api repos/Jorrob98/PDF-Facile/releases/latest --jq '.assets[].name' | grep -Fx 'DocFix_Aggiornamento_1.8.exe'
-          gh api repos/Jorrob98/PDF-Facile/releases/latest --jq '.assets[].name' | grep -Fx 'DocFix_Aggiornamento_1.8.sha256'
+          gh api repos/Jorrob98/PDF-Facile/releases/latest --jq '.assets[].name' | grep -Fx "$updater"
+          gh api repos/Jorrob98/PDF-Facile/releases/latest --jq '.assets[].name' | grep -Fx "$shafile"
 
       - name: Upload updater artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DocFix-Aggiornamento-1.8-fast
+          name: DocFix-Aggiornamento-fast
           path: |
-            docfix-build/DocFix_Aggiornamento_1.8.exe
-            docfix-build/DocFix_Aggiornamento_1.8.sha256
+            docfix-build/${{ env.UPDATER_FILE }}
+            docfix-build/${{ env.UPDATER_SHA_FILE }}
           if-no-files-found: error
           retention-days: 7
