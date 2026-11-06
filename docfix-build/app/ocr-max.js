@@ -145,7 +145,9 @@ async function recognizeOne(w,canvas,psm){
  return {text:String(r?.data?.text||'').trim(),confidence:Number(r?.data?.confidence)||0};
 }
 async function localMultiPass(source){
- const v=variants(source),w=await worker(),T=await loadTesseract();
+ const v=variants(source);
+ try{
+ const w=await worker(),T=await loadTesseract();
  const P=T.PSM||{};
  const passes=[
   ['natural',v.natural,P.SINGLE_BLOCK??'6'],
@@ -165,10 +167,19 @@ async function localMultiPass(source){
   rescue.width=rescue.height=1;
   results.sort((a,b)=>b.score-a.score);
  }
+ if(!results.length){void releaseWorkerNow();}
  return {best:results[0]||{text:'',confidence:0,score:0,name:'none'},results,variants:v};
+ }catch(e){
+  // Worker startup/engine failures used to leak all three high-resolution
+  // OCR canvases, even before a result had been assigned to the caller.
+  for(const c of Object.values(v)){if(c?.width)c.width=c.height=1;}
+  void releaseWorkerNow();
+  throw e;
+ }
 }
 async function canvasBase64(canvas,quality=.94){
  let c=canvas;
+ try{
  // Keep JSON payload below Google Vision's 10 MB request limit.
  if(Math.max(c.width,c.height)>2800){
   const scale=2800/Math.max(c.width,c.height);c=makeCanvas(c,c.width*scale,c.height*scale);
@@ -182,6 +193,7 @@ async function canvasBase64(canvas,quality=.94){
   }
  }
  throw Error('Immagine OCR troppo grande');
+ }finally{if(c!==canvas)c.width=c.height=1;}
 }
 function providerLabel(p){return p==='google'?'Google Vision':p==='google-rescue'?'Google Vision · rescue':p==='azure'?'Azure Read':p==='azure-id'?'Azure ID Document':p==='tesseract'?'Tesseract IT+EN':p==='pdf-text'?'Testo PDF originale':String(p||'OCR')}
 async function getCloudStatus(){
@@ -200,10 +212,12 @@ async function analyzeEntry(entry,force=false){
  if(entry.ocrState==='working')return;
  if(entry.ocrResult&&!force)return;
  entry.ocrState='working';entry.ocrError='';repaint();
+ const revision=entry.ocrRevision||0;
+ const current=()=>host()?.indexOf?.(entry)>=0&&(entry.ocrRevision||0)===revision;
  let local=null;
  try{
   local=await localMultiPass(entry.processed);const st=cloudStatus||await getCloudStatus();
-  if(host()?.indexOf?.(entry)<0)return;
+  if(!current())return;
   let final={provider:'tesseract',text:local.best.text,confidence:clamp(local.best.confidence/100,0,1),score:local.best.score,signals:signals(local.best.text)};
   let candidates=[final],errors=[];
   if((st.google?.configured||st.azure?.configured)&&window.DocFixOCRCloud){
@@ -220,7 +234,7 @@ async function analyzeEntry(entry,force=false){
    final={...final,structuredFields:cloud?.structuredFields||[]};
    errors=cloud?.errors||[];
   }
-  if(host()?.indexOf?.(entry)<0)return;
+  if(!current())return;
   entry.ocrResult={
    text:String(final.text||'').trim(),
    confidence:clamp(Number(final.confidence)||0,0,1),
@@ -233,16 +247,17 @@ async function analyzeEntry(entry,force=false){
   };
   entry.ocrState=entry.ocrResult.text?'ready':'bad';
  }catch(e){
-  console.error('OCR MAX',e);entry.ocrState='bad';entry.ocrError=String(e?.message||e);
+  console.error('OCR MAX',e);if(current()){entry.ocrState='bad';entry.ocrError=String(e?.message||e);}
  }finally{
   for(const c of Object.values(local?.variants||{})){try{c.width=c.height=1}catch{}}
+  if(host()?.indexOf?.(entry)>=0&&(entry.ocrRevision||0)!==revision&&entry.ocrState==='working')entry.ocrState='queued';
   repaint();
  }
 }
 function enqueue(entry,force=false){
  if(!entry)return;
  if(queuedEntries.has(entry)&&!force)return;
- if(force){queue=queue.filter(x=>x.entry!==entry);queuedEntries.delete(entry)}
+ if(force){entry.ocrRevision=(entry.ocrRevision||0)+1;queue=queue.filter(x=>x.entry!==entry);queuedEntries.delete(entry)}
  queuedEntries.add(entry);queue.push({entry,force});void drain();
 }
 async function drain(){
