@@ -87,7 +87,7 @@
   if(!scanner||!source)return null;
   const s=scanner.resize(source,650),ctx=s.getContext('2d',{willReadFrequently:true});
   const raw=ctx.getImageData(0,0,s.width,s.height),found=detectPixels(raw.data,s.width,s.height);
-  s.width=s.height=1;
+  if(s!==source)s.width=s.height=1;
   if(!found||!scanner.validQuad(found.quad))return null;
   return {status:'found',quad:found.quad,confidence:clamp(.80+(4-found.missing)*.027,.80,.92),
    method:'physical-outer-boundaries-lines',cardLikely:true,physicalLines:true,score:found.score,angle:found.angle,area:found.area};
