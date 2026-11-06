@@ -120,6 +120,10 @@ jobs:
           if($index -notmatch 'card-threeup-polish.js'){ throw 'Motore rifinitura 6 tessere mancante' }
           if($index -notmatch 'regroupSixCards'){ throw 'Ordinamento 6 tessere mancante' }
           if($main -notmatch 'threeCardPolish'){ throw 'Self-test rifinitura brevetto mancante' }
+          if($index -notmatch 'planSixCardOrder'){ throw 'Nuovo ordinamento delle 6 tessere mancante' }
+          if($main -notmatch 'sixCardActualOrder'){ throw 'Test ordine documenti mancante' }
+          if($main -notmatch 'sixCardDarknessRecovery'){ throw 'Test fronte-retro su foto scura mancante' }
+          if($main -notmatch 'sixCardUncertainSafe'){ throw 'Test verso incerto mancante' }
           if($main -notmatch 'sixCardGrouping'){ throw 'Self-test ordine 6 pagine mancante' }
           if($index -notmatch 'card-threeup.js'){ throw 'Nuovo motore 3 tessere non caricato' }
           if($index -notmatch 'threeByTwoState'){ throw 'Stato 6/6 mancante' }
