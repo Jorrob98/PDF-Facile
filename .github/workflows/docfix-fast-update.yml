@@ -180,6 +180,17 @@ jobs:
           echo "APP_ASAR_SIZE=$size" >> "$GITHUB_ENV"
           echo "APP_ASAR_SHA=$(sha256sum DocFix-1.9.7-app.asar | awk '{print $1}')" >> "$GITHUB_ENV"
 
+      - name: Run Electron functional self-test before publishing
+        shell: bash
+        working-directory: docfix-build
+        env:
+          ELECTRON_DISABLE_SECURITY_WARNINGS: 'true'
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb
+          timeout 180s xvfb-run -a ./node_modules/.bin/electron --no-sandbox . --self-test
+
       - name: Install NSIS
         run: |
           sudo apt-get update -qq
