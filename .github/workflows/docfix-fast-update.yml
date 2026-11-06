@@ -162,7 +162,7 @@ jobs:
           grep -F "cardKind==='cf'" verify/app/index.html
           grep -F "rotatedProbe" verify/app/index.html
           grep -F "tightenSeparatedCardCanvas" verify/app/index.html
-          grep -F "bordo fisico rifinito" verify/app/index.html
+          grep -F "cropVerified:physicalVerified" verify/app/index.html
           grep -F "twoByTwoCandidateMeta" verify/app/index.html
           grep -F "rebuildSourceAsTwoUp" verify/app/index.html
           grep -F "stackedCardCandidatesRecovery" verify/app/index.html
