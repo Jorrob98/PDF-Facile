@@ -58,6 +58,7 @@ jobs:
           node --check app/card-physical-edges.js
           node --check app/card-onepass.js
           node --check app/card-texture-crop.js
+          grep -F 'if(sample!==original)' app/card-texture-crop.js
           grep -F "win.once('ready-to-show'" main.js
           grep -F "win.webContents.once('dom-ready'" main.js
           grep -F "startup-fallback'),300" main.js
