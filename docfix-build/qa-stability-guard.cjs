@@ -80,6 +80,11 @@ const ids=x=>x.map(e=>e.id).join(',');
  assert.ok(index.includes('if(threeByTwoState().complete&&!manuallyOrdered)'),
    'export must preserve operator order');
  assert.ok(index.includes('manuallyOrdered=false;'),'new practice must reset manual mode');
+ assert.ok(!index.includes('orientationKnown?{angle:0,trustworthy:true}'),
+   'photo layout must never claim verified text orientation');
+ assert.ok(index.includes("cardKind:c.kind||'generic'"),
+   'three-up identity card must use the MRZ orientation verifier');
+
 }
 (async()=>{
  const w={};
