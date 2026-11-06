@@ -825,6 +825,7 @@ function syncActions(){
  $('queue-count').hidden=!pending.length&&!processing;
  $('queue-count').textContent=processing?'Elaborazione '+completedInBatch+'/'+Math.max(totalInBatch,1)+' · in attesa: '+pending.length:pending.length+' file in attesa';
  $('undo-remove').hidden=!lastRemoved;
+ $('reset').disabled=exporting;
  const sourceOrder=[...new Set(entries.map(e=>e.sourceIndex))];
  const pairedSet=entries.length===4&&entries.every(e=>e.twoUp&&e.pairLabel)&&sourceOrder.length===2;
  $('reverse-files').hidden=busy||sourceOrder.length<2;
@@ -833,6 +834,8 @@ function syncActions(){
  $('sizes').textContent='Originali: '+fmt(sourceBytes)+(lastPdfSize!==null?' · Ultimo PDF: '+fmt(lastPdfSize):' · Il PDF viene creato quando premi Scarica.');
 }
 function reset(){
+ if(exporting){status('Sto completando il PDF: apri una nuova pratica dopo il salvataggio.');return;}
+ if(!$('editor').hidden)closeCorrection();
  document.body.classList.remove('has-document');sequence++;document.dispatchEvent(new CustomEvent('docfix:reset'));entries=[];sourceFiles=[];pending=[];activeSource=null;sourceBytes=0;busy=false;processing=false;exporting=false;completedInBatch=0;totalInBatch=0;nextSourceId=1;lastRemoved=null;lastPdfSize=null;manuallyOrdered=false;
  cards.replaceChildren();$('warnings').replaceChildren();$('warnings').hidden=true;workspace.hidden=true;$('progress-wrap').hidden=true;dl.disabled=true;$('sizes').textContent='';$('summary').textContent='';$('review-count').textContent='';if(currentURL){URL.revokeObjectURL(currentURL);currentURL=null}picker.value='';zone.hidden=false;syncActions();
 }
