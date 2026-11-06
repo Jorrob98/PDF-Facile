@@ -102,6 +102,29 @@ const ids=x=>x.map(e=>e.id).join(',');
  await assert.rejects(()=>exportAPI.create([{processed:{width:0,height:0}}],{encodeJPEG:async()=>fakeJPEG}),
    /non valida/,'invalid canvas must never produce a PDF');
 
+ // One JPEG thumbnail per unchanged processed canvas; no double compression.
+ {
+  const thumbCode=between(index,'const thumbsCache=new WeakMap();','function repaint(){');
+  let calls=0;
+  const original={width:500,height:300,toDataURL(){calls++;return 'data:image/jpeg;base64,static';}};
+  const make=new Function('window',thumbCode+'return thumb;');
+  const thumb=make({DocFixScanner:{resize:c=>c}});
+  assert.equal(thumb(original),thumb(original),'same image cached');
+  assert.equal(calls,1,'unchanged pages must not be re-encoded on each repaint');
+  const changed={width:500,height:300,toDataURL(){calls++;return 'data:image/jpeg;base64,changed';}};
+  assert.equal(thumb(changed),'data:image/jpeg;base64,changed');
+  assert.equal(calls,2,'changed pages must produce fresh JPEG');
+  let small;
+  const thumbOther=make({DocFixScanner:{resize:c=>{
+    small={width:180,height:100,toDataURL(){return 'data:image/jpeg;base64,small';}};
+    return small;
+  }}});
+  const before={width:900,height:600};
+  thumbOther(before);
+  assert.equal(small.width,1,'temporary thumbnail resize must be freed');
+  assert.equal(before.width,900,'thumbnail conversion must not destroy source');
+ }
+
  // Simulate OCR worker startup failure: no temporary canvas may leak.
  {
   const localCode=between(ocrCode,'async function localMultiPass(source){','async function canvasBase64(');
