@@ -15,7 +15,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.9.9',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.9.10',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -24,7 +24,7 @@ function log(...parts){
   console.log(line.trim());
 }
 function requiredStartupFiles(){
-  return ['index.html','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-threeup.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
+  return ['index.html','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-threeup.js','card-threeup-polish.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
 }
 function requiredEngineFiles(){
   return [
@@ -149,7 +149,7 @@ async function runSelfTest(){
       (async()=>{
         const out={};
         out.ui=!!document.querySelector('#dropzone')&&!!document.querySelector('#download')&&!!document.querySelector('#picker');
-        out.modules=!!window.DocFixGroup1&&!!window.DocFixGroup2&&!!window.DocFixGroup3&&!!window.DocFixGroup5&&!!window.DocFixStability&&!!window.DocFixPhysicalEdges&&!!window.DocFixOnePass&&!!window.DocFixRealCrop&&!!window.DocFixThreeUp;
+        out.modules=!!window.DocFixGroup1&&!!window.DocFixGroup2&&!!window.DocFixGroup3&&!!window.DocFixGroup5&&!!window.DocFixStability&&!!window.DocFixPhysicalEdges&&!!window.DocFixOnePass&&!!window.DocFixRealCrop&&!!window.DocFixThreeUp&&!!window.DocFixThreeUpPolish;
         const c=document.createElement('canvas');c.width=800;c.height=500;
         const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.fillStyle='#111';g.font='40px Arial';g.fillText('DOCFIX SELF TEST 123',70,180);g.strokeRect(40,40,720,420);
         const jpg=await window.DocFixGroup3.encodeJPEG(c,'high');
@@ -171,10 +171,10 @@ async function runSelfTest(){
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.9':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.10':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         out.updaterHiddenWhenNoUpdate=document.querySelector('#docfix-update-button')?.hidden===true;
-        out.ocrModule=window.DocFixOCRMax?.version==='1.9.9';
+        out.ocrModule=window.DocFixOCRMax?.version==='1.9.10';
         const cloudTest=window.DocFixOCRCloud?.selfTest?await window.DocFixOCRCloud.selfTest():null;
         out.ocrCloudLogic=!!cloudTest&&cloudTest.identity===true&&cloudTest.structured===true&&cloudTest.agreement===true;
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
@@ -224,6 +224,8 @@ async function runSelfTest(){
            return wide/high>1.35&&wide/high<1.9;
          });
         out.sixCardGate=typeof window.DocFixDesktopDiagnostics?.threeByTwoState==='function';
+        out.threeCardPolish=typeof window.DocFixThreeUpPolish?.refine==='function';
+        out.sixCardGrouping=typeof window.DocFixDesktopDiagnostics?.regroupSixCards==='function';
 
         // Both cards must be detected independently on the same untouched scan.
         const sourceFirst=multi.length===2?multi.map(c=>window.DocFixDesktopDiagnostics?.detectOriginalCard?.(mc,c.quad)):[],
@@ -313,7 +315,7 @@ async function runSelfTest(){
         const verifiedDeskew=skew?window.DocFixDesktopDiagnostics?.fineDeskewCard?.(skew,{cardKind:'cf'}):null;
         const verifiedResidual=verifiedDeskew?.canvas?window.DocFixDesktopDiagnostics?.estimateFineDeskew?.(verifiedDeskew.canvas,{cardKind:'cf'}):null;
         out.deskewResidualVerified=!!verifiedDeskew?.applied&&verifiedDeskew.verified===true&&verifiedDeskew.residual<=.5&&(!verifiedResidual?.applied||Math.abs(verifiedResidual.angle)<=.5);
-        out.diagnosticsCoverage=['tightenSeparatedCardCanvas','estimateFineDeskew','fineDeskewCard','twoByTwoCandidateMeta','detectPhysicalLines','detectOriginalCard','detectTextureCards','detectThreeCards','threeByTwoState'].every(k=>typeof window.DocFixDesktopDiagnostics?.[k]==='function');
+        out.diagnosticsCoverage=['tightenSeparatedCardCanvas','estimateFineDeskew','fineDeskewCard','twoByTwoCandidateMeta','detectPhysicalLines','detectOriginalCard','detectTextureCards','detectThreeCards','threeByTwoState','polishThreeCards','regroupSixCards'].every(k=>typeof window.DocFixDesktopDiagnostics?.[k]==='function');
         const orderTest=window.DocFixDesktopDiagnostics?.orderedIncoming?.([
           new File(['b'],'WhatsApp Image 2026-11-05 at 15.10.11.jpeg',{type:'image/jpeg',lastModified:2}),
           new File(['a'],'WhatsApp Image 2026-11-05 at 15.10.10.jpeg',{type:'image/jpeg',lastModified:1})
@@ -362,7 +364,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.9.9','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.9.10','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
