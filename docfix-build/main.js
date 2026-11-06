@@ -15,7 +15,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.9.0',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.9.1',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -171,10 +171,10 @@ async function runSelfTest(){
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.0':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.1':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         out.updaterHiddenWhenNoUpdate=document.querySelector('#docfix-update-button')?.hidden===true;
-        out.ocrModule=window.DocFixOCRMax?.version==='1.9.0';
+        out.ocrModule=window.DocFixOCRMax?.version==='1.9.1';
         const cloudTest=window.DocFixOCRCloud?.selfTest?await window.DocFixOCRCloud.selfTest():null;
         out.ocrCloudLogic=!!cloudTest&&cloudTest.identity===true&&cloudTest.structured===true&&cloudTest.agreement===true;
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
@@ -215,6 +215,15 @@ async function runSelfTest(){
         out.twoByTwoGate=typeof window.DocFixDesktopDiagnostics?.twoByTwoState==='function';
         const meta=window.DocFixDesktopDiagnostics?.twoByTwoCandidateMeta;
         out.onePlusOneRecovery=typeof meta==='function'&&meta([1,1],true,true)===true&&meta([1,1],false,true)===false&&meta([2,1],false,false)===true&&meta([2,2],false,false)===true;
+        const border=document.createElement('canvas');border.width=1000;border.height=700;const bg=border.getContext('2d');
+        bg.fillStyle='#8b8b8b';bg.fillRect(0,0,1000,700);
+        bg.fillStyle='#d6eaf3';bg.fillRect(150,150,700,440);
+        bg.fillStyle='#0c5e86';bg.fillRect(150,150,700,85);
+        bg.fillStyle='#fff';for(let y=280;y<540;y+=52)bg.fillRect(195,y,610,18);
+        bg.fillStyle='#111';for(let x=210;x<790;x+=16)bg.fillRect(x,500,6,50);
+        const tightened=window.DocFixDesktopDiagnostics?.tightenSeparatedCardCanvas?.(border);
+        const tr=tightened?.canvas?Math.max(tightened.canvas.width,tightened.canvas.height)/Math.max(1,Math.min(tightened.canvas.width,tightened.canvas.height)):0;
+        out.tightSeparatedCard=!!tightened?.tightened&&tightened.canvas.width<930&&tightened.canvas.height<650&&tr>1.40&&tr<1.84;
         const orderTest=window.DocFixDesktopDiagnostics?.orderedIncoming?.([
           new File(['b'],'WhatsApp Image 2026-11-05 at 15.10.11.jpeg',{type:'image/jpeg',lastModified:2}),
           new File(['a'],'WhatsApp Image 2026-11-05 at 15.10.10.jpeg',{type:'image/jpeg',lastModified:1})
@@ -263,7 +272,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.9.0','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.9.1','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
