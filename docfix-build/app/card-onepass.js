@@ -123,6 +123,10 @@
   const quad=best.quad.map(p=>({x:roi.x0+p.x*(roi.x1-roi.x0),y:roi.y0+p.y*(roi.y1-roi.y0)}));
   c.width=c.height=1;
   if(!scan.validQuad(quad))return null;
+  // An expanded search region must never take the card belonging to the other half.
+  const center={x:quad.reduce((sum,p)=>sum+p.x,0)/4,y:quad.reduce((sum,p)=>sum+p.y,0)/4};
+  const bounds={x0:Math.min(...rough.map(p=>p.x)),y0:Math.min(...rough.map(p=>p.y)),x1:Math.max(...rough.map(p=>p.x)),y1:Math.max(...rough.map(p=>p.y))};
+  if(center.x<bounds.x0-.025||center.x>bounds.x1+.025||center.y<bounds.y0-.025||center.y>bounds.y1+.025)return null;
   return {quad,verified:true,confidence:best.confidence,method:best.method,support:best.support,score:best.score};
  }
  window.DocFixOnePass=Object.freeze({detect,detectColorRect:colorCandidate,version:'source-first-1.9.7'});
