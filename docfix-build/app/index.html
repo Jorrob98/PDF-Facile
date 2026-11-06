@@ -1599,17 +1599,17 @@ function planSixCardOrder(group){
   const candidates=[...new Set(g.map(e=>e.photoSide))];
   return candidates.length===1&&['fronte','retro'].includes(candidates[0])?candidates[0]:null;
  });
- if(labels.includes('fronte')&&labels.includes('retro')){sides=labels;how='etichette';}
- else{
-  // CF fronts are light blue; their European health-insurance backs contain
-  // a broad black band. Compare the two CF cards rather than using a fixed
-  // brightness threshold that fails on dark mobile photographs.
-  const a=bySource[0].find(e=>e.docType==='cf').cfDarkness;
-  const b=bySource[1].find(e=>e.docType==='cf').cfDarkness;
-  if(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)>.075){
-   sides=a<b?['fronte','retro']:['retro','fronte'];how='confronto banda nera CF';
-  }
- }
+ // Two independent signals must not silently contradict each other.
+ // If they disagree, leave the order for manual confirmation.
+ const frontBackLabels=labels.includes('fronte')&&labels.includes('retro');
+ const darkA=bySource[0].find(e=>e.docType==='cf').cfDarkness;
+ const darkB=bySource[1].find(e=>e.docType==='cf').cfDarkness;
+ const bandOrder=Number.isFinite(darkA)&&Number.isFinite(darkB)&&Math.abs(darkA-darkB)>.12
+    ?(darkA<darkB?['fronte','retro']:['retro','fronte']):null;
+ if(frontBackLabels&&bandOrder&&bandOrder.some((side,i)=>side!==labels[i]))
+  return {ok:false,reason:'indicatori fronte/retro discordanti: controlla le tessere sanitarie'};
+ if(frontBackLabels){sides=labels;how='etichette';}
+ else if(bandOrder){sides=bandOrder;how='confronto banda nera CF';}
  if(!sides)return {ok:false,reason:'fronte e retro non distinguibili con sicurezza'};
  const titles={cf:'Codice fiscale',licence:'Patente',identity:'Carta identità'};
  const ordered=[],names=[];
