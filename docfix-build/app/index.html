@@ -1731,8 +1731,8 @@ async function recoverIncompleteTwoByTwo(){
 async function drainPending(){
  if(processing||exporting||!pending.length)return;
  const token=sequence;processing=true;busy=true;completedInBatch=0;totalInBatch=pending.length;dl.disabled=true;
- $('progress-wrap').hidden=false;progress(0,totalInBatch);repaint();
  try{
+  $('progress-wrap').hidden=false;progress(0,totalInBatch);repaint();
   while(token===sequence&&pending.length){
    const item=pending.shift(),f=item.file;activeSource=item.id;
    try{
@@ -1757,7 +1757,9 @@ async function drainPending(){
   }
  }finally{
   if(token===sequence){
-   await recoverIncompleteTwoByTwo();
+   // Recovery is best-effort: one bad card must never lock the whole UI.
+   try{await recoverIncompleteTwoByTwo();}
+   catch(err){console.warn('DocFix recupero multiplo',err);note('Recupero automatico non riuscito: controlla la tessera evidenziata. Le altre pagine restano disponibili.');}
    // Final guarantee: the pairing is checked again after EVERY input is processed.
    const sixGrouped=manuallyOrdered?false:regroupSixCards();
    processing=false;busy=false;activeSource=null;$('progress-wrap').hidden=true;
