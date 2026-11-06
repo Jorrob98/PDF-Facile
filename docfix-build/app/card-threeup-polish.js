@@ -122,8 +122,16 @@ function refine(original,detected){
  });
  if(sample!==oriented&&sample!==original)sample.width=sample.height=1;
  if(oriented!==original)oriented.width=oriented.height=1;
- if(result.some(c=>!scan.validQuad(c.quad)))return detected;
- return {...detected,cards:result,materialVerified:allTypes,sourceSide};
+ // A difficult corner must not discard the classification and ordering of
+ // all six cards. Revert only that corner to its safe detected source quad.
+ let physicalReview=false;
+ for(let i=0;i<result.length;i++){
+  if(!scan.validQuad(result[i].quad)){
+   result[i].quad=detected.cards[i].quad.map(p=>({...p}));
+   result[i].geometryReview=true;physicalReview=true;
+  }
+ }
+ return {...detected,cards:result,materialVerified:allTypes,sourceSide,physicalReview};
 }
 window.DocFixThreeUpPolish=Object.freeze({refine,material,version:'1.9.11'});
 })();
