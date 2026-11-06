@@ -246,6 +246,9 @@ async function runSelfTest(){
         out.sixCardDarknessRecovery=!!fallback?.ok&&fallback.ordered.map(e=>e.id).join(',')==='4,3,5,2,6,1';
         const uncertain=badLabels.map(e=>({...e,cfDarkness:.50,photoSide:'indefinito'}));
         out.sixCardUncertainSafe=window.DocFixDesktopDiagnostics?.planSixCardOrder?.(uncertain)?.ok===false;
+        const opposite=fake.map(e=>({...e,photoSide:e.photoSide==='fronte'?'retro':'fronte'}));
+        out.sixCardConflictWarns=window.DocFixDesktopDiagnostics?.planSixCardOrder?.(opposite)?.ok===false;
+
         // Version-stamped real output and licence-only post-correction are mandatory.
         out.licenceSafeStraightener=typeof window.DocFixDesktopDiagnostics?.straightenLicenceWithoutCutting==='function';
         const syntheticSix=Array.from({length:6},(_,i)=>({threeUp:true,source:'source-'+(i<3?'one':'two')+'.jpg'}));
