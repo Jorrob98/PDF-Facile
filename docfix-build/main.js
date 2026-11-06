@@ -15,7 +15,7 @@ function initLog(){
     fs.mkdirSync(dir,{recursive:true});
     logFile=path.join(dir,'docfix.log');
     if(fs.existsSync(logFile)&&fs.statSync(logFile).size>1024*1024)fs.renameSync(logFile,logFile+'.old');
-    log('START','DocFix Desktop 1.9.8',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
+    log('START','DocFix Desktop 1.9.9',process.platform,process.arch,SELF_TEST?'SELF_TEST':'NORMAL');
   }catch(e){console.error(e);}
 }
 function log(...parts){
@@ -24,7 +24,7 @@ function log(...parts){
   console.log(line.trim());
 }
 function requiredStartupFiles(){
-  return ['index.html','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
+  return ['index.html','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-threeup.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
 }
 function requiredEngineFiles(){
   return [
@@ -149,7 +149,7 @@ async function runSelfTest(){
       (async()=>{
         const out={};
         out.ui=!!document.querySelector('#dropzone')&&!!document.querySelector('#download')&&!!document.querySelector('#picker');
-        out.modules=!!window.DocFixGroup1&&!!window.DocFixGroup2&&!!window.DocFixGroup3&&!!window.DocFixGroup5&&!!window.DocFixStability&&!!window.DocFixPhysicalEdges&&!!window.DocFixOnePass&&!!window.DocFixRealCrop;
+        out.modules=!!window.DocFixGroup1&&!!window.DocFixGroup2&&!!window.DocFixGroup3&&!!window.DocFixGroup5&&!!window.DocFixStability&&!!window.DocFixPhysicalEdges&&!!window.DocFixOnePass&&!!window.DocFixRealCrop&&!!window.DocFixThreeUp;
         const c=document.createElement('canvas');c.width=800;c.height=500;
         const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.fillStyle='#111';g.font='40px Arial';g.fillText('DOCFIX SELF TEST 123',70,180);g.strokeRect(40,40,720,420);
         const jpg=await window.DocFixGroup3.encodeJPEG(c,'high');
@@ -171,10 +171,10 @@ async function runSelfTest(){
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
-        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.8':false;
+        out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.9':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
         out.updaterHiddenWhenNoUpdate=document.querySelector('#docfix-update-button')?.hidden===true;
-        out.ocrModule=window.DocFixOCRMax?.version==='1.9.8';
+        out.ocrModule=window.DocFixOCRMax?.version==='1.9.9';
         const cloudTest=window.DocFixOCRCloud?.selfTest?await window.DocFixOCRCloud.selfTest():null;
         out.ocrCloudLogic=!!cloudTest&&cloudTest.identity===true&&cloudTest.structured===true&&cloudTest.agreement===true;
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
@@ -197,6 +197,33 @@ async function runSelfTest(){
           &&textureTest.cards[0].quad[0].x>.10&&textureTest.cards[0].quad[0].x<.18
           &&textureTest.cards[0].quad[0].y>.09&&textureTest.cards[0].quad[0].y<.16
           &&textureTest.cards[1].quad[0].y>.52&&textureTest.cards[1].quad[0].y<.61;
+
+        // Three-up geometry and portrait-to-landscape output, fully synthetic.
+        // No personal photo is bundled with DocFix.
+        const tr=document.createElement('canvas');tr.width=600;tr.height=338;
+        const tctx=tr.getContext('2d');tctx.fillStyle='rgb(184,181,190)';tctx.fillRect(0,0,600,338);
+        for(const [x0,y0,x1,y1,color] of [
+         [202,12,378,118,'rgb(39,104,157)'],
+         [100,170,272,275,'rgb(195,153,176)'],
+         [302,167,477,277,'rgb(135,191,206)']
+        ]){
+         tctx.fillStyle=color;tctx.fillRect(x0,y0,x1-x0,y1-y0);
+         tctx.fillStyle='#26374b';tctx.fillRect(x0+12,y0+25,x1-x0-22,7);
+         tctx.fillRect(x0+20,y1-23,x1-x0-32,5);
+        }
+        const sideways=document.createElement('canvas');sideways.width=338;sideways.height=600;
+        const sg3=sideways.getContext('2d');sg3.translate(338,0);sg3.rotate(Math.PI/2);sg3.drawImage(tr,0,0);
+        const originalWidth=sideways.width,originalHeight=sideways.height;
+        const threeResult=window.DocFixThreeUp?.detect?.(sideways)||{cards:[]};
+        out.threeCardsFromOne=threeResult.cards?.length===3&&threeResult.verified===true;
+        out.threeCardsOriginalSafe=sideways.width===originalWidth&&sideways.height===originalHeight;
+        out.threeCardsOrientCorrect=threeResult.orientation==='left'&&threeResult.cards?.length===3
+         &&threeResult.cards.every(c=>{
+           const p=c.quad,wide=Math.hypot((p[1].x-p[0].x)*338,(p[1].y-p[0].y)*600),
+            high=Math.hypot((p[3].x-p[0].x)*338,(p[3].y-p[0].y)*600);
+           return wide/high>1.35&&wide/high<1.9;
+         });
+        out.sixCardGate=typeof window.DocFixDesktopDiagnostics?.threeByTwoState==='function';
 
         // Both cards must be detected independently on the same untouched scan.
         const sourceFirst=multi.length===2?multi.map(c=>window.DocFixDesktopDiagnostics?.detectOriginalCard?.(mc,c.quad)):[],
@@ -286,7 +313,7 @@ async function runSelfTest(){
         const verifiedDeskew=skew?window.DocFixDesktopDiagnostics?.fineDeskewCard?.(skew,{cardKind:'cf'}):null;
         const verifiedResidual=verifiedDeskew?.canvas?window.DocFixDesktopDiagnostics?.estimateFineDeskew?.(verifiedDeskew.canvas,{cardKind:'cf'}):null;
         out.deskewResidualVerified=!!verifiedDeskew?.applied&&verifiedDeskew.verified===true&&verifiedDeskew.residual<=.5&&(!verifiedResidual?.applied||Math.abs(verifiedResidual.angle)<=.5);
-        out.diagnosticsCoverage=['tightenSeparatedCardCanvas','estimateFineDeskew','fineDeskewCard','twoByTwoCandidateMeta','detectPhysicalLines','detectOriginalCard','detectTextureCards'].every(k=>typeof window.DocFixDesktopDiagnostics?.[k]==='function');
+        out.diagnosticsCoverage=['tightenSeparatedCardCanvas','estimateFineDeskew','fineDeskewCard','twoByTwoCandidateMeta','detectPhysicalLines','detectOriginalCard','detectTextureCards','detectThreeCards','threeByTwoState'].every(k=>typeof window.DocFixDesktopDiagnostics?.[k]==='function');
         const orderTest=window.DocFixDesktopDiagnostics?.orderedIncoming?.([
           new File(['b'],'WhatsApp Image 2026-11-05 at 15.10.11.jpeg',{type:'image/jpeg',lastModified:2}),
           new File(['a'],'WhatsApp Image 2026-11-05 at 15.10.10.jpeg',{type:'image/jpeg',lastModified:1})
@@ -335,7 +362,7 @@ function isNewerVersion(candidate,current){
 function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
   return new Promise((resolve,reject)=>{
     if(redirects>6)return reject(new Error('Troppi reindirizzamenti durante il download'));
-    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.9.8','Accept':'application/vnd.github+json',...headers}},res=>{
+    const req=https.get(url,{headers:{'User-Agent':'DocFix-Desktop-Updater/1.9.9','Accept':'application/vnd.github+json',...headers}},res=>{
       const code=res.statusCode||0;
       if(code>=300&&code<400&&res.headers.location){res.resume();return resolve(httpsBuffer(new URL(res.headers.location,url).toString(),headers,redirects+1,onProgress,totalHint));}
       if(code!==200){res.resume();return reject(new Error('Server aggiornamenti non disponibile ('+code+')'));}
