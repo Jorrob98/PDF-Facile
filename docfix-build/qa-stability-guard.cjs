@@ -128,6 +128,33 @@ const ids=x=>x.map(e=>e.id).join(',');
   assert.equal(before.width,900,'thumbnail conversion must not destroy source');
  }
 
+ // The verified two-card engine must not hide a third independent document.
+ {
+  const geometry=between(index,'function quadBounds(q){','function crossOverlap(');
+  const choice=between(index,'function chooseMultiCardMode(sourceCards,triple){','async function makeImageEntries(');
+  const pick=new Function('window',geometry+choice+'return chooseMultiCardMode;')(
+    {DocFixScanner:{validQuad:q=>q?.length===4}});
+  const box=(x,y,w,h)=>[{x,y},{x:x+w,y},{x:x+w,y:y+h},{x,y:y+h}];
+  const two=[
+    {quad:box(.12,.12,.3,.2),confidence:.96},
+    {quad:box(.12,.7,.3,.2),confidence:.94}
+  ];
+  const three={verified:true,materialVerified:true,cards:[
+    {...two[0],kind:'cf'},
+    {quad:box(.12,.41,.3,.20),confidence:.91,kind:'licence'},
+    {...two[1],kind:'identity'}
+  ]};
+  assert.equal(pick(two,null).mode,'two','2-card case stays 2-up');
+  assert.equal(pick(two,three).mode,'three','3rd independent card must not be lost');
+  assert.equal(pick([],three).mode,'three','3-up works without 2-up evidence');
+  const uncertain={...three,materialVerified:false};
+  assert.equal(pick(two,uncertain).mode,'two','unverified third must not change tested 2-up');
+  assert.equal(pick(two,uncertain).conflict,true,'ambiguous third must be reported');
+  const falseExtra={...three,cards:three.cards.map(x=>({...x}))};
+  falseExtra.cards[1]={quad:box(.14,.14,.27,.18),confidence:.95,kind:'licence'};
+  assert.equal(pick(two,falseExtra).mode,'two','overlapping false third must be rejected');
+ }
+
  // Simulate OCR worker startup failure: no temporary canvas may leak.
  {
   const localCode=between(ocrCode,'async function localMultiPass(source){','async function canvasBase64(');
