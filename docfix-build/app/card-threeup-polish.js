@@ -1,4 +1,4 @@
-/* DocFix Desktop 1.9.11 - material-aware geometry for photos with three cards.
+/* DocFix Desktop 1.9.12 - material-aware geometry for photos with three cards.
  * Only a downscaled scratch canvas is analyzed. The full-resolution original
  * is never changed. Runs locally and keeps the 2-card engine untouched.
  */
@@ -57,16 +57,16 @@ function refineLicence(rgba,w,h,box){
  const x0=Math.min(...q.map(p=>p.x))*w,x1=Math.max(...q.map(p=>p.x))*w,cx=(x0+x1)/2;
  const slopes=[top,bottom].filter(valid).map(x=>x.slope);
  const slope=clamp(slopes.reduce((a,b)=>a+b,0)/slopes.length,-.10,.10);
- const first=(valid(top)?top.yBase+top.offset:((q[0].y+q[1].y)/2)*h)-1.3;
+ const first=(valid(top)?top.yBase+top.offset:((q[0].y+q[1].y)/2)*h)-3.5;
  const observed=((q[3].y+q[2].y)/2)*h;
- const last=Math.max(observed+1.5,(valid(bottom)?bottom.yBase+bottom.offset:observed)+(valid(bottom)?1.3:2.5));
+ const last=Math.max(observed+3.5,(valid(bottom)?bottom.yBase+bottom.offset:observed)+(valid(bottom)?3.5:4.5));
  if(last-first<45||last-first>h*.75)return q;
  q[0].y=clamp((first+(q[0].x*w-cx)*slope)/h,0,1);
  q[1].y=clamp((first+(q[1].x*w-cx)*slope)/h,0,1);
  q[2].y=clamp((last+(q[2].x*w-cx)*slope)/h,0,1);
  q[3].y=clamp((last+(q[3].x*w-cx)*slope)/h,0,1);
- q[1].x=clamp(q[1].x+2/w,0,1);
- q[2].x=clamp(q[2].x+2/w,0,1);
+ for(const i of [0,3])q[i].x=clamp(q[i].x-2.5/w,0,1);
+ for(const i of [1,2])q[i].x=clamp(q[i].x+5/w,0,1);
  const length=(a,b)=>Math.hypot((a.x-b.x)*w,(a.y-b.y)*h);
  const wide=(length(q[0],q[1])+length(q[3],q[2]))/2;
  const high=(length(q[0],q[3])+length(q[1],q[2]))/2;
@@ -116,7 +116,7 @@ function refine(original,detected){
   }
   if(allTypes&&c.kind==='identity'&&sourceSide==='retro'){
    // Do not cut the bottom line of MRZ on the pale identity-card back.
-   q[2].y=clamp(q[2].y+3.5/h,0,1);q[3].y=clamp(q[3].y+3.5/h,0,1);
+   q[2].y=clamp(q[2].y+7/h,0,1);q[3].y=clamp(q[3].y+7/h,0,1);
   }
   return {...c,quad:toSrc(q),sideGuess:sourceSide,materialVerified:allTypes};
  });
@@ -133,5 +133,5 @@ function refine(original,detected){
  }
  return {...detected,cards:result,materialVerified:allTypes,sourceSide,physicalReview};
 }
-window.DocFixThreeUpPolish=Object.freeze({refine,material,version:'1.9.11'});
+window.DocFixThreeUpPolish=Object.freeze({refine,material,version:'1.9.12'});
 })();
