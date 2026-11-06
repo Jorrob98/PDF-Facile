@@ -46,6 +46,8 @@ jobs:
         shell: pwsh
         run: |
           node --check main.js
+          node --check qa-stability-guard.cjs
+          node qa-stability-guard.cjs
           node --check prepare-vendor.js
           node --check preload.js
           node --check ocr-cloud-main.js
