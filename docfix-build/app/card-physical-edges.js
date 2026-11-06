@@ -35,7 +35,7 @@
      const distanceToFrame=(side==='top'||side==='left')?p:size-1-p;
      const bgDist=med(background);
      // Reject internal text/header lines: their exterior is not page background.
-     if(distanceToFrame>size*.055&&bgDist>64)continue;
+     if(distanceToFrame>=3&&bgDist>64)continue;
      const bgBonus=distanceToFrame>size*.055?clamp((52-bgDist)/9,-3,4):1;
      const score=strength*.26+support*9+bgBonus-Math.abs(deg)*.13-distanceToFrame/size*9;
      list.push({side,p,deg,slope,strength,support,bgDist,score});
