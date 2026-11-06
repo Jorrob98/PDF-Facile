@@ -51,6 +51,7 @@ jobs:
           node --check ocr-cloud-main.js
           node --check app\ocr-max.js
           node --check app\group1-safe-crop.js
+          node --check app\card-threeup.js
           node --check app\group2-orientation.js
           node --check app\group3-quality.js
           node --check app\group5-export.js
@@ -115,6 +116,10 @@ jobs:
           if($index -notmatch 'rotatedProbe'){ throw 'Sonda ruotata codice fiscale mancante' }
           if($index -notmatch 'tightenSeparatedCardCanvas'){ throw 'Secondo ritaglio fisico tessera mancante' }
           if($index -notmatch 'cropVerified:physicalVerified'){ throw 'Stato bordo fisico rifinito mancante' }
+          if($index -notmatch 'card-threeup.js'){ throw 'Nuovo motore 3 tessere non caricato' }
+          if($index -notmatch 'threeByTwoState'){ throw 'Stato 6/6 mancante' }
+          if($main -notmatch 'threeCardsFromOne'){ throw 'Test 3 tessere assente' }
+          if($main -notmatch 'threeCardsOrientCorrect'){ throw 'Test rotazione 90 gradi assente' }
           if($index -notmatch 'twoByTwoCandidateMeta'){ throw 'Decisione recupero 1+1 mancante' }
           if($index -notmatch 'rebuildSourceAsTwoUp'){ throw 'Ricostruzione sorgente 2x2 mancante' }
           if($index -notmatch 'stackedCardCandidatesRecovery'){ throw 'Rilevatore di recupero 2x2 mancante' }
