@@ -811,7 +811,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
 const $=id=>document.getElementById(id);const zone=$('dropzone'),picker=$('picker'),cards=$('cards'),workspace=$('workspace'),dl=$('download');
 const LIMIT=45*1048576,MAX_PAGES=40,MAX_FILES=12,MAX_TOTAL=100*1048576;
 let entries=[],sourceFiles=[],pending=[],activeSource=null,sourceBytes=0,busy=false,processing=false,exporting=false,sequence=0,currentURL=null,nextSourceId=1,nextLoadBatch=1;
-let completedInBatch=0,totalInBatch=0,lastRemoved=null,lastPdfSize=null,dragSource=-1;
+let completedInBatch=0,totalInBatch=0,lastRemoved=null,lastPdfSize=null,dragSource=-1,manuallyOrdered=false;
 const wait=()=>new Promise(r=>setTimeout(r,0));
 const fmt=n=>n<1048576?Math.round(n/1024)+' KB':(n/1048576).toFixed(2)+' MB';
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
@@ -833,7 +833,7 @@ function syncActions(){
  $('sizes').textContent='Originali: '+fmt(sourceBytes)+(lastPdfSize!==null?' · Ultimo PDF: '+fmt(lastPdfSize):' · Il PDF viene creato quando premi Scarica.');
 }
 function reset(){
- document.body.classList.remove('has-document');sequence++;document.dispatchEvent(new CustomEvent('docfix:reset'));entries=[];sourceFiles=[];pending=[];activeSource=null;sourceBytes=0;busy=false;processing=false;exporting=false;completedInBatch=0;totalInBatch=0;nextSourceId=1;lastRemoved=null;lastPdfSize=null;
+ document.body.classList.remove('has-document');sequence++;document.dispatchEvent(new CustomEvent('docfix:reset'));entries=[];sourceFiles=[];pending=[];activeSource=null;sourceBytes=0;busy=false;processing=false;exporting=false;completedInBatch=0;totalInBatch=0;nextSourceId=1;lastRemoved=null;lastPdfSize=null;manuallyOrdered=false;
  cards.replaceChildren();$('warnings').replaceChildren();$('warnings').hidden=true;workspace.hidden=true;$('progress-wrap').hidden=true;dl.disabled=true;$('sizes').textContent='';$('summary').textContent='';$('review-count').textContent='';if(currentURL){URL.revokeObjectURL(currentURL);currentURL=null}picker.value='';zone.hidden=false;syncActions();
 }
 $('reset').onclick=reset;
@@ -1437,7 +1437,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
 }
 window.DocFixDesktopDiagnostics=Object.freeze({
  multiCardCandidates,stackedCardCandidatesByGap,stackedCardCandidatesRecovery,
- pairedFourCards,regroupTwoFileFourCards,regroupLatestTwoUpSources,planSixCardOrder,regroupSixCards,
+ pairedFourCards,regroupTwoFileFourCards,regroupLatestTwoUpSources,planSixCardOrder,regroupSixCards,manualOrderState:()=>manuallyOrdered,
  twoByTwoCandidateMeta,twoByTwoState,threeByTwoState,rebuildSourceAsTwoUp,
  safeRefineMultiQuad,tightenSeparatedCardCanvas,estimateFineDeskew,fineDeskewCard,straightenLicenceWithoutCutting,
  warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
@@ -1488,9 +1488,9 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
   item.addEventListener('drop',ev=>{if(dragSource>=0&&!busy){ev.preventDefault();moveEntry(dragSource,i)}dragSource=-1});
   item.addEventListener('dragend',()=>{dragSource=-1;item.classList.remove('drag-sort')});
  });const completeFour=entries.length===4&&entries.every(e=>e.pairLabel),setState=twoByTwoState(),setThree=threeByTwoState(),sixOrder=setThree.complete?planSixCardOrder(entries.filter(e=>e.threeUp&&e.splitCount===3)):null;
- $('summary').textContent=setThree.complete?(sixOrder?.ok?'6 tessere · ordine corretto 6/6':'6 tessere · ordine da verificare'):setThree.incomplete?('Set incompleto '+setThree.count+'/6'):completeFour?'4 tessere · set completo 4/4':setState.incomplete?('Set incompleto '+setState.count+'/4'):entries.length+' '+(entries.length===1?'pagina':'pagine')+(pending.length?' · '+pending.length+' in attesa':'');const reviewN=entries.filter(e=>e.review).length,qualityN=entries.filter(e=>e.qualityReview).length;$('review-count').textContent=reviewN?(reviewN+' da verificare'+(qualityN?' · '+qualityN+' qualità':'')):'Tutto pronto';syncActions();document.dispatchEvent(new CustomEvent('docfix:repaint',{detail:{entries:entries.slice()}}));}
+ $('summary').textContent=setThree.complete?(manuallyOrdered?'6 tessere · ordine manuale confermato':sixOrder?.ok?'6 tessere · ordine corretto 6/6':'6 tessere · ordine da verificare'):setThree.incomplete?('Set incompleto '+setThree.count+'/6'):completeFour?'4 tessere · set completo 4/4':setState.incomplete?('Set incompleto '+setState.count+'/4'):entries.length+' '+(entries.length===1?'pagina':'pagine')+(pending.length?' · '+pending.length+' in attesa':'');const reviewN=entries.filter(e=>e.review).length,qualityN=entries.filter(e=>e.qualityReview).length;$('review-count').textContent=reviewN?(reviewN+' da verificare'+(qualityN?' · '+qualityN+' qualità':'')):'Tutto pronto';syncActions();document.dispatchEvent(new CustomEvent('docfix:repaint',{detail:{entries:entries.slice()}}));}
 function moveEntry(from,to){if(busy||from===to||from<0||to<0||from>=entries.length||to>=entries.length)return;
- const [item]=entries.splice(from,1);entries.splice(to,0,item);lastPdfSize=null;repaint();status('Ordine delle pagine aggiornato: il PDF seguirà questo ordine.');}
+ const [item]=entries.splice(from,1);entries.splice(to,0,item);manuallyOrdered=true;lastPdfSize=null;repaint();status('Ordine delle pagine aggiornato: il PDF seguirà questo ordine.');}
 function discardUnusedSource(id){if(id===activeSource||pending.some(x=>x.id===id)||entries.some(e=>e.sourceIndex===id))return;sourceFiles=sourceFiles.filter(s=>s.id!==id)}
 function removeEntry(index){if(busy||index<0||index>=entries.length)return;
  const [entry]=entries.splice(index,1),source=sourceFiles.find(s=>s.id===entry.sourceIndex);
@@ -1507,6 +1507,7 @@ function reverseFileOrder(){
  if(busy)return;
  const order=[...new Set(entries.map(e=>e.sourceIndex))];
  if(order.length<2)return;
+ manuallyOrdered=true;
  const reversed=[...order].reverse(),rank=new Map(reversed.map((id,i)=>[id,i]));
  entries=entries.map((e,i)=>({e,i})).sort((a,b)=>(rank.get(a.e.sourceIndex)-rank.get(b.e.sourceIndex))||(a.i-b.i)).map(x=>x.e);
  sourceFiles=sourceFiles.map((s,i)=>({s,i})).sort((a,b)=>{
@@ -1621,6 +1622,7 @@ function planSixCardOrder(group){
  return {ok:true,ordered,names,how};
 }
 function regroupSixCards(){
+ if(manuallyOrdered)return false; // The operator's confirmed page order wins on export.
  const group=entries.filter(e=>e.threeUp&&e.splitCount===3),plan=planSixCardOrder(group);
  if(!plan.ok)return false;
  const slots=[];entries.forEach((e,i)=>{if(group.includes(e))slots.push(i)});
@@ -1749,13 +1751,14 @@ async function drainPending(){
   if(token===sequence){
    await recoverIncompleteTwoByTwo();
    // Final guarantee: the pairing is checked again after EVERY input is processed.
-   const sixGrouped=regroupSixCards();
+   const sixGrouped=manuallyOrdered?false:regroupSixCards();
    processing=false;busy=false;activeSource=null;$('progress-wrap').hidden=true;
    const setState=twoByTwoState(),setThree=threeByTwoState();
    if(setThree.incomplete)status('Set incompleto '+setThree.count+'/6 · mancano '+(6-setThree.count)+' tessere: controlla le foto.');
    else if(setThree.complete){
-    const six=planSixCardOrder(entries.filter(e=>e.threeUp&&e.splitCount===3));
-    status(six.ok?'Set completo 6/6 · CF, patente e carta identità in ordine fronte/retro.':'6 tessere individuate · ordine da verificare: '+six.reason+'.');
+    if(manuallyOrdered){status('Set completo 6/6 · ordine manuale conservato nel PDF.');}
+    else {const six=planSixCardOrder(entries.filter(e=>e.threeUp&&e.splitCount===3));
+    status(six.ok?'Set completo 6/6 · CF, patente e carta identità in ordine fronte/retro.':'6 tessere individuate · ordine da verificare: '+six.reason+'.');}
    }
    else if(setState.incomplete)status('Set incompleto '+setState.count+'/4 · manca un ritaglio: controlla la foto evidenziata.');
    else if(setState.complete)status('Set completo 4/4 · controlla le anteprime e scarica il PDF.');
@@ -1789,7 +1792,7 @@ async function exportRasterOffline(){
 async function exportPdf(){
  if(busy||pending.length||!entries.length||twoByTwoState().incomplete||threeByTwoState().incomplete)return;
  // Never export a stale source order if the last recognition finished between UI events.
- if(threeByTwoState().complete){
+ if(threeByTwoState().complete&&!manuallyOrdered){
   regroupSixCards();
   const order=planSixCardOrder(entries.filter(e=>e.threeUp&&e.splitCount===3));
   if(!order.ok)note('Sei tessere rilevate, ma ordine da controllare: '+order.reason+'. Puoi usare Prima/Dopo per riordinarle prima di scaricare.');
