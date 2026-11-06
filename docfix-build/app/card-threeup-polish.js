@@ -1,4 +1,4 @@
-/* DocFix Desktop 1.9.10 - material-aware geometry for photos with three cards.
+/* DocFix Desktop 1.9.11 - material-aware geometry for photos with three cards.
  * Only a downscaled scratch canvas is analyzed. The full-resolution original
  * is never changed. Runs locally and keeps the 2-card engine untouched.
  */
@@ -87,7 +87,19 @@ function refine(original,detected){
  const toRot=q=>portrait?q.map(p=>({x:p.y,y:1-p.x})):q.map(p=>({...p}));
  const toSrc=q=>portrait?q.map(p=>({x:1-p.y,y:p.x})):q.map(p=>({...p}));
  const cards=detected.cards.map(card=>({...card,...material(rgba,toRot(card.quad),w,h),rot:toRot(card.quad)}));
- const allTypes=['cf','licence','identity'].every(x=>cards.filter(c=>c.kind===x).length===1);
+
+ // Use RELATIVE material evidence, not just hard thresholds: on pale backgrounds
+ // the blue of a worn health card can dip below the old threshold.
+ const reds=[...cards].sort((a,b)=>b.redFraction-a.redFraction);
+ const licence=reds[0];
+ const other=cards.filter(c=>c!==licence).sort((a,b)=>b.blueFraction-a.blueFraction);
+ const cfCandidate=other[0],identityCandidate=other[1];
+ const distinct=licence.redFraction>.22
+   &&licence.redFraction-reds[1].redFraction>.10
+   &&cfCandidate.blueFraction>.18
+   &&cfCandidate.blueFraction-identityCandidate.blueFraction>.075;
+ if(distinct){licence.kind='licence';cfCandidate.kind='cf';identityCandidate.kind='identity';}
+ const allTypes=distinct&&['cf','licence','identity'].every(x=>cards.filter(c=>c.kind===x).length===1);
  const cf=cards.find(x=>x.kind==='cf');
  const sourceSide=allTypes?(cf.darkFraction>.46?'retro':'fronte'):'indefinito';
  const result=cards.map(c=>{
@@ -113,5 +125,5 @@ function refine(original,detected){
  if(result.some(c=>!scan.validQuad(c.quad)))return detected;
  return {...detected,cards:result,materialVerified:allTypes,sourceSide};
 }
-window.DocFixThreeUpPolish=Object.freeze({refine,material,version:'1.9.10'});
+window.DocFixThreeUpPolish=Object.freeze({refine,material,version:'1.9.11'});
 })();
