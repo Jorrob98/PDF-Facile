@@ -286,6 +286,59 @@ const ids=x=>x.map(e=>e.id).join(',');
     'unsupported document must never be altered by licence guard');
  }
 
+
+ // 1.9.16: recover a pale driving-licence border from the rose plastic,
+ // not from the printed text. Use synthetic raster only, never a client ID.
+ {
+  const source=read('app/card-licence-guard.js'),w=1000,h=600;
+  const rgba=new Uint8ClampedArray(w*h*4);
+  function fill(red){
+   for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const k=(y*w+x)*4;
+    const rose=red&&x>=240&&x<=670&&y>=145&&y<=414;
+    rgba[k]=rose?187:170;rgba[k+1]=rose?124:170;
+    rgba[k+2]=rose?143:175;rgba[k+3]=255;
+   }
+  }
+  const win={DocFixScanner:{
+   resize:c=>c,
+   validQuad:q=>Array.isArray(q)&&q.length===4
+    &&q.every(p=>p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1)
+  }};
+  vm.runInNewContext(source,{window:win,Math,Uint8ClampedArray});
+  const quad=[{x:.24,y:.245},{x:.633,y:.245},{x:.633,y:.692},{x:.24,y:.692}];
+  fill(true);
+  const found=win.DocFixLicenceGuard.pinkEnvelope(quad,rgba,w,h);
+  assert.equal(found.verified,true,'pale rose physical plastic must be detected');
+  assert.ok(found.quad[1].x>.668&&found.quad[2].x>.668,
+   'right physical licence edge must be recovered, not cropped at x=.633');
+  assert.ok(found.quad[2].y>.69,'bottom physical edge must be kept');
+  const canvas={width:w,height:h,getContext:()=>({
+   getImageData:()=>({data:rgba})
+  })};
+  const triple={verified:true,materialVerified:true,orientation:'none',cards:[
+   {kind:'cf',quad},
+   {kind:'licence',quad},
+   {kind:'identity',quad}
+  ]};
+  const res=win.DocFixLicenceGuard.protect(canvas,triple);
+  assert.equal(res.cards[0],triple.cards[0],
+   'licence protection must leave CF detection unchanged');
+  assert.equal(res.cards[2],triple.cards[2],
+   'licence protection must leave identity detection unchanged');
+  assert.equal(res.cards[1].licenceGuard.method,'pink-envelope');
+  assert.ok(res.cards[1].quad[1].x>.668,
+   'recovered licence geometry must reach the final crop');
+  assert.equal(canvas.width,w,'original photo cannot be cleared');
+  fill(false);
+  const none=win.DocFixLicenceGuard.pinkEnvelope(quad,rgba,w,h);
+  assert.equal(none.verified,false,
+   'neutral paper may not masquerade as a driving licence');
+  const resNone=win.DocFixLicenceGuard.protect(canvas,triple);
+  assert.notEqual(resNone.cards[1].licenceGuard.method,'pink-envelope',
+   'rose envelope must not be applied without colour proof');
+ }
+
  // The verified two-card engine must not hide a third independent document.
  {
   const geometry=between(index,'function quadBounds(q){','function crossOverlap(');
