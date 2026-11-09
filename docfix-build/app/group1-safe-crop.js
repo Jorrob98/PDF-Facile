@@ -54,6 +54,7 @@
  function refineQuad(source,q){
   if(!q||!scan.validQuad(q))return {quad:q,refined:false,gain:0};
   const samp=scan.resize(source,700),w=samp.width,h=samp.height,d=samp.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+  try{
   const px=q.map(p=>({x:p.x*w,y:p.y*h})),range=Math.round(clamp(Math.min(w,h)*.018,4,12)),gap=clamp(Math.min(w,h)*.005,2,4);
   const shifted=[],offsets=[];let baseTotal=0,bestTotal=0;
   for(let i=0;i<4;i++){
@@ -81,9 +82,11 @@
   const before=edgeSupport(px,d,w,h),after=edgeSupport(corners,d,w,h),gain=after.strength-before.strength;
   const changed=offsets.some(v=>v!==0)&&after.sidesOk>=before.sidesOk&&gain>=.8;
   return changed?{quad:nq,refined:true,gain,offsets,before,after}:{quad:q,refined:false,gain:0,offsets,before,after};
+  }finally{if(samp!==source)samp.width=samp.height=1;}
  }
  function candidateFromBackground(source){
   const samp=scan.resize(source,480),w=samp.width,h=samp.height;
+  try{
   if(w<120||h<120)return null;
   const d=samp.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
   const bg=[],border=Math.max(5,Math.floor(Math.min(w,h)*.075));
@@ -131,6 +134,7 @@
    candidates.push({quad:normalized,confidence:clamp(.81+(edges.sidesOk-3)*.065+(fill-.40)*.05+(fine.refined?.015:0),.81,.95),status:'found',cardLikely:ratio>1.43&&ratio<1.84,method:fine.refined?'physical-outer-boundaries-fine':'physical-outer-boundaries',reason:fine.refined?'Bordi fisici agganciati e rifiniti con precisione':'Bordi fisici esterni riconosciuti con margine di sicurezza',rank,edges,fine});
   }
   return candidates.sort((a,b)=>b.rank-a.rank)[0]||null;
+  }finally{if(samp!==source)samp.width=samp.height=1;}
  }
  function validateLegacy(source,found){
   if(!found||found.status!=='found'||!scan.validQuad(found.quad))return false;
@@ -138,8 +142,10 @@
   if(coverage<.10||coverage>.81||q.some(p=>p.x<.012||p.x>.988||p.y<.012||p.y>.988))return false;
   const ratio=quadRatio(q,w,h);if(ratio<1.35||ratio>1.95)return false;
   const s=scan.resize(source,480),d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,s.width,s.height).data;
+  try{
   const edges=edgeSupport(q.map(p=>({x:p.x*s.width,y:p.y*s.height})),d,s.width,s.height);
   return edges.sidesOk>=3&&edges.strength>=23;
+  }finally{if(s!==source)s.width=s.height=1;}
  }
  const oldDetect=scan.detectDocument;
  scan.detectDocument=(source)=>{
