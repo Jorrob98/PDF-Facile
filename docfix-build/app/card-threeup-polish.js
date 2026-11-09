@@ -1,4 +1,4 @@
-/* DocFix Desktop 1.9.13 - material-aware geometry for photos with three cards.
+/* DocFix Desktop 1.9.14 - material-aware geometry for photos with three cards.
  * Only a downscaled scratch canvas is analyzed. The full-resolution original
  * is never changed. Runs locally and keeps the 2-card engine untouched.
  */
@@ -133,5 +133,5 @@ function refine(original,detected){
  }
  return {...detected,cards:result,materialVerified:allTypes,sourceSide,physicalReview};
 }
-window.DocFixThreeUpPolish=Object.freeze({refine,material,version:'1.9.13'});
+window.DocFixThreeUpPolish=Object.freeze({refine,material,version:'1.9.14'});
 })();
