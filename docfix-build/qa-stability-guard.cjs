@@ -71,6 +71,34 @@ const ids=x=>x.map(e=>e.id).join(',');
    '2-up workflow must remain unchanged');
 }
 {
+ // Manual page order is binding. Late recognition must not reorder the operator's work.
+ const chunk=between(index,'function regroupTwoFileFourCards(batchId){','function twoByTwoCandidateMeta(');
+ const sample=[
+  {id:'a',sourceIndex:10,loadBatch:4,twoUp:true,splitSlot:0,pairGroup:null},
+  {id:'b',sourceIndex:20,loadBatch:4,twoUp:true,splitSlot:0,pairGroup:null},
+  {id:'c',sourceIndex:10,loadBatch:4,twoUp:true,splitSlot:1,pairGroup:null},
+  {id:'d',sourceIndex:20,loadBatch:4,twoUp:true,splitSlot:1,pairGroup:null}
+ ];
+ const paired=group=>group.slice().reverse();
+ const apply=(ordered,slots)=>ordered.forEach((e,i)=>{sample[slots[i]]=e});
+ const build=new Function('entries','manuallyOrdered','pairedFourCards','applyFourCardLabels',
+  chunk+';return {regroupTwoFileFourCards,regroupLatestTwoUpSources};');
+ const funcs=build(sample,true,paired,apply);
+ assert.equal(funcs.regroupTwoFileFourCards(4),false,'late batch must respect manual page ordering');
+ assert.equal(funcs.regroupLatestTwoUpSources(),false,'late 2-up auto pairing must respect manual page ordering');
+ assert.equal(sample.map(x=>x.id).join(','),'a,b,c,d','manual order must not be mutated');
+ assert.equal(funcs.regroupLatestTwoUpSources(true),true,'explicit reverse button may force a re-pair');
+ assert.equal(sample.map(x=>x.id).join(','),'d,c,b,a','explicit operator reverse must still work');
+ assert.ok(index.includes('regroupLatestTwoUpSources(true);'),'reverse-files must use explicit operator override');
+}
+{
+ const editor=between(index,'function openCorrection(index){','function addFiles(files){');
+ assert.ok(editor.includes('e.cropped=true;e.cropVerified=true;'),'manual four-corner crop must clear false crop warning');
+ assert.ok(editor.includes('e.cropped=false;e.cropVerified=undefined;'),'use entire page must clear stale crop verdict');
+ assert.ok(editor.includes("$('editor-image').removeAttribute('src')"),'closing the editor must release its preview data');
+ assert.ok(editor.includes('editQuad=null;editSource=null;'),'closing the editor must release scratch image references');
+}
+{
  // Never clear a resized reference if resize() returned the original.
  const deskew=between(index,'function estimateFineDeskew(','function rotateFineCanvas(');
  assert.equal(deskew.split('s.width=s.height=1').length-1,3);
