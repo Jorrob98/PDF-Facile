@@ -270,11 +270,27 @@ async function drain(){
  if(running)return;running=true;
  try{
   while(queue.length){
-   while(host()?.isBusy?.())await sleep(250);
-   const x=queue.shift();queuedEntries.delete(x.entry);
-   await analyzeEntry(x.entry,x.force);
+   // Reset or removal may clear the queue during the busy wait.
+   // Re-check it AFTER every await, before trying to access x.entry.
+   while(queue.length&&host()?.isBusy?.())await sleep(250);
+   const x=queue.shift();
+   if(!x)continue;
+   queuedEntries.delete(x.entry);
+   if(host()?.indexOf?.(x.entry)<0)continue;
+   try{await analyzeEntry(x.entry,x.force);}
+   catch(error){
+    console.error('DocFix OCR coda',error);
+    if(host()?.indexOf?.(x.entry)>=0){
+     x.entry.ocrState='bad';
+     x.entry.ocrError=String(error?.message||error);
+     repaint();
+    }
+   }
   }
- }finally{running=false;scheduleWorkerRelease()}
+ }finally{
+  running=false;scheduleWorkerRelease();
+  if(queue.length)void drain();
+ }
 }
 
 function decorate(entries){
