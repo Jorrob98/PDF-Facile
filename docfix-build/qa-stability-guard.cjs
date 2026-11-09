@@ -90,6 +90,8 @@ const ids=x=>x.map(e=>e.id).join(',');
  assert.ok(index.includes("cardKind:c.kind||'generic'"),
    'three-up identity card must use the MRZ orientation verifier');
  const tripleOrientation=between(index,'async function normalizeKnownCard(','// Never let an earlier 2-up success hide a third independently confirmed card.');
+ assert.ok(index.includes("sourceVerified:c.materialVerified===true&&(c.kind!=='licence'||c.licenceGuard?.verified===true)"),
+   'three-up unclassified cards cannot claim physically verified borders');
  assert.ok(tripleOrientation.includes("orientationKnown&&cardKind!=='identity'?"),
    'inconclusive MRZ on 3-up identity must fall back to text orientation, not layout');
  assert.ok(tripleOrientation.includes("(cardKind==='identity'||textLines(processed).vertical)"),
