@@ -107,7 +107,7 @@ const ids=x=>x.map(e=>e.id).join(',');
  const bytes=await blob.arrayBuffer(),head=new TextDecoder().decode(new Uint8Array(bytes).slice(0,900));
  assert.ok(head.includes('/Count 6'),'PDF must declare all 6 pages');
  assert.equal(exportAPI.validate(blob,6),blob);
- assert.equal(exportAPI.filename(source),'DocFix-1.9.15-6-tessere.pdf',
+ assert.equal(exportAPI.filename(source),'DocFix-1.9.16-6-tessere.pdf',
    'versioned PDF should not collide with previous Downloads');
  await assert.rejects(()=>exportAPI.create([{processed:{width:0,height:0}}],{encodeJPEG:async()=>realJPEG}),
    /non valida/,'invalid canvas must never produce a PDF');
