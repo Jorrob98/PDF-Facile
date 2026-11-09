@@ -77,12 +77,14 @@ function refine(original,detected){
  const scan=window.DocFixScanner;if(!scan)return detected;
  const portrait=detected.orientation==='left';
  let oriented=original;
+ try{
  if(portrait){
   oriented=document.createElement('canvas');oriented.width=original.height;oriented.height=original.width;
   const g=oriented.getContext('2d',{willReadFrequently:true});
   g.translate(0,original.width);g.rotate(-Math.PI/2);g.drawImage(original,0,0);
  }
  const sample=scan.resize(oriented,600),w=sample.width,h=sample.height;
+ try{
  const rgba=sample.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
  const toRot=q=>portrait?q.map(p=>({x:p.y,y:1-p.x})):q.map(p=>({...p}));
  const toSrc=q=>portrait?q.map(p=>({x:1-p.y,y:p.x})):q.map(p=>({...p}));
@@ -120,8 +122,6 @@ function refine(original,detected){
   }
   return {...c,quad:toSrc(q),sideGuess:sourceSide,materialVerified:allTypes};
  });
- if(sample!==oriented&&sample!==original)sample.width=sample.height=1;
- if(oriented!==original)oriented.width=oriented.height=1;
  // A difficult corner must not discard the classification and ordering of
  // all six cards. Revert only that corner to its safe detected source quad.
  let physicalReview=false;
@@ -132,6 +132,8 @@ function refine(original,detected){
   }
  }
  return {...detected,cards:result,materialVerified:allTypes,sourceSide,physicalReview};
+ }finally{if(sample!==oriented&&sample!==original)sample.width=sample.height=1;}
+ }finally{if(oriented!==original)oriented.width=oriented.height=1;}
 }
 window.DocFixThreeUpPolish=Object.freeze({refine,material,version:'1.9.16'});
 })();
