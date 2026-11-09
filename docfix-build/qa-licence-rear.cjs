@@ -35,6 +35,14 @@ const original={width:w,height:h,getContext:()=>({getImageData:()=>({data:source
 win.DocFixScanner={resize:()=>original,validQuad:q=>Array.isArray(q)&&q.length===4&&q.every(p=>p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1)};
 const normal=api.detect(original);
 assert.equal(normal?.status,'found');
+win.DocFixLicenceGuard={polishQuad:q=>({verified:true,quad:q.map(p=>({x:.5+(p.x-.5)*.91,y:.5+(p.y-.5)*.91}))})};
+const rejected=api.detect(original);
+assert.equal(rejected.physicallyVerified,false,'inner licence print must not certify an inward crop');
+assert.equal(rejected.needsReview,true,'unverified inner border still requires inspection');
+win.DocFixLicenceGuard={polishQuad:q=>({verified:true,quad:q.map(p=>({x:.5+(p.x-.5)*1.02,y:.5+(p.y-.5)*1.02}))})};
+const accepted=api.detect(original);
+assert.equal(accepted.physicallyVerified,true,'verified enclosing four edges can be accepted');
+win.DocFixLicenceGuard=null;
 assert.equal(original.width,w,'original must not be released');
 const scratch={width:w,height:h,getContext:original.getContext};
 win.DocFixScanner.resize=()=>scratch;
