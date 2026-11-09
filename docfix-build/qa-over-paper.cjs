@@ -29,6 +29,8 @@ assert.deepEqual(back,snapshot,'never mutate uploaded pixels');
 const front=engine.analyzeRGBA(make(750,520,{x0:375,y0:70,x1:603,y1:435}),750,520);
 assert.equal(front?.status,'found','portrait cyan CIE on landscape A4 must be cropped');
 assert.equal(front.physicallyVerified,true);
+const portraitOnly=engine.analyzeRGBA(make(750,520,{x0:430,y0:140,x1:576,y1:375}),750,520);
+assert.equal(portraitOnly,null,'small cyan portrait-panel island must not masquerade as a full CIE');
 assert.ok(front.quad[0].x>.47&&front.quad[2].x<.84,'background page removed');
 assert.equal(engine.analyzeRGBA(make(750,520),750,520),null,'paper and printed lines are not a card');
 assert.equal(engine.analyzeRGBA(new Uint8ClampedArray(90*120*4),90,120),null,'tiny image rejected');
@@ -50,4 +52,8 @@ assert.ok(index.includes('&&!norm.overPaper'),'false source MRZ never reverses p
 assert.ok(index.includes('const cardEvidence=norm.cardLikely||'),'A4 printed paper cannot claim a trustworthy CIE MRZ');
 assert.ok(index.includes("let mrz=cardEvidence&&!norm.licenceRear?window.DocFixGroup2.recognizeMRZOrientation(processed)"),'MRZ orientation not read from unisolated printed paper');
 assert.ok(index.includes('function portraitCieTurn('),'sideways CIE orientation fallback present');
+assert.ok(index.includes("let licenceRear=null,onPaper=null")&&index.includes("const found=onPaper||licenceRear||scan.detectDocument(original)"),
+ 'blue CIE candidate must be checked before pink licence material');
+assert.ok(index.includes("if(!e.geometryReview&&found.status==='found'"),
+ 'failed automatic crop must open manual correction at the full original');
 console.log('DocFix over-paper regression PASS: portrait front, neutral MRZ, no-card rejection, pixel ownership and integration');
