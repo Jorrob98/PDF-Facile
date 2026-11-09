@@ -1,0 +1,97 @@
+'use strict';
+// Source-aware single-card crop regression: no personal photos required.
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
+const index=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
+const start=index.indexOf('function singleCropGate(original,candidate,kind=');
+const end=index.indexOf('// The same normalization path is used by photos and scanned PDF pages.',start);
+assert.ok(start>=0&&end>start,'single-image crop safety logic must be testable');
+const code=index.slice(start,end);
+const area=q=>Math.abs(q.reduce((sum,p,i)=>sum+p.x*q[(i+1)%4].y-q[(i+1)%4].x*p.y,0))/2;
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function ratio(q,w,h){
+ const p=q.map(x=>({x:x.x*w,y:x.y*h}));
+ const ww=(dist(p[0],p[1])+dist(p[2],p[3]))/2;
+ const hh=(dist(p[1],p[2])+dist(p[3],p[0]))/2;
+ return Math.max(ww,hh)/Math.max(1,Math.min(ww,hh));
+}
+const q=(x0,y0,x1,y1)=>[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}];
+const box=q(.14,.24,.84,.55);
+const face=q(.43,.37,.59,.47);
+const original={width:1000,height:1414}; // A4-proportioned PHOTO of a CIE on paper
+const scannedCard={status:'found',confidence:.88,cardLikely:true,quad:box,reason:'Materiale azzurro',physicallyVerified:true};
+const pinkCard={...scannedCard,reason:'Materiale rosa',needsReview:true,physicallyVerified:false};
+const defaultGeneric={status:'uncertain',quad:q(.03,.03,.97,.97),confidence:0};
+const state={blue:null,pink:null,generic:defaultGeneric,warpFails:false,legacyFails:false,blueFails:false};
+const win={
+ DocFixOverPaper:{detect:()=>{if(state.blueFails)throw Error('synthetic blue error');return state.blue}},
+ DocFixLicenceRear:{detect:()=>state.pink},
+ DocFixScanner:{
+  validQuad:x=>Array.isArray(x)&&x.length===4&&x.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))&&area(x)>.01,
+  area,detectDocument:()=>{if(state.legacyFails)throw Error('synthetic old detector error');return state.generic},
+  process:(src)=>{if(state.warpFails)throw Error('synthetic warp error');return {width:820,height:520}}
+ }
+};
+const silent={warn(){}};
+const run=new Function('window','quadCardRatio','trimCardBackground','console',code+'return {singleCropGate,photoNormalize};');
+const {singleCropGate,photoNormalize}=run(win,ratio,c=>c,silent);
+const reset=()=>{state.blue=null;state.pink=null;state.generic=defaultGeneric;state.warpFails=false;state.legacyFails=false;state.blueFails=false};
+reset();state.blue=scannedCard;
+let result=photoNormalize(original);
+assert.notEqual(result.processed,original,'blue CIE must be cropped on A4-shaped photo');
+assert.equal(result.overPaper,true);
+assert.equal(result.licenceRear,false);
+assert.equal(result.cropVerified,undefined,'single-normalizer does not certify source directly');
+assert.equal(result.physicallyVerified,true);
+assert.equal(result.review,false);
+assert.equal(singleCropGate(original,scannedCard,'blue').ok,true);
+reset();state.pink=pinkCard;
+result=photoNormalize(original);
+assert.notEqual(result.processed,original,'rose licence can be cropped on A4-shaped photo');
+assert.equal(result.licenceRear,true);
+assert.equal(result.review,true,'unverified rose borders remain a warning');
+assert.equal(result.physicallyVerified,false);
+reset();state.blue={...scannedCard,quad:face};
+result=photoNormalize(original);
+assert.equal(result.processed,original,'small portrait cannot become the entire identity document');
+assert.equal(result.overPaper,false,'a rejected colour region is not a verified material crop');
+assert.equal(result.review,true);
+reset();state.blue=scannedCard;
+const alreadyCard={width:1000,height:1586};
+result=photoNormalize(alreadyCard);
+assert.equal(result.processed,alreadyCard,'ISO-card-shaped original is not destructively recropped');
+assert.equal(result.overPaper,false,'rejected blue candidate must not trigger sideways CIE logic');
+reset();state.generic={...scannedCard,quad:q(.2,.2,.85,.75)};
+result=photoNormalize(original);
+assert.equal(result.processed,original,'a generic text/frame contour must not crop inside A4');
+reset();state.blue={...scannedCard,quad:face};
+state.generic={...scannedCard,quad:q(.20,.21,.80,.70)};
+const landscape={width:1300,height:1000};
+result=photoNormalize(landscape);
+assert.notEqual(result.processed,landscape,'valid generic fallback must be tried after bad preferred candidate');
+assert.equal(result.overPaper,false,'fallback must not claim rejected material evidence');
+reset();state.blueFails=true;state.generic={...scannedCard,quad:q(.20,.21,.80,.70)};
+result=photoNormalize(landscape);
+assert.notEqual(result.processed,landscape,'failed optional blue detector cannot suppress generic crop');
+reset();state.blue=scannedCard;state.warpFails=true;
+result=photoNormalize(original);
+assert.equal(result.processed,original,'failed perspective warp retains source');
+assert.equal(result.sourceQuad,null,'failed warp must never expose stale crop');
+assert.equal(result.overPaper,false,'failed warp must not claim success');
+assert.equal(result.review,true);
+reset();state.legacyFails=true;
+result=photoNormalize(original);
+assert.equal(result.processed,original,'failed fallback detector retains source');
+assert.equal(result.review,true);
+reset();
+assert.equal(singleCropGate(original,{...scannedCard,quad:q(.001,.1,.70,.50)},'blue').ok,false,
+ 'a candidate on the photograph border must be rejected');
+assert.equal(singleCropGate(original,{...scannedCard,confidence:.20},'blue').ok,false,
+ 'low-confidence material region cannot silently crop');
+assert.ok(index.includes("try{sourceCards=window.DocFixRealCrop?.detect?.(original)"),
+ '2-up detector must be isolated from import failures');
+assert.ok(index.includes("try{tripleRaw=window.DocFixThreeUp?.detect?.(original)"),
+ '3-up detector must be isolated from import failures');
+assert.ok(index.includes("try{multi=multiCardCandidates(original)"),
+ 'multi-card fallback errors must not delete the uploaded source');
+console.log('DocFix crop gate PASS: A4 blue/rose cards, face safety, alternative detectors, scanner/warp error recovery');
