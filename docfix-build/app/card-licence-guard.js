@@ -1,4 +1,4 @@
-/* DocFix 1.9.23: verify the four physical licence edges before source crop.
+/* DocFix 1.9.24: verify the four physical licence edges before source crop.
  * Local/offline only. Original photo is never overwritten. Other document
  * types and the proven 2-up detector are not modified.
  */
@@ -184,5 +184,5 @@ function protect(original,detected){
   }finally{if(sample!==oriented&&sample!==original)sample.width=sample.height=1;}
  }finally{if(oriented!==original)oriented.width=oriented.height=1;}
 }
-window.DocFixLicenceGuard=Object.freeze({protect,polishQuad,pinkEnvelope,version:'1.9.23'});
+window.DocFixLicenceGuard=Object.freeze({protect,polishQuad,pinkEnvelope,version:'1.9.24'});
 })();
