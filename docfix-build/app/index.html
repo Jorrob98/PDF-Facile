@@ -1048,6 +1048,26 @@ function qualityAudit(c,sourceQuad=null){
  return {review:issues.length>0,issues,metrics:{mean:Math.round(mean),stdev:Math.round(stdev),lapVar:Math.round(lapVar),edgeDensity:Number(edgeDensity.toFixed(3)),width:c.width,height:c.height}};
  });
 }
+// A sideways CIE front has a localized portrait photograph in one end of
+// the vertical plastic card. Turn so the portrait is on the readable left.
+// This is a visual hint, NOT proof of the upright text direction.
+function portraitCieTurn(source){
+ if(source.height<source.width*1.22)return 0;
+ return withResizedCanvas(source,360,s=>{
+  const w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+  const darkness=(a,b)=>{
+   let ink=0,n=0;
+   for(let y=Math.round(h*a);y<Math.round(h*b);y+=2)for(let x=Math.round(w*.21);x<Math.round(w*.79);x+=2){
+    const k=(y*w+x)*4,lum=.299*d[k]+.587*d[k+1]+.114*d[k+2];
+    ink+=Number(lum<120);n++;
+   }return ink/Math.max(1,n);
+  };
+  const top=darkness(.12,.40),bottom=darkness(.60,.88);
+  if(bottom>.16&&bottom>top*2.1&&bottom-top>.12)return 90;
+  if(top>.16&&top>bottom*2.1&&top-bottom>.12)return 270;
+  return 0;
+ });
+}
 async function normalizeRaster(original){
  const before=window.DocFixGroup2.recognizeMRZOrientation(original);
  const norm=photoNormalize(original);let processed=norm.processed,rotation=0;
@@ -1061,13 +1081,15 @@ async function normalizeRaster(original){
  }
  if(mrz.trustworthy){rotation=mrz.angle;processed=rotate(processed,rotation);}
  // G1: never trim again after a perspective crop: that deletes MRZ and card edges.
- const osd=mrz.trustworthy?{angle:0,review:false,trustworthy:true}:await inferTextOrientation(processed);
+ const visualTurn=norm.overPaper&&!mrz.trustworthy?portraitCieTurn(processed):0;
+ const osd=mrz.trustworthy?{angle:0,review:false,trustworthy:true}:visualTurn?{angle:0,review:true,trustworthy:false}:await inferTextOrientation(processed);
  if(!mrz.trustworthy&&osd.trustworthy&&osd.angle){processed=rotate(processed,osd.angle);rotation=(rotation+osd.angle)%360;}
+ if(visualTurn){processed=rotate(processed,visualTurn);rotation=(rotation+visualTurn)%360;}
  const geometryReview=norm.review||preservedSource;
  const orientationReview=!mrz.trustworthy&&!osd.trustworthy&&(norm.cardLikely||textLines(processed).vertical);
  const sourceQuad=preservedSource?null:norm.sourceQuad,quality=qualityAudit(processed,sourceQuad),qualityReview=quality.review;
  const review=geometryReview||orientationReview||qualityReview;
- const method=mrz.trustworthy?'Verso verificato dalla zona MRZ':osd.trustworthy?'Verso verificato dal testo':'Orientamento non confermato';
+ const method=mrz.trustworthy?'Verso verificato dalla zona MRZ':osd.trustworthy?'Verso verificato dal testo':visualTurn?'Orientamento probabile dalla posizione della foto · verifica il verso':'Orientamento non confermato';
  const cropNote=preservedSource?'Ritaglio non sicuro: foto integra · verifica i bordi':norm.how;
  const qualityNote=quality.issues.length?' · '+quality.issues.join(' · '):'';
  const how=cropNote+' · '+method+qualityNote+(review?' · Verifica consigliata':'');
