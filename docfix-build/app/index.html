@@ -805,7 +805,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-onepass.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-onepass.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const zone=$('dropzone'),picker=$('picker'),cards=$('cards'),workspace=$('workspace'),dl=$('download');
@@ -993,7 +993,8 @@ function photoNormalize(original){
  const scan=window.DocFixScanner;let processed=original,confidence=0,how='Foto completa',review=false,cardLikely=false,sourceQuad=null,precise=false,backLike=false;
  // Single photo = one document. Multi-contour analysis can confuse a card with a
  // shadow or with the inner printed area and crop off the actual edges.
- const found=scan.detectDocument(original),area=found.status==='found'?scan.area(found.quad):0;
+ const onPaper=window.DocFixOverPaper?.detect?.(original)||null;
+ const found=onPaper||scan.detectDocument(original),area=found.status==='found'?scan.area(found.quad):0;
  // 1.7: avoid a second destructive crop when the source is already a tightly
  // cropped ISO card or A-series page. In those cases inner frames/text boxes can
  // otherwise be mistaken for the physical document edge.
@@ -1001,18 +1002,18 @@ function photoNormalize(original){
  const tightCard=photoShape>=1.50&&photoShape<=1.73;
  const tightPage=photoShape>=1.36&&photoShape<=1.47;
  const alreadyDocumentShape=tightCard||tightPage;
- const unsafeInnerCrop=alreadyDocumentShape&&area<.86;
+ const unsafeInnerCrop=!onPaper&&alreadyDocumentShape&&area<.86;
  if(found.status==='found'&&found.confidence>=.79&&area>.09&&area<.88&&!unsafeInnerCrop&&scan.validQuad(found.quad)){
   const quad=found.quad.map(p=>({...p}));
   processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
-  confidence=found.confidence;sourceQuad=quad;precise=String(found.method||'').includes('fine')||found.method==='precise-color';backLike=found.cardBackLike===true;how=precise?'Bordi del documento rifiniti':'Bordi del documento ritagliati';
+  confidence=found.confidence;sourceQuad=quad;precise=String(found.method||'').includes('fine')||found.method==='precise-color';backLike=found.cardBackLike===true;how=onPaper?found.reason:(precise?'Bordi del documento rifiniti':'Bordi del documento ritagliati');review=found.needsReview===true;
   const pts=quad.map(pt=>({x:pt.x*original.width,y:pt.y*original.height}));
   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),ww=(dist(pts[0],pts[1])+dist(pts[2],pts[3]))/2,hh=(dist(pts[1],pts[2])+dist(pts[3],pts[0]))/2;
   const shape=Math.max(ww,hh)/Math.max(1,Math.min(ww,hh));cardLikely=found.cardLikely===true||(shape>=1.43&&shape<=1.94);
   // 1.7: after a safe perspective crop, remove only proven blue desk/card slivers.
   // trimCardBackground returns the same canvas when the colour evidence is weak,
   // so licences, paper documents and already-clean cards are left untouched.
-  if(cardLikely){
+  if(cardLikely&&!onPaper){
    const cleaned=trimCardBackground(processed,backLike);
    if(cleaned!==processed){processed=cleaned;how+=' · sfondo residuo rimosso';}
   }
@@ -1021,7 +1022,7 @@ function photoNormalize(original){
   processed=original;review=true;
   how=unsafeInnerCrop?(tightCard?'Tessera già pronta · nessun doppio ritaglio':'Pagina già pronta · nessun doppio ritaglio'):'Foto conservata · controlla i 4 bordi';
  }
- return {processed,confidence,how,review,cardLikely,sourceQuad,precise,backLike};
+ return {processed,confidence,how,review,cardLikely,sourceQuad,precise,backLike,overPaper:!!onPaper,physicallyVerified:onPaper?.physicallyVerified};
 }
 // The same normalization path is used by photos and scanned PDF pages.
 // Never skip 180-degree detection for ID cards: landscape proportions tell us
@@ -1055,7 +1056,7 @@ async function normalizeRaster(original){
  // pixels rather than pretending to have recognized the physical card edge.
  let mrz=window.DocFixGroup2.recognizeMRZOrientation(processed);
  let preservedSource=false;
- if(before.trustworthy&&!mrz.trustworthy&&processed!==original){
+ if(before.trustworthy&&!mrz.trustworthy&&processed!==original&&!norm.overPaper){
   processed=original;mrz=before;preservedSource=true;
  }
  if(mrz.trustworthy){rotation=mrz.angle;processed=rotate(processed,rotation);}
@@ -1070,7 +1071,7 @@ async function normalizeRaster(original){
  const cropNote=preservedSource?'Ritaglio non sicuro: foto integra · verifica i bordi':norm.how;
  const qualityNote=quality.issues.length?' · '+quality.issues.join(' · '):'';
  const how=cropNote+' · '+method+qualityNote+(review?' · Verifica consigliata':'');
- return {processed,rotation,review,geometryReview,orientationReview,qualityReview,qualityIssues:quality.issues,qualityMetrics:quality.metrics,cropped:norm.processed!==original&&!preservedSource,sourceQuad,how};
+ return {processed,rotation,review,cropVerified:norm.overPaper?norm.physicallyVerified:undefined,geometryReview,orientationReview,qualityReview,qualityIssues:quality.issues,qualityMetrics:quality.metrics,cropped:norm.processed!==original&&!preservedSource,sourceQuad,how};
 }
 function quadBounds(q){const xs=q.map(p=>p.x),ys=q.map(p=>p.y);return {x:Math.min(...xs),y:Math.min(...ys),width:Math.max(...xs)-Math.min(...xs),height:Math.max(...ys)-Math.min(...ys)}}
 function quadCardRatio(q,w,h){const p=q.map(z=>({x:z.x*w,y:z.y*h})),d=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),ww=(d(p[0],p[1])+d(p[2],p[3]))/2,hh=(d(p[1],p[2])+d(p[3],p[0]))/2;return Math.max(ww,hh)/Math.max(1,Math.min(ww,hh))}
