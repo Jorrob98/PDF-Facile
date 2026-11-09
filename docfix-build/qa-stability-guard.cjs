@@ -231,6 +231,89 @@ const ids=x=>x.map(e=>e.id).join(',');
  }
 
 
+
+ // An incomplete 2/4 or 5/6 set must NOT lock away already processed pages.
+ // A second emergency save stays clickable even when the async crop is busy.
+ {
+  const portion=between(index,'function availablePages(){','function reset(){');
+  const make=new Function('incomplete','busyAtStart',`
+   let entries=[{sourceIndex:1,processed:{width:500,height:320}},
+       {sourceIndex:2,processed:{width:500,height:320}}];
+   let sourceFiles=[{id:1,file:{size:100}},{id:2,file:{size:100}}],pending=[],
+       processing=false,exporting=false,emergencyExporting=false,
+       busy=busyAtStart,sourceBytes=0,lastRemoved=null,lastPdfSize=null;
+   const dl={disabled:true,textContent:''},ui={};
+   const $=id=>(ui[id]??={hidden:false,disabled:false,textContent:''});
+   const twoByTwoState=()=>({incomplete}),threeByTwoState=()=>({incomplete:false});
+   const fmt=n=>String(n);
+   ${portion}
+   return {syncActions,dl,ui,setBusy:v=>{busy=v},
+     setPending:n=>{pending=Array(n).fill({})},setEntries:e=>{entries=e}};
+  `);
+  const partial=make(true,false);partial.syncActions();
+  assert.equal(partial.dl.disabled,false,'2/4 set cannot disable finished PDF');
+  assert.match(partial.dl.textContent,/set incompleto/);
+  assert.equal(partial.ui['download-ready'].hidden,false,'partial save must be visible');
+  assert.equal(partial.ui['download-ready'].disabled,false);
+  partial.setBusy(true);partial.setPending(1);partial.syncActions();
+  assert.equal(partial.dl.disabled,true,'main exporter waits for active processing');
+  assert.equal(partial.ui['download-ready'].disabled,false,
+    'emergency save must bypass stuck processing and queued files');
+  const complete=make(false,false);complete.syncActions();
+  assert.equal(complete.dl.disabled,false);
+  assert.equal(complete.ui['download-ready'].hidden,true,'no emergency UI on healthy set');
+ }
+ // The normal PDF action must export incomplete results (clearly labeled),
+ // and must never claim a partial 2/4 set is complete.
+ {
+  const body=between(index,'async function exportPdf(){','// Emergency save is deliberately independent');
+  const fn=new Function(`
+    let busy=false,exporting=false,emergencyExporting=false,pending=[],
+        entries=[{processed:{width:400,height:250},kind:'raster'},
+                 {processed:{width:400,height:250},kind:'raster'}],
+        manuallyOrdered=false;
+    let message='',download=null;
+    const dl={disabled:false};
+    const $=id=>({hidden:false,value:'document'});
+    const partialSet=()=>true,threeByTwoState=()=>({complete:false}),
+       twoByTwoState=()=>({incomplete:true});
+    const status=x=>{message=x},note=()=>{},progress=()=>{},repaint=()=>{},fmt=x=>String(x);
+    const exportLayout=()=> 'document',exportRasterOffline=async()=>new Blob([new Uint8Array(1024)],{type:'application/pdf'});
+    const downloadBlob=(blob,pages,partial)=>{download={pages:pages.length,partial,size:blob.size}};
+    ${body}
+    return {run:exportPdf,get:()=>({message,download})};
+   `)();
+  await fn.run();
+  assert.equal(fn.get().download.pages,2,'incomplete group still produces 2-page PDF');
+  assert.equal(fn.get().download.partial,true,'PDF must be labeled incomplete');
+  assert.match(fn.get().message,/parziale/);
+ }
+ // A stuck extraction must not prevent saving an immutable snapshot of the
+ // already finished pages; late batch changes must not alter the saved file.
+ {
+  const part=between(index,'async function saveAvailablePages(){',"$('download-ready').onclick=saveAvailablePages;");
+  let finish,seen=null,stateText='',statusUpdates=0;
+  const gate=new Promise(resolve=>{finish=resolve});
+  const run=new Function('gate','seenSetter','setMessage',`
+   let entries=[{processed:{width:400,height:250},source:'A.jpg'},
+                {processed:{width:400,height:250},source:'B.jpg'}],
+       exporting=false,emergencyExporting=false,busy=true,pending=[{}];
+   const availablePages=()=>entries.filter(e=>e.processed?.width>0&&e.processed?.height>0);
+   const status=x=>setMessage(x),note=()=>{},syncActions=()=>{};
+   const exportRasterOffline=async pages=>{await gate;return new Blob([new Uint8Array(1500)],{type:'application/pdf'})};
+   const downloadBlob=(blob,pages,partial)=>seenSetter({pages:pages.map(p=>p.source),partial,size:blob.size});
+   ${part}
+   return {run:saveAvailablePages,setLive:e=>{entries=e},busyState:()=>busy};
+  `)(gate,x=>{seen=x},x=>{stateText=x;statusUpdates++});
+  const started=run.run();
+  run.setLive([{processed:{width:400,height:250},source:'C.jpg'}]);
+  finish();await started;
+  assert.deepEqual(seen.pages,['A.jpg','B.jpg'],'in-flight PDF must use original snapshot');
+  assert.equal(seen.partial,true);
+  assert.equal(run.busyState(),true,'emergency export must not alter OCR busy lock');
+  assert.match(stateText,/PDF parziale salvato/);
+ }
+
  // Export and new-practice operations must never race.
  {
   const resetCode=between(index,'function reset(){',"'reset').onclick=reset;");
