@@ -1696,7 +1696,8 @@ function openCorrection(index){
  if(e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))editQuad=rotatedQuad(e.sourceQuad,editRotation);
  else{
   editQuad=window.DocFixScanner.defaultQuad();const found=window.DocFixScanner.detectDocument(editSource);
-  if(found.status==='found'&&found.confidence>=.79)editQuad=found.quad.map(p=>({...p}));
+  if(!e.geometryReview&&found.status==='found'&&found.confidence>=.79&&window.DocFixScanner.area(found.quad)>.20)
+   editQuad=found.quad.map(p=>({...p}));
  }
  $('edit-title').textContent='Pagina '+(index+1);$('editor').hidden=false;updateEditor();document.body.classList.add('dialog-open');
 }
