@@ -187,7 +187,7 @@ jobs:
           grep -F "threeCardsFromOne" verify/main.js
           grep -F "threeCardsOrientCorrect" verify/main.js
           grep -F "sixCardGate" verify/main.js
-          grep -F "Bordi da correggere" verify/app/index.html
+          grep -F "Bordi da verificare" verify/app/index.html
           grep -F "cropVerified:physicalVerified" verify/app/index.html
           grep -F "onePassPhysicalOriginal" verify/main.js
           grep -F "onePassBlankRejected" verify/main.js
