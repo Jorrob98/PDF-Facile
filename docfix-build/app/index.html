@@ -1470,7 +1470,15 @@ async function makeImageEntries(file,index,total=1,meta={}){
  // Two detection engines are independent; a strong 2-up result must not
  // prevent the check for a third card on the same source photograph.
  const tripleRaw=portrait>1.18?window.DocFixThreeUp?.detect?.(original):null;
- const polished=tripleRaw?.verified?(window.DocFixThreeUpPolish?.refine?.(original,tripleRaw)||tripleRaw):tripleRaw;
+ let polished=tripleRaw;
+  if(tripleRaw?.verified){
+   try{polished=window.DocFixThreeUpPolish?.refine?.(original,tripleRaw)||tripleRaw;}
+   catch(error){
+    console.warn('DocFix: analisi materiale delle tre tessere non riuscita',error);
+    polished={...tripleRaw,materialVerified:false,physicalReview:true,
+     cards:tripleRaw.cards.map(c=>({...c,geometryReview:true}))};
+   }
+  }
  let triple=polished;
  if(polished?.verified){
   try{
