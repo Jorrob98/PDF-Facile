@@ -55,7 +55,7 @@ function analyzeRGBA(data,w,h){
  for(const c of boxes(mask,w,h)){
   const bw=c.r-c.l+1,bh=c.b-c.t+1,major=Math.max(bw,bh),minor=Math.min(bw,bh);
   const coverage=bw*bh/(w*h),material=c.pixels/(bw*bh);
-  if(coverage<.075||coverage>.75||material<.24||major<Math.min(w,h)*.32)continue;
+  if(coverage<.13||coverage>.75||material<.24||major<Math.min(w,h)*.32)continue;
   // A face portrait may have almost the same rose colour and aspect ratio.
   // Check spatial support and reject any rose rectangle surrounded by the
   // cyan material of a larger identity card.
