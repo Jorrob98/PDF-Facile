@@ -1665,7 +1665,7 @@ function reverseFileOrder(){
    return ar-br;
  }).map(x=>x.s);
  for(const e of entries){if(e.twoUp){e.pairGroup=null;e.pairLabel=null;e.title=e.source+' · tessera '+(Number(e.splitSlot||0)+1)}}
- regroupLatestTwoUpSources();
+ regroupLatestTwoUpSources(true);
  lastPdfSize=null;repaint();status(entries.length===4&&entries.every(e=>e.pairLabel)?'Fronte e retro scambiati. Le 4 tessere sono state riordinate.':'Ordine dei file invertito. Il PDF seguirà questo ordine.');
 }
 $('reverse-files').onclick=reverseFileOrder;
@@ -1701,7 +1701,7 @@ function openCorrection(index){
  }
  $('edit-title').textContent='Pagina '+(index+1);$('editor').hidden=false;updateEditor();document.body.classList.add('dialog-open');
 }
-function closeCorrection(){$('editor').hidden=true;document.body.classList.remove('dialog-open');editIndex=-1;}
+function closeCorrection(){$('editor').hidden=true;document.body.classList.remove('dialog-open');$('editor-image').removeAttribute('src');editIndex=-1;editQuad=null;editSource=null;}
 $('edit-close').onclick=closeCorrection;$('edit-cancel').onclick=closeCorrection;
 $('editor').onclick=e=>{if(e.target===$('editor'))closeCorrection()};
 function updateEditor(){const img=$('editor-image');img.src=thumb(editSource);const handles=$('corners');handles.querySelectorAll('.corner').forEach(el=>el.remove());for(const [i,p] of editQuad.entries()){
@@ -1714,9 +1714,9 @@ function editorTurn(delta){if(editIndex<0)return;editRotation=(editRotation+delt
 $('edit-rotate').onclick=()=>editorTurn(90);
 $('edit-left').onclick=()=>editorTurn(270);
 $('edit-flip').onclick=()=>editorTurn(180);
-$('edit-full').onclick=()=>{if(editIndex<0)return;const e=entries[editIndex];e.rotation=editRotation;e.processed=editSource;e.cropped=false;e.sourceQuad=null;e.vectorCrop=null;e.geometryReview=false;e.orientationReview=false;const q=qualityAudit(e.processed,null);e.qualityReview=q.review;e.qualityIssues=q.issues;e.qualityMetrics=q.metrics;e.review=q.review;e.how='Pagina completa · Verso confermato'+(q.issues.length?' · '+q.issues.join(' · '):'');lastPdfSize=null;closeCorrection();repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}))};
+$('edit-full').onclick=()=>{if(editIndex<0)return;const e=entries[editIndex];e.rotation=editRotation;e.processed=editSource;e.cropped=false;e.cropVerified=undefined;e.sourceQuad=null;e.vectorCrop=null;e.geometryReview=false;e.orientationReview=false;const q=qualityAudit(e.processed,null);e.qualityReview=q.review;e.qualityIssues=q.issues;e.qualityMetrics=q.metrics;e.review=q.review;e.how='Pagina completa · Verso confermato'+(q.issues.length?' · '+q.issues.join(' · '):'');lastPdfSize=null;closeCorrection();repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}))};
 $('edit-apply').onclick=()=>{if(editIndex<0)return;if(!window.DocFixScanner.validQuad(editQuad)){alert('Gli angoli si incrociano. Riprova.');return}
- const e=entries[editIndex];e.rotation=editRotation;e.processed=window.DocFixScanner.process(editSource,{crop:true,quad:editQuad,rotation:0,filter:'original',strength:0},4200);e.cropped=true;e.geometryReview=false;e.orientationReview=false;e.sourceQuad=rotatedQuad(editQuad,(360-editRotation)%360);const q=qualityAudit(e.processed,e.sourceQuad);e.qualityReview=q.review;e.qualityIssues=q.issues;e.qualityMetrics=q.metrics;e.review=q.review;e.how='Ritaglio verificato'+(q.issues.length?' · '+q.issues.join(' · '):'');lastPdfSize=null;closeCorrection();repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}))};
+ const e=entries[editIndex];e.rotation=editRotation;e.processed=window.DocFixScanner.process(editSource,{crop:true,quad:editQuad,rotation:0,filter:'original',strength:0},4200);e.cropped=true;e.cropVerified=true;e.geometryReview=false;e.orientationReview=false;e.vectorCrop=null;e.sourceQuad=rotatedQuad(editQuad,(360-editRotation)%360);const q=qualityAudit(e.processed,e.sourceQuad);e.qualityReview=q.review;e.qualityIssues=q.issues;e.qualityMetrics=q.metrics;e.review=q.review;e.how='Ritaglio verificato'+(q.issues.length?' · '+q.issues.join(' · '):'');lastPdfSize=null;closeCorrection();repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}))};
 function addFiles(files){
  const incoming=orderedIncoming(files);if(!incoming.length)return;
  workspace.hidden=false;document.body.classList.add('has-document');zone.hidden=false;
@@ -1798,14 +1798,15 @@ function applyFourCardLabels(ordered,slots){
  ordered.forEach((e,i)=>{e.pairLabel=labels[i];e.title=labels[i]+' · '+e.source;entries[slots[i]]=e});
 }
 function regroupTwoFileFourCards(batchId){
- if(batchId==null)return false;
+ if(manuallyOrdered||batchId==null)return false;
  const group=entries.filter(e=>e.loadBatch===batchId),ordered=pairedFourCards(group);
  if(ordered.length!==4)return false;
  const slots=[];entries.forEach((e,i)=>{if(e.loadBatch===batchId)slots.push(i)});
  if(slots.length!==4)return false;
  applyFourCardLabels(ordered,slots);return true;
 }
-function regroupLatestTwoUpSources(){
+function regroupLatestTwoUpSources(force=false){
+ if(manuallyOrdered&&!force)return false;
  const ids=[...new Set(entries.filter(e=>e.twoUp).map(e=>e.sourceIndex))];
  if(ids.length<2)return false;
  const a=ids[ids.length-2],b=ids[ids.length-1],group=entries.filter(e=>e.sourceIndex===a||e.sourceIndex===b);
