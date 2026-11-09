@@ -46,13 +46,13 @@ assert.equal(mock.width,750,'original photo remains intact');
 const index=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 assert.ok(index.includes('card-over-paper.js'),'module loaded before normalizer');
 assert.ok(index.includes('window.DocFixOverPaper?.detect?.(original)||null'),'photo path checks over-paper first');
-assert.ok(index.includes("catch(error){console.warn('DocFix: analisi tessera su foglio non riuscita'"),'failed detector must not block importing a photo');
-assert.ok(index.includes('if(cardLikely&&!onPaper&&!licenceRear)'),'MRZ not trimmed again after crop');
+assert.ok(index.includes("console.warn('DocFix: analisi tessera su foglio non riuscita'"),'failed detector must not block importing a photo');
+assert.ok(index.includes("if(cardLikely&&kind==='generic')"),'MRZ not trimmed again after crop');
 assert.ok(index.includes('&&!norm.overPaper'),'false source MRZ never reverses proven over-paper crop');
 assert.ok(index.includes('const cardEvidence=norm.cardLikely||'),'A4 printed paper cannot claim a trustworthy CIE MRZ');
 assert.ok(index.includes("let mrz=cardEvidence&&!norm.licenceRear?window.DocFixGroup2.recognizeMRZOrientation(processed)"),'MRZ orientation not read from unisolated printed paper');
 assert.ok(index.includes('function portraitCieTurn('),'sideways CIE orientation fallback present');
-assert.ok(index.includes("let licenceRear=null,onPaper=null")&&index.includes("const found=onPaper||licenceRear||scan.detectDocument(original)"),
+assert.ok(index.includes("let licenceRear=null,onPaper=null")&&index.includes("singleCropGate(original,onPaper,'blue')"),
  'blue CIE candidate must be checked before pink licence material');
 assert.ok(index.includes('if(!e.geometryReview&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))'),
  'a disputed source quad must not preselect a portrait in manual editor');
