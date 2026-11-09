@@ -1693,7 +1693,7 @@ function turnEntry(index,angle){
 function openCorrection(index){
  if(busy)return;
  editIndex=index;const e=entries[index];editRotation=e.rotation||0;editSource=rotate(e.original,editRotation);
- if(e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))editQuad=rotatedQuad(e.sourceQuad,editRotation);
+ if(!e.geometryReview&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))editQuad=rotatedQuad(e.sourceQuad,editRotation);
  else{
   editQuad=window.DocFixScanner.defaultQuad();const found=window.DocFixScanner.detectDocument(editSource);
   if(!e.geometryReview&&found.status==='found'&&found.confidence>=.79&&window.DocFixScanner.area(found.quad)>.20)
