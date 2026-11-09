@@ -101,7 +101,7 @@ const ids=x=>x.map(e=>e.id).join(',');
 {
  // Regression tests for repeated input, source restoration and clipboard status.
  const matcher=between(index,'function sameSelectedFile(a,b){','function addFiles(files){');
- const sameSelectedFile=new Function('function sameSelectedFile(a,b){'+matcher+'return sameSelectedFile;')();
+ const sameSelectedFile=new Function(matcher+'return sameSelectedFile;')();
  const uploaded={name:'WhatsApp-2026-11-09.jpg',type:'image/jpeg',size:45681,lastModified:1700000123456};
  const identical={...uploaded},different={...uploaded,lastModified:uploaded.lastModified+1};
  assert.equal(sameSelectedFile(uploaded,identical),true,'same WhatsApp file reselected must be recognized');
@@ -116,7 +116,7 @@ const ids=x=>x.map(e=>e.id).join(',');
   'clipboard success text must not overwrite an addFiles rejection');
  assert.ok(index.includes('nextSourceId=1;nextLoadBatch=1;dragSource=-1;'),
   'a new practice must reset all loading and drag counters');
- const undo='function undoRemove(){'+between(index,'function undoRemove(){',"$('undo-remove').onclick=undoRemove;");
+ const undo=between(index,'function undoRemove(){',"$('undo-remove').onclick=undoRemove;");
  const testUndo=(count,src=[],position=0)=>{
   const warnings=[],history=[],source={id:8,file:{size:512,name:'test.jpg'}},entry={id:'removed',sourceIndex:8};
   const context={busy:false,lastRemoved:{entry,index:position,source,sourcePosition:0},
