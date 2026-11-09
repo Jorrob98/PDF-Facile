@@ -1385,6 +1385,15 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
   quad=sourceQuad.map(p=>({...p}));
   processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
   tightened=true;physicalVerified=true;tightMethod='segmentazione sfondo originale';
+ }else if(multiSafe&&cardKind==='licence'){
+  // The three-up detector identifies the card, not necessarily the four
+  // physical plastic edges. Never reinterpret '3 cards found' as 'crop proved'.
+  // In an uncertain case retain a generous reversible safety margin instead
+  // of re-detecting inner print/grid borders and cutting off the plastic.
+  quad=expandQuadSafe(sourceQuad,.105);
+  processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
+  physicalVerified=false;confidence=0;
+  tightMethod='patente con margine protettivo; controlla i quattro bordi';
  }else if(multiSafe){
   // Older fallbacks only for scans where texture segmentation cannot decide.
   const found=window.DocFixOnePass?.detect?.(original,sourceQuad)||null;
@@ -1479,12 +1488,14 @@ async function makeImageEntries(file,index,total=1,meta={}){
   for(let i=0;i<3;i++){
    const c=triple.cards[i];
    const fixed=await normalizeKnownCard(original,c.quad,'3 tessere riconosciute · tessera '+(i+1),c.confidence,
-    {multiSafe:true,sourceVerified:true,orientationKnown:triple.orientation==='left',cardKind:c.kind||'generic'});
+    {multiSafe:true,sourceVerified:c.kind!=='licence'||c.licenceGuard?.verified===true,
+     orientationKnown:triple.orientation==='left',cardKind:c.kind||'generic'});
    if(!multiCropHealthy(fixed.processed)){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · Verifica consigliata';}
    if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
    fixed.how+=' · DocFix 1.9.16 · '+(c.materialVerified?('classificato '+(c.kind||'tessera')+' / '+(c.sideGuess||'verso incerto')):'tipo e verso da verificare');
    if(c.geometryReview){fixed.geometryReview=true;fixed.review=true;fixed.how+=' · bordo da verificare';}
-   if(c.kind==='licence'&&c.licenceGuard?.verified===false){
+   if(c.kind==='licence'&&c.licenceGuard?.verified!==true){
+    fixed.cropVerified=false;fixed.cropped=false;
     fixed.geometryReview=true;fixed.review=true;
     fixed.how+=' · bordo fisico patente da verificare prima dell’uso';
    }else if(c.kind==='licence'&&c.licenceGuard?.verified===true){
