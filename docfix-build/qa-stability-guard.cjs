@@ -138,7 +138,7 @@ const ids=x=>x.map(e=>e.id).join(',');
  const bytes=await blob.arrayBuffer(),head=new TextDecoder().decode(new Uint8Array(bytes).slice(0,900));
  assert.ok(head.includes('/Count 6'),'PDF must declare all 6 pages');
  assert.equal(exportAPI.validate(blob,6),blob);
- assert.equal(exportAPI.filename(source),'DocFix-1.9.18-6-tessere.pdf',
+ assert.equal(exportAPI.filename(source),'DocFix-1.9.19-6-tessere.pdf',
    'versioned PDF should not collide with previous Downloads');
  await assert.rejects(()=>exportAPI.create([{processed:{width:0,height:0}}],{encodeJPEG:async()=>realJPEG}),
    /non valida/,'invalid canvas must never produce a PDF');
@@ -401,7 +401,7 @@ const ids=x=>x.map(e=>e.id).join(',');
  }
 
 
- // 1.9.18: recover a pale driving-licence border from the rose plastic,
+ // 1.9.19: recover a pale driving-licence border from the rose plastic,
  // not from the printed text. Use synthetic raster only, never a client ID.
  {
   const source=read('app/card-licence-guard.js'),w=1000,h=600;
