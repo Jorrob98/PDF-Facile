@@ -9,6 +9,7 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const index=read('app/index.html');
 const physical=read('app/card-physical-edges.js');
 const cards3=read('app/card-threeup.js');
+const licenceGuardCode=read('app/card-licence-guard.js');
 const cards2=read('app/card-texture-crop.js');
 const pdfCode=read('app/group5-export.js');
 const ocrCode=read('app/ocr-max.js');
@@ -139,6 +140,51 @@ const ids=x=>x.map(e=>e.id).join(',');
   assert.ok(index.includes("$('reset').disabled=exporting;"),
     'reset UI must reflect active export lock');
  }
+ // Real regression: a licence quad excludes a pale 37px right-hand strip.
+ // The physical guard must recover the full outer edge before perspective crop.
+ {
+  const window={DocFixScanner:{
+   resize:c=>c,
+   validQuad:q=>Array.isArray(q)&&q.length===4
+     &&q.every(p=>p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1)
+  }};
+  vm.runInNewContext(licenceGuardCode,{window,Math,Uint8Array,Float32Array});
+  const api=window.DocFixLicenceGuard,w=1000,h=600;
+  const d=new Uint8ClampedArray(w*h*4);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   const k=(y*w+x)*4,pink=x>=240&&x<=670&&y>=145&&y<=414;
+   d[k]=pink?187:170;d[k+1]=pink?124:170;
+   d[k+2]=pink?143:175;d[k+3]=255;
+  }
+  const base=[{x:.240,y:.245},{x:.633,y:.245},
+   {x:.633,y:.692},{x:.240,y:.692}];
+  const fixed=api.polishQuad(base,d,w,h);
+  assert.ok(fixed.verified,'licence border must be physically verified');
+  assert.ok(fixed.quad[1].x>.665&&fixed.quad[2].x>.665,
+    'right hand plastic edge must be recovered before crop');
+  assert.ok(fixed.quad[0].x<base[0].x&&fixed.quad[3].x<base[3].x,
+    'recovered licence must preserve left edge');
+  const canvas={width:w,height:h,
+   getContext:()=>({getImageData:()=>({data:d})})};
+  const detected={verified:true,materialVerified:true,orientation:'none',cards:[
+   {kind:'cf',quad:base},
+   {kind:'licence',quad:base},
+   {kind:'identity',quad:base}
+  ]};
+  const after=api.protect(canvas,detected);
+  assert.equal(after.cards[0],detected.cards[0],
+    'CF geometry must remain completely unchanged');
+  assert.equal(after.cards[2],detected.cards[2],
+    'identity geometry must remain completely unchanged');
+  assert.ok(after.cards[1].quad[1].x>.665,
+    'licence guard must be integrated in final card geometry');
+  assert.equal(canvas.width,w,'original image must not be cleared');
+  assert.equal(canvas.height,h,'original image must retain its height');
+  const unknown={...detected,materialVerified:false};
+  assert.equal(api.protect(canvas,unknown),unknown,
+    'unsupported document must never be altered by licence guard');
+ }
+
  // The verified two-card engine must not hide a third independent document.
  {
   const geometry=between(index,'function quadBounds(q){','function crossOverlap(');
