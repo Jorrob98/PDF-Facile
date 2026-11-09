@@ -74,7 +74,7 @@ fino a un collaudo effettivo. Non includiamo fotografie personali nei test.
 - `--self-test` di Electron controlla avvio, moduli, geometria sintetica e sicurezza canvas.
 - GitHub Actions compila l'installer solo dopo i controlli statici e di stabilità.
 
-## Addendum — DocFix Desktop 1.9.15 (9 novembre 2026)
+## Addendum — DocFix Desktop 1.9.16 (9 novembre 2026)
 
 Bug riprodotti o evidenziati dal nuovo audit e corretti nel ramo di sviluppo:
 
@@ -85,3 +85,7 @@ Bug riprodotti o evidenziati dal nuovo audit e corretti nel ramo di sviluppo:
 - **Test di regressione**: JPEG realmente codificato, reset concorrente OCR, errori OCR per pagina, gestione del canvas nelle uscite anticipate e documenti 2×2/3×2.
 
 La pipeline Windows e l'aggiornamento incrementale devono superare questi test prima della pubblicazione. Resta necessaria la verifica della qualità visiva sui documenti reali dell'ufficio; il controllo JPEG non equivale a una decodifica integrale dell'immagine.
+
+## DocFix 1.9.16 — Contorno patente, 9 novembre 2026
+
+Dopo il collaudo della 1.9.15, le anteprime della patente mostravano ancora bordi tagliati o sfondo residuo. Il controllo solo basato sul gradiente poteva agganciarsi alle scritte anziché al bordo della plastica. È stata aggiunta una **rilevazione alternativa basata sul colore rosa della patente** con conferma della copertura della tessera e bassa dispersione di colore sul foglio. Si applica esclusivamente al documento riconosciuto come patente nelle foto da tre tessere. Se la superficie non è separabile con sufficiente sicurezza, non modifica automaticamente un quadrilatero non verificato e richiede controllo manuale. La suite contiene scenari sintetici di recupero del bordo destro e del fondo, e verifica l'invarianza di codice fiscale, carta d'identità e foto originale. Le prove visive sulle immagini reali disponibili sono incoraggianti; **il nuovo PDF effettivamente prodotto sul PC d'ufficio deve ancora essere verificato**.
