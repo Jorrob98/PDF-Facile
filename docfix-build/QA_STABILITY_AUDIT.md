@@ -73,3 +73,15 @@ fino a un collaudo effettivo. Non includiamo fotografie personali nei test.
 - `npm run test:stability` esegue regressioni offline senza immagini di clienti.
 - `--self-test` di Electron controlla avvio, moduli, geometria sintetica e sicurezza canvas.
 - GitHub Actions compila l'installer solo dopo i controlli statici e di stabilità.
+
+## Addendum — DocFix Desktop 1.9.15 (9 novembre 2026)
+
+Bug riprodotti o evidenziati dal nuovo audit e corretti nel ramo di sviluppo:
+
+- **OCR: reset durante l'attesa**: riprodotto `TypeError` quando la coda viene svuotata mentre il worker aspetta. Ricontrollo dopo ogni `await` e isolamento del singolo errore.
+- **OCR: errore per documento**: una pagina difettosa non interrompe il riconoscimento delle altre pagine.
+- **Canvas temporanei**: pulizia in `finally` delle copie dei controlli MRZ, qualità, bordi, sfondo e foto multiple; mai cancellare il canvas originale.
+- **PDF: verifica JPEG**: validazione di header SOF/SOS e dimensioni dell'immagine prima dell'incorporamento. I JPEG incompleti o incompatibili impediscono un PDF apparentemente riuscito.
+- **Test di regressione**: JPEG realmente codificato, reset concorrente OCR, errori OCR per pagina, gestione del canvas nelle uscite anticipate e documenti 2×2/3×2.
+
+La pipeline Windows e l'aggiornamento incrementale devono superare questi test prima della pubblicazione. Resta necessaria la verifica della qualità visiva sui documenti reali dell'ufficio; il controllo JPEG non equivale a una decodifica integrale dell'immagine.
