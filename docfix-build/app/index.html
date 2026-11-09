@@ -876,20 +876,29 @@ const canvas=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1
 async function imageCanvas(file,pagesInBatch=1){let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'});}catch(_){bmp=await new Promise((res,rej)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(url);res(img)};img.onerror=()=>{URL.revokeObjectURL(url);rej(Error('Immagine illeggibile'))};img.src=url})}const ratio=window.DocFixGroup3.inputScale(bmp.width,bmp.height,window.DocFixGroup3.pixelBudget(pagesInBatch)),c=canvas(bmp.width*ratio,bmp.height*ratio);c.docfixDownscaled=ratio<.999;const g=c.getContext('2d',{alpha:false});g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(bmp,0,0,c.width,c.height);bmp.close?.();return c}
 function rotate(c,deg){const q=((deg%360)+360)%360;if(!q)return c;const n=canvas(q%180?c.height:c.width,q%180?c.width:c.height),g=n.getContext('2d');g.translate(n.width/2,n.height/2);g.rotate(q*Math.PI/180);g.drawImage(c,-c.width/2,-c.height/2);return n}
 function crop(c,b){const out=canvas(c.width*(b.x1-b.x0),c.height*(b.y1-b.y0));out.getContext('2d').drawImage(c,c.width*b.x0,c.height*b.y0,c.width*(b.x1-b.x0),c.height*(b.y1-b.y0),0,0,out.width,out.height);return out}
+function withResizedCanvas(original,maxSide,process){
+ const temporary=window.DocFixScanner.resize(original,maxSide);
+ try{return process(temporary)}
+ finally{if(temporary!==original)temporary.width=temporary.height=1}
+}
 function whiteMarginCrop(c){/* Never crop unless the entire margin looks blank; keep 2% guard. */
- const s=window.DocFixScanner.resize(c,560),w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;let xs=[],ys=[];
+ return withResizedCanvas(c,560,s=>{
+ const w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;let xs=[],ys=[];
  for(let y=0;y<h;y++){let ink=0;for(let x=0;x<w;x+=2){let i=4*(y*w+x);if((d[i]+d[i+1]+d[i+2])/3<215)ink++}ys[y]=ink/(w/2)}
  for(let x=0;x<w;x++){let ink=0;for(let y=0;y<h;y+=2){let i=4*(y*w+x);if((d[i]+d[i+1]+d[i+2])/3<215)ink++}xs[x]=ink/(h/2)}
  let L=0,R=w-1,T=0,B=h-1;while(L<w*.15&&xs[L]<.012)L++;while(R>w*.85&&xs[R]<.012)R--;while(T<h*.15&&ys[T]<.012)T++;while(B>h*.85&&ys[B]<.012)B--;
  L=clamp(L-8,0,w);R=clamp(R+8,0,w);T=clamp(T-8,0,h);B=clamp(B+8,0,h);
  const saved=(L+(w-1-R))/w+(T+(h-1-B))/h;if(saved<.085||R-L<w*.70||B-T<h*.70)return null;
  return {x0:L/w,x1:(R+1)/w,y0:T/h,y1:(B+1)/h};
+ });
 }
 function textLines(c){/* Orientation heuristic: only 90/270 distinction. Never guess upside-down. */
- const s=window.DocFixScanner.resize(c,350),w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,rows=new Float32Array(h),cols=new Float32Array(w);
+ return withResizedCanvas(c,350,s=>{
+ const w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,rows=new Float32Array(h),cols=new Float32Array(w);
  for(let y=0;y<h;y+=2)for(let x=0;x<w;x+=2){const i=(y*w+x)*4,g=(d[i]+d[i+1]+d[i+2])/3;if(g<160){rows[y]++;cols[x]++}}
  function variance(a){let mean=0,v=0,n=0;for(const x of a){mean+=x;n++}mean/=n;for(const x of a)v+=(x-mean)**2;return v/n/(mean*mean+3)}
  const rv=variance(rows),cv=variance(cols);return {rv,cv,vertical:cv>rv*1.9&&cv>0.28,uncertain:!(rv>cv*1.6||cv>rv*1.9)};
+ });
 }
 // Optical page orientation is genuinely different from merely checking portrait/landscape.
 // OSD is optional, runs on the user's device, and never uploads images. When offline or
@@ -922,7 +931,8 @@ async function inferTextOrientation(source){
  * rounded plastic cards after a four-corner perspective transform. Analyze
  * the blue material itself; never change printed fields or redraw a card. */
 function trimCardBackground(c,backLike=false){
- const small=window.DocFixScanner.resize(c,780),w=small.width,h=small.height,im=small.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+ return withResizedCanvas(c,780,small=>{
+ const w=small.width,h=small.height,im=small.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
  const row=new Float32Array(h),col=new Float32Array(w),dark=new Float32Array(h),x0=Math.floor(w*.18),x1=Math.ceil(w*.82),y0=Math.floor(h*.18),y1=Math.ceil(h*.82);
  const isBlue=(r,g,b)=>{
   const hi=Math.max(r,g,b),lo=Math.min(r,g,b),d=hi-lo;
@@ -967,6 +977,7 @@ function trimCardBackground(c,backLike=false){
  g.beginPath();g.roundRect(0,0,out.width,out.height,radius);g.clip();
  g.drawImage(c,x,y,out.width,out.height,0,0,out.width,out.height);
  return out;
+ });
 }
 function photoNormalize(original){
  const scan=window.DocFixScanner;let processed=original,confidence=0,how='Foto completa',review=false,cardLikely=false,sourceQuad=null,precise=false,backLike=false;
@@ -1006,7 +1017,8 @@ function photoNormalize(original){
 // Never skip 180-degree detection for ID cards: landscape proportions tell us
 // nothing about which side is up (particularly on the reverse with MRZ).
 function qualityAudit(c,sourceQuad=null){
- const sample=window.DocFixScanner.resize(c,520),w=sample.width,h=sample.height,ctx=sample.getContext('2d',{willReadFrequently:true}),d=ctx.getImageData(0,0,w,h).data;
+ return withResizedCanvas(c,520,sample=>{
+ const w=sample.width,h=sample.height,ctx=sample.getContext('2d',{willReadFrequently:true}),d=ctx.getImageData(0,0,w,h).data;
  let sum=0,sum2=0,n=0,lapSum=0,lap2=0,lapN=0,edge=0;
  const gray=new Float32Array(w*h);
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const k=(y*w+x)*4,g=.299*d[k]+.587*d[k+1]+.114*d[k+2];gray[y*w+x]=g;sum+=g;sum2+=g*g;n++}
@@ -1023,6 +1035,7 @@ function qualityAudit(c,sourceQuad=null){
  if(mean>246&&stdev<16)issues.push('Foto sovraesposta');
  if(sourceQuad&&sourceQuad.some(p=>p.x<.008||p.y<.008||p.x>.992||p.y>.992))issues.push('Documento troppo vicino al bordo della foto');
  return {review:issues.length>0,issues,metrics:{mean:Math.round(mean),stdev:Math.round(stdev),lapVar:Math.round(lapVar),edgeDensity:Number(edgeDensity.toFixed(3)),width:c.width,height:c.height}};
+ });
 }
 async function normalizeRaster(original){
  const before=window.DocFixGroup2.recognizeMRZOrientation(original);
@@ -1056,7 +1069,7 @@ function crossOverlap(a,b,axis){if(axis==='x'){const n=Math.max(0,Math.min(a.x+a
 function stackedCardCandidatesByGap(original){
  const scan=window.DocFixScanner,portrait=original.height/Math.max(1,original.width);
  if(portrait<1.16||portrait>2.45)return [];
- const s=scan.resize(original,360),w=s.width,h=s.height;
+ return withResizedCanvas(original,360,s=>{const w=s.width,h=s.height;
  if(h<220||w<180)return [];
  const d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
  const scores=new Float32Array(h),x0=Math.round(w*.06),x1=Math.round(w*.94);
@@ -1118,11 +1131,12 @@ function stackedCardCandidatesByGap(original){
  const topX=xBounds(0,topEnd),bottomX=xBounds(bottomStart,h);
  const rect=(x0,y0,x1,y1)=>({quad:[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}],confidence:.86,status:'found',method:'stacked-gap-color',box:{x:x0,y:y0,width:x1-x0,height:y1-y0}});
  return [rect(topX.x0,0,topX.x1,topEnd/h),rect(bottomX.x0,bottomStart/h,bottomX.x1,1)];
+ });
 }
 function stackedCardCandidatesRecovery(original){
  const scan=window.DocFixScanner,portrait=original.height/Math.max(1,original.width);
  if(portrait<1.18||portrait>2.45)return [];
- const s=scan.resize(original,340),w=s.width,h=s.height;if(h<220||w<170)return [];
+ return withResizedCanvas(original,340,s=>{const w=s.width,h=s.height;if(h<220||w<170)return [];
  const d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
  const row=new Float32Array(h),x0=Math.round(w*.04),x1=Math.round(w*.96);
  for(let y=0;y<h;y++){let sum=0,sum2=0,grad=0,n=0,last=0;
@@ -1142,6 +1156,7 @@ function stackedCardCandidatesRecovery(original){
  if(ht<.24||ht>.59||hb<.24||hb>.59||rt<1.18||rt>2.18||rb<1.18||rb>2.18)return [];
  const rect=(y0,y1)=>({quad:[{x:0,y:y0},{x:1,y:y0},{x:1,y:y1},{x:0,y:y1}],confidence:.72,status:'found',method:'stacked-recovery',box:{x:0,y:y0,width:1,height:y1-y0}});
  return [rect(0,topEnd/h),rect(bottomStart/h,1)];
+ });
 }
 function multiCardCandidates(original){
  const scan=window.DocFixScanner,stacked=stackedCardCandidatesByGap(original);
@@ -1165,12 +1180,15 @@ function multiCardCandidates(original){
 }
 function medianNumber(values){values.sort((a,b)=>a-b);return values[values.length>>1]||0}
 function warmBackgroundReference(source){
- const s=window.DocFixScanner.resize(source,420),w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,values=[[],[],[]],m=Math.max(4,Math.round(Math.min(w,h)*.07));
+ return withResizedCanvas(source,420,s=>{
+ const w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data,values=[[],[],[]],m=Math.max(4,Math.round(Math.min(w,h)*.07));
  for(let y=0;y<h;y+=2)for(let x=0;x<w;x+=2){if(!(x<m||x>=w-m||y<m||y>=h-m))continue;const k=(y*w+x)*4;values[0].push(d[k]);values[1].push(d[k+1]);values[2].push(d[k+2]);}
  return values.map(medianNumber);
+ });
 }
 function warmVerticalTrim(canvas,ref){
- const scan=window.DocFixScanner,s=scan.resize(canvas,520),w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
+ return withResizedCanvas(canvas,520,s=>{
+ const w=s.width,h=s.height,d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
  const rb=ref[0]-ref[2],rg=ref[0]-ref[1];if(rb<30||rg<10)return {y0:0,y1:1,used:false};
  const trb=Math.max(26,rb*.48),trg=Math.max(9,rg*.38),rows=new Float32Array(h);
  for(let y=0;y<h;y++){let warm=0,n=0;for(let x=0;x<w;x+=2){const k=(y*w+x)*4,r=d[k],g=d[k+1],b=d[k+2];warm+=((r-b)>trb&&(r-g)>trg);n++;}rows[y]=warm/Math.max(1,n)}
@@ -1181,6 +1199,7 @@ function warmVerticalTrim(canvas,ref){
  const pad=Math.max(3,Math.round(h*.012)),a=Math.max(0,best.start-pad),b=Math.min(h-1,best.end+pad);
  if(a>h*.20||b<h*.80)return {y0:0,y1:1,used:false};
  return {y0:a/h,y1:(b+1)/h,used:a>1||b<h-2};
+ });
 }
 function verticalTrimQuad(q,t0,t1){const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});return [lerp(q[0],q[3],t0),lerp(q[1],q[2],t0),lerp(q[1],q[2],t1),lerp(q[0],q[3],t1)]}
 function expandQuadSafe(q,pad=.025){
