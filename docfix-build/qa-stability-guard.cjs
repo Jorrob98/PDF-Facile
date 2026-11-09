@@ -350,7 +350,7 @@ const ids=x=>x.map(e=>e.id).join(',');
     'reset must be gated while PDF export is running');
   assert.ok(resetCode.includes("if(!$('editor').hidden)closeCorrection();"),
     'reset must close manual correction editor to prevent stale image access');
-  assert.ok(index.includes("$('reset').disabled=exporting;"),
+  assert.ok(index.includes("$('reset').disabled=exporting||emergencyExporting;"),
     'reset UI must reflect active export lock');
  }
  // Real regression: a licence quad excludes a pale 37px right-hand strip.
