@@ -116,6 +116,71 @@ const ids=x=>x.map(e=>e.id).join(',');
  await assert.rejects(()=>exportAPI.create([{processed:{width:40,height:32}}],{encodeJPEG:async()=>realJPEG}),
    /dimensioni non corrispondenti/,'JPEG dimensions must match PDF page dimensions');
 
+
+ // Regression: reset during OCR busy wait must not access a removed entry.
+ {
+  const body=between(ocrCode,'async function drain(){','function decorate(entries){');
+  const make=new Function('console',
+    "let running=false,queue=[{entry:{id:1}}],queuedEntries=new Set(),busy=true,jobs=0,releases=0;"+
+    "const host=()=>({isBusy:()=>busy,indexOf:()=>0});"+
+    "const sleep=async()=>{queue.length=0;busy=false;};"+
+    "const analyzeEntry=async()=>{jobs++};const scheduleWorkerRelease=()=>{releases++},repaint=()=>{};"+
+    body+"return {run:drain,state:()=>({running,queue:queue.length,jobs,releases})};");
+  const instance=make(console);
+  await instance.run();
+  assert.deepEqual(instance.state(),{running:false,queue:0,jobs:0,releases:1},
+    'reset during OCR busy wait must not throw or process a missing page');
+ }
+ // If OCR fails for one card, the next card must still run.
+ {
+  const body=between(ocrCode,'async function drain(){','function decorate(entries){');
+  const make=new Function('console',
+    "let running=false,queue=[{entry:{id:1}},{entry:{id:2}}],queuedEntries=new Set(),done=[];"+
+    "const host=()=>({isBusy:()=>false,indexOf:()=>0}),sleep=async()=>{};"+
+    "const analyzeEntry=async(e)=>{if(e.id===1)throw Error('bad page');done.push(e.id)};"+
+    "const scheduleWorkerRelease=()=>{},repaint=()=>{};"+
+    body+"return {run:drain,done:()=>done};");
+  const instance=make({error(){}});
+  await instance.run();
+  assert.deepEqual(instance.done(),[2],'one bad OCR page must not interrupt later pages');
+ }
+ // Image analysis must release resized canvases without ever touching source.
+ {
+  const helper=between(index,'function withResizedCanvas(','function whiteMarginCrop(');
+  let temporary;
+  const make=same=>new Function('window',helper+'return withResizedCanvas;')({
+   DocFixScanner:{resize(src){temporary=same?src:{width:200,height:120};return temporary;}}
+  });
+  const original={width:800,height:500};
+  assert.equal(make(false)(original,520,c=>c.width),200);
+  assert.equal(temporary.width,1,'temporary preview canvas must be released');
+  assert.equal(original.width,800,'source canvas modified during resize');
+  assert.throws(()=>make(false)(original,520,()=>{throw Error('synthetic failure')}),/synthetic failure/);
+  assert.equal(temporary.width,1,'temporary canvas not freed after error');
+  make(true)(original,520,()=>null);
+  assert.equal(original.width,800,'source returned from resize must remain untouched');
+ }
+ // MRZ checks rotate and sample multiple scratch canvases; all must be freed.
+ {
+  const module=read('app/group2-orientation.js'),created=[];
+  function mockCanvas(){
+   const c={width:1,height:1,getContext(){return {
+    drawImage(){},translate(){},rotate(){},
+    getImageData(){return {data:new Uint8ClampedArray(c.width*c.height*4)}}
+   }}};
+   created.push(c);return c;
+  }
+  const win={DocFixScanner:{resize(){const c=mockCanvas();c.width=480;c.height=300;return c;}}};
+  vm.runInNewContext(module,{window:win,document:{createElement:mockCanvas},
+    Float32Array,Uint8ClampedArray,Math});
+  const original={width:1200,height:750};
+  const result=win.DocFixGroup2.recognizeMRZOrientation(original);
+  assert.equal(result.trustworthy,false,'blank scan cannot verify orientation');
+  assert.ok(created.length>=5,'must exercise multiple MRZ candidate canvases');
+  assert.ok(created.every(c=>c.width===1&&c.height===1),'MRZ scratch canvases not freed');
+  assert.equal(original.width,1200,'MRZ detection modified source');
+ }
+
  // One JPEG thumbnail per unchanged processed canvas; no double compression.
  {
   const thumbCode=between(index,'const thumbsCache=new WeakMap();','function repaint(){');
