@@ -1488,7 +1488,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
   for(let i=0;i<3;i++){
    const c=triple.cards[i];
    const fixed=await normalizeKnownCard(original,c.quad,'3 tessere riconosciute · tessera '+(i+1),c.confidence,
-    {multiSafe:true,sourceVerified:c.kind!=='licence'||c.licenceGuard?.verified===true,
+    {multiSafe:true,sourceVerified:c.materialVerified===true&&(c.kind!=='licence'||c.licenceGuard?.verified===true),
      orientationKnown:triple.orientation==='left',cardKind:c.kind||'generic'});
    if(!multiCropHealthy(fixed.processed)){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · Verifica consigliata';}
    if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
