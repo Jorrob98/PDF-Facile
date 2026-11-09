@@ -29,6 +29,16 @@ assert.ok(result.quad[0].x<.17&&result.quad[1].x>.73,'licence long edges retaine
 assert.ok(result.quad[0].y<.24&&result.quad[2].y>.72,'licence short edges retained');
 assert.deepEqual(source,before,'never modify original pixels');
 assert.equal(api.analyzeRGBA(photo(w,h,'cie'),w,h),null,'CIE must remain on the proven blue detector');
+// Regression: a skin-coloured portrait can be a complete ISO-shaped pink island
+// within the cyan plastic of an upright CIE. It must NOT become a driving licence.
+const face=photo(w,h,'neutral');
+for(let y=34;y<466;y++)for(let x=200;x<479;x++){
+ const k=(y*w+x)*4;face[k]=153;face[k+1]=187;face[k+2]=211;
+}
+for(let y=95;y<410;y++)for(let x=241;x<431;x++){
+ const k=(y*w+x)*4;face[k]=191;face[k+1]=139;face[k+2]=122;
+}
+assert.equal(api.analyzeRGBA(face,w,h),null,'skin island inside larger cyan identity card must never be cropped');
 assert.equal(api.analyzeRGBA(photo(w,h,'neutral'),w,h),null,'do not crop plain A4 paper');
 assert.equal(api.analyzeRGBA(new Uint8ClampedArray(60*80*4),60,80),null,'reject undersized photos');
 const original={width:w,height:h,getContext:()=>({getImageData:()=>({data:source})})};
@@ -55,8 +65,10 @@ assert.throws(()=>api.detect(original),/synthetic canvas readback fault/);
 assert.equal(broken.width,1,'scratch must be freed after pixel readback throws');
 const index=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 assert.ok(index.includes('card-licence-rear.js'),'licence module must be loaded');
-assert.ok(index.includes('const found=licenceRear||onPaper||scan.detectDocument(original)'),'licence back must get priority over paper');
+assert.ok(index.includes('const found=onPaper||licenceRear||scan.detectDocument(original)'),'whole blue CIE must take precedence over rose skin detector');
 assert.ok(index.includes('if(cardLikely&&!onPaper&&!licenceRear)'),'no second blue-card trim on licence');
+assert.ok(index.includes('const unsafeInnerCrop=alreadyDocumentShape&&area<.86'),'card-shaped original cannot be recropped at a portrait');
+assert.ok(index.includes('!unsafeInnerCrop&&!weakSmallCard&&scan.validQuad(found.quad)'),'small unverified portrait crops must be rejected');
 assert.ok(index.includes('let mrz=cardEvidence&&!norm.licenceRear?'),'licence reverse must not claim a CIE MRZ');
 assert.ok(index.includes("cropVerified:norm.overPaper?norm.physicallyVerified:undefined"),'unverified licence must be flagged in preview');
 console.log('DocFix licence reverse PASS: paper background, CIE regression, canvas cleanup and integration');
