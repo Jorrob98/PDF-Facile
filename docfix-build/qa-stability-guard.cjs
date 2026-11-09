@@ -305,7 +305,12 @@ const ids=x=>x.map(e=>e.id).join(',');
    validQuad:q=>Array.isArray(q)&&q.length===4
     &&q.every(p=>p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1)
   }};
-  vm.runInNewContext(source,{window:win,Math,Uint8ClampedArray});
+  const fakeDocument={createElement:()=>({
+   width:1,height:1,getContext:()=>({
+    translate(){},rotate(){},drawImage(){},getImageData:()=>({data:rgba})
+   })
+  })};
+  vm.runInNewContext(source,{window:win,document:fakeDocument,Math,Uint8ClampedArray});
   const quad=[{x:.24,y:.245},{x:.633,y:.245},{x:.633,y:.692},{x:.24,y:.692}];
   fill(true);
   const found=win.DocFixLicenceGuard.pinkEnvelope(quad,rgba,w,h);
@@ -330,6 +335,24 @@ const ids=x=>x.map(e=>e.id).join(',');
   assert.ok(res.cards[1].quad[1].x>.668,
    'recovered licence geometry must reach the final crop');
   assert.equal(canvas.width,w,'original photo cannot be cleared');
+  // Real WhatsApp three-up input is PORTRAIT: detection rotates 90 degrees
+  // to inspect it, then returns quadrilaterals in original photo coordinates.
+  const sourceQuad=quad.map(p=>({x:1-p.y,y:p.x}));
+  const portraitTriple={...triple,orientation:'left',cards:[
+   {kind:'cf',quad:sourceQuad},
+   {kind:'licence',quad:sourceQuad},
+   {kind:'identity',quad:sourceQuad}
+  ]};
+  const portraitOriginal={width:h,height:w};
+  const portraitResult=win.DocFixLicenceGuard.protect(portraitOriginal,portraitTriple);
+  const orientedResult=portraitResult.cards[1].quad.map(p=>({x:p.y,y:1-p.x}));
+  assert.equal(portraitResult.cards[1].licenceGuard.method,'pink-envelope',
+   'portrait three-up photographs must run the same physical-edge recovery');
+  assert.ok(orientedResult[1].x>.668,
+   'portrait coordinate transformation lost the recovered right edge');
+  assert.equal(portraitOriginal.width,h,'portrait original may not be cleared');
+  assert.equal(portraitResult.cards[0],portraitTriple.cards[0]);
+  assert.equal(portraitResult.cards[2],portraitTriple.cards[2]);
   fill(false);
   const none=win.DocFixLicenceGuard.pinkEnvelope(quad,rgba,w,h);
   assert.equal(none.verified,false,
