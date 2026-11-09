@@ -95,16 +95,26 @@ const ids=x=>x.map(e=>e.id).join(',');
  const w={};
  vm.runInNewContext(pdfCode,{window:w,TextEncoder,Blob,Uint8Array,Math,Number});
  const exportAPI=w.DocFixGroup5;
+ // Authentic 32×32 JPEG created specifically for offline regression testing.
+ // The former fixture was 256 arbitrary bytes bracketed by JPEG SOI/EOI!
+ const realJPEG=Uint8Array.from(Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwQDAwQEBAQFBQQFBwsHBwYGBw4KCggLEA4RERAOEA8SFBoWEhMYEw8QFh8XGBsbHR0dERYgIh8cIhocHRz/2wBDAQUFBQcGBw0HBw0cEhASHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBz/wAARCAAgACADASIAAhEBAxEB/8QAFwABAQEBAAAAAAAAAAAAAAAABwgGAP/EADAQAAAEBAEICwEAAAAAAAAAAAECAwUABAYRBwgSGEFRVWGTExQVFiE2VnWls9PR/8QAGAEAAgMAAAAAAAAAAAAAAAAAAAYBAwT/xAAdEQADAQEAAgMAAAAAAAAAAAABAgQDABFScrHR/9oADAMBAAIRAxEAPwCjcZcZX7DuqJRra5RtWl1pIkyY00moYwGFRQtgEpyhaxA1bYO9KKr92sXIW/WM5lgvFQN+JbUk1U12pLizJGMv15NDNN069y5pguPgADfjwifu89Z+g/l0f5DRHjIcFL5knx6sfocv1a0jZgjgD5D96pNKKr92sXIW/WETBrGV+xEqiba3SUbUZdGSPMlNKpqFMJgUTLYRMcwWscdWyIX7z1n6D+XR/kUDkfPFQOGJbqk6012XLgzKmKv15NfON06Fi5pQuHgIjfhxgsxkXBimZB8erD7HEutJ2UO4I+Q/e0eVF5/bfak/uWgSiscZcGn7ESqJR0a5ttRl0ZIksYs0ooUwmBRQ1wApDBaxw17YO9F2r95MXPW/KNEN0+c6IzgEDqbI933ZlUkE8JQ25Lvn9y9qU+5GO0Xav3kxc9b8oRMGsGn7DuqJt0dJttWl1pI8sUsqooYwGFRM1xAxChaxB17Ii+6fSd0RwSRxHHum6sykAHv/2Q==','base64'));
  const fakeJPEG=new Uint8Array(256);fakeJPEG[0]=255;fakeJPEG[1]=216;fakeJPEG[254]=255;fakeJPEG[255]=217;
- const source=cards.map(e=>({...e,processed:{width:520,height:320}}));
- const blob=await exportAPI.create(source,{encodeJPEG:async()=>fakeJPEG});
+ const source=cards.map(e=>({...e,processed:{width:32,height:32}}));
+ assert.equal(exportAPI.jpegInfo(realJPEG)?.width,32,'real JPEG header is valid');
+ assert.equal(exportAPI.jpegInfo(realJPEG)?.height,32,'real JPEG dimensions are correct');
+ assert.equal(exportAPI.jpegInfo(fakeJPEG),null,'fake SOI/EOI-only JPEG must be rejected');
+ const blob=await exportAPI.create(source,{encodeJPEG:async()=>realJPEG});
  const bytes=await blob.arrayBuffer(),head=new TextDecoder().decode(new Uint8Array(bytes).slice(0,900));
  assert.ok(head.includes('/Count 6'),'PDF must declare all 6 pages');
  assert.equal(exportAPI.validate(blob,6),blob);
  assert.equal(exportAPI.filename(source),'DocFix-1.9.14-6-tessere.pdf',
    'versioned PDF should not collide with previous Downloads');
- await assert.rejects(()=>exportAPI.create([{processed:{width:0,height:0}}],{encodeJPEG:async()=>fakeJPEG}),
+ await assert.rejects(()=>exportAPI.create([{processed:{width:0,height:0}}],{encodeJPEG:async()=>realJPEG}),
    /non valida/,'invalid canvas must never produce a PDF');
+ await assert.rejects(()=>exportAPI.create(source,{encodeJPEG:async()=>fakeJPEG}),
+   /JPEG incompleto/,'a fake JPEG must never be embedded in an apparently valid PDF');
+ await assert.rejects(()=>exportAPI.create([{processed:{width:40,height:32}}],{encodeJPEG:async()=>realJPEG}),
+   /dimensioni non corrispondenti/,'JPEG dimensions must match PDF page dimensions');
 
  // One JPEG thumbnail per unchanged processed canvas; no double compression.
  {
