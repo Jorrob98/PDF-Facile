@@ -55,6 +55,7 @@ jobs:
           node --check app\group1-safe-crop.js
           node --check app\card-threeup.js
           node --check app\card-threeup-polish.js
+          node --check app\card-licence-guard.js
           node --check app\group2-orientation.js
           node --check app\group3-quality.js
           node --check app\group5-export.js
@@ -120,6 +121,9 @@ jobs:
           if($index -notmatch 'tightenSeparatedCardCanvas'){ throw 'Secondo ritaglio fisico tessera mancante' }
           if($index -notmatch 'cropVerified:physicalVerified'){ throw 'Stato bordo fisico rifinito mancante' }
           if($index -notmatch 'card-threeup-polish.js'){ throw 'Motore rifinitura 6 tessere mancante' }
+          if($index -notmatch 'card-licence-guard.js'){ throw 'Verifica bordi fisici patente non caricata' }
+          if($main -notmatch 'licencePhysicalBorderRecovered'){ throw 'Test recupero bordo patente mancante' }
+          if($main -notmatch 'licenceOtherCardsUntouched'){ throw 'Protezione CF e CI mancante' }
           if($index -notmatch 'regroupSixCards'){ throw 'Ordinamento 6 tessere mancante' }
           if($main -notmatch 'threeCardPolish'){ throw 'Self-test rifinitura brevetto mancante' }
           if($index -notmatch 'planSixCardOrder'){ throw 'Nuovo ordinamento delle 6 tessere mancante' }
