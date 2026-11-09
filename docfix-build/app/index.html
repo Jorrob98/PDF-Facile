@@ -993,14 +993,16 @@ function photoNormalize(original){
  const scan=window.DocFixScanner;let processed=original,confidence=0,how='Foto completa',review=false,cardLikely=false,sourceQuad=null,precise=false,backLike=false;
  // Single photo = one document. Multi-contour analysis can confuse a card with a
  // shadow or with the inner printed area and crop off the actual edges.
+ // A blue identity card takes precedence over rose detection: otherwise
+ // skin/portrait colours can be misclassified as licence plastic.
  let licenceRear=null,onPaper=null;
- try{licenceRear=window.DocFixLicenceRear?.detect?.(original)||null;}
- catch(error){console.warn('DocFix: analisi retro patente non riuscita',error);}
- if(!licenceRear){
-  try{onPaper=window.DocFixOverPaper?.detect?.(original)||null;}
-  catch(error){console.warn('DocFix: analisi tessera su foglio non riuscita',error);}
+ try{onPaper=window.DocFixOverPaper?.detect?.(original)||null;}
+ catch(error){console.warn('DocFix: analisi tessera su foglio non riuscita',error);}
+ if(!onPaper){
+  try{licenceRear=window.DocFixLicenceRear?.detect?.(original)||null;}
+  catch(error){console.warn('DocFix: analisi retro patente non riuscita',error);}
  }
- const found=licenceRear||onPaper||scan.detectDocument(original),area=found.status==='found'?scan.area(found.quad):0;
+ const found=onPaper||licenceRear||scan.detectDocument(original),area=found.status==='found'?scan.area(found.quad):0;
  // 1.7: avoid a second destructive crop when the source is already a tightly
  // cropped ISO card or A-series page. In those cases inner frames/text boxes can
  // otherwise be mistaken for the physical document edge.
@@ -1008,8 +1010,13 @@ function photoNormalize(original){
  const tightCard=photoShape>=1.50&&photoShape<=1.73;
  const tightPage=photoShape>=1.36&&photoShape<=1.47;
  const alreadyDocumentShape=tightCard||tightPage;
- const unsafeInnerCrop=!onPaper&&!licenceRear&&alreadyDocumentShape&&area<.86;
- if(found.status==='found'&&found.confidence>=.79&&area>.09&&area<.88&&!unsafeInnerCrop&&scan.validQuad(found.quad)){
+ // Never permit a small internal rectangle on a source that already has
+ // card/page proportions. This guard applies to ALL colour detectors.
+ const unsafeInnerCrop=alreadyDocumentShape&&area<.86;
+ // A small face or decorative portrait can have a plausible ID-1 ratio.
+ // Without independent physical-card evidence, keep the original.
+ const weakSmallCard=!onPaper&&!licenceRear&&found.cardLikely===true&&area<.20;
+ if(found.status==='found'&&found.confidence>=.79&&area>.09&&area<.88&&!unsafeInnerCrop&&!weakSmallCard&&scan.validQuad(found.quad)){
   const quad=found.quad.map(p=>({...p}));
   processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
   confidence=found.confidence;sourceQuad=quad;precise=String(found.method||'').includes('fine')||found.method==='precise-color';backLike=found.cardBackLike===true;how=(licenceRear||onPaper)?found.reason:(precise?'Bordi del documento rifiniti':'Bordi del documento ritagliati');review=found.needsReview===true;
@@ -1026,7 +1033,7 @@ function photoNormalize(original){
  }else{
   // Group 1 safety fallback: no inferred crop if the outer contour is not proven.
   processed=original;review=true;
-  how=unsafeInnerCrop?(tightCard?'Tessera già pronta · nessun doppio ritaglio':'Pagina già pronta · nessun doppio ritaglio'):'Foto conservata · controlla i 4 bordi';
+  how=unsafeInnerCrop?(tightCard?'Tessera già pronta · nessun doppio ritaglio':'Pagina già pronta · nessun doppio ritaglio'):weakSmallCard?'Possibile ritaglio interno: conservo il documento intero · controlla i bordi':'Foto conservata · controlla i 4 bordi';
  }
  return {processed,confidence,how,review,cardLikely,sourceQuad,precise,backLike,overPaper:!!(onPaper||licenceRear),licenceRear:!!licenceRear,physicallyVerified:licenceRear?.physicallyVerified??onPaper?.physicallyVerified};
 }
