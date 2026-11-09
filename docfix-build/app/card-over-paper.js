@@ -70,7 +70,7 @@ function analyzeRGBA(data,w,h){
   const bw=c.maxX-c.minX+1,bh=c.maxY-c.minY+1,wide=bw>=bh,major=Math.max(bw,bh),minor=Math.min(bw,bh);
   const expected=major/1.586,expansion=Math.max(0,(expected-minor)/Math.max(1,minor));
   const boxFrac=bw*bh/(w*h),evidence=c.pixels/Math.max(1,bw*bh);
-  if(boxFrac<.055||boxFrac>.71||major<Math.min(w,h)*.35||evidence<.19||expansion>.50)continue;
+  if(boxFrac<.12||boxFrac>.71||major<Math.min(w,h)*.35||evidence<.19||expansion>.50)continue;
   let L=c.minX,R=c.maxX,T=c.minY,B=c.maxY;
   // Extend in the expected direction to preserve neutral MRZ and security print.
   if(wide&&bh<expected)B+=expected-bh;
