@@ -86,6 +86,66 @@ function polishQuad(q,data,w,h){
   edges:fits.map(x=>({reliable:x.reliable,shift:+x.shift.toFixed(1),
    strength:+x.strength.toFixed(1),baseline:+x.baseline.toFixed(1)}))};
 }
+// A pale rose driving licence can have low-contrast edges: the old gradient
+// search may lock onto printed text while leaving the actual plastic outside.
+// Detect a saturated rose surface separated from neutral paper, but ONLY
+// accept it if almost all of that colour is inside ONE card-shaped envelope.
+function pinkEnvelope(q,rgba,w,h){
+ if(!Array.isArray(q)||q.length!==4||!rgba||w<100||h<100)return {quad:q,verified:false,reason:'campione insufficiente'};
+ const p=q.map(z=>point(z,w,h)),xs=p.map(z=>z.x),ys=p.map(z=>z.y);
+ const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),ww=x1-x0,hh=y1-y0;
+ if(ww<80||hh<48)return {quad:q,verified:false,reason:'tessera troppo piccola'};
+ const left=clamp(Math.floor(x0-ww*.25),0,w-1),right=clamp(Math.ceil(x1+ww*.25),1,w);
+ const top=clamp(Math.floor(y0-hh*.20),0,h-1),bottom=clamp(Math.ceil(y1+hh*.20),1,h);
+ const xa=clamp(Math.round(x0+ww*.25),left,right-1),xb=clamp(Math.round(x1-ww*.25),xa+1,right);
+ const ya=clamp(Math.round(y0+hh*.25),top,bottom-1),yb=clamp(Math.round(y1-hh*.25),ya+1,bottom);
+ function isRose(x,y){
+  const i=(y*w+x)*4,r=rgba[i],g=rgba[i+1],b=rgba[i+2];
+  const max=Math.max(r,g,b),min=Math.min(r,g,b);
+  return r>45&&r-g>=5&&max>0&&(max-min)*255/max>=17;
+ }
+ const cols=[];
+ for(let x=left;x<right;x++){
+  let pink=0;
+  for(let y=ya;y<yb;y++)pink+=Number(isRose(x,y));
+  if(pink/Math.max(1,yb-ya)>.15)cols.push(x);
+ }
+ const rows=[];
+ for(let y=top;y<bottom;y++){
+  let pink=0;
+  for(let x=xa;x<xb;x++)pink+=Number(isRose(x,y));
+  if(pink/Math.max(1,xb-xa)>.15)rows.push(y);
+ }
+ if(cols.length<ww*.42||rows.length<hh*.42)
+  return {quad:q,verified:false,reason:'colore della plastica non confermato'};
+ const minX=cols[0],maxX=cols[cols.length-1],minY=rows[0],maxY=rows[rows.length-1];
+ const width=maxX-minX+1,height=maxY-minY+1;
+ const ratio=width/height,area=width*height/(ww*hh);
+ if(ratio<1.43||ratio>1.80||area<.70||area>1.55
+    ||Math.abs((minX+maxX-x0-x1)/2)>ww*.20
+    ||Math.abs((minY+maxY-y0-y1)/2)>hh*.20)
+  return {quad:q,verified:false,reason:'ingombro non coerente con una patente'};
+ let inner=0,pinkInside=0,pinkOutside=0,outer=0;
+ for(let y=top;y<bottom;y+=2)for(let x=left;x<right;x+=2){
+  const inside=x>=minX&&x<=maxX&&y>=minY&&y<=maxY;
+  if(inside){inner++;pinkInside+=Number(isRose(x,y));}
+  else {outer++;pinkOutside+=Number(isRose(x,y));}
+ }
+ const coverage=pinkInside/Math.max(1,inner),spill=pinkOutside/Math.max(1,outer);
+ if(coverage<.29||spill>.12)
+  return {quad:q,verified:false,reason:'superficie plastica non distinta dallo sfondo'};
+ const pad=Math.max(2,Math.round(Math.min(width,height)*.013));
+ const L=minX-pad,R=maxX+pad,T=minY-pad,B=maxY+pad;
+ if(L<3||R>w-4||T<3||B>h-4)
+  return {quad:q,verified:false,reason:'patente troppo vicina al bordo'};
+ // Bounding the entire coloured plastic is safer than warping along the
+ // inner text frame. Small neutral margins remain intentionally visible.
+ const quad=[{x:L/w,y:T/h},{x:R/w,y:T/h},{x:R/w,y:B/h},{x:L/w,y:B/h}];
+ return {quad,verified:true,reason:'plastica rosa separata dal foglio originale',
+   coverage:+coverage.toFixed(3),spill:+spill.toFixed(3),
+   recoveredPixels:{left:+(x0-L).toFixed(1),right:+(R-x1).toFixed(1),
+    top:+(y0-T).toFixed(1),bottom:+(B-y1).toFixed(1)}};
+}
 function protect(original,detected){
  if(!original||!detected?.verified||detected.cards?.length!==3||
     detected.materialVerified!==true)return detected;
@@ -107,15 +167,22 @@ function protect(original,detected){
    const toSrc=q=>portrait?q.map(p=>({x:1-p.y,y:p.x})):q.map(p=>({...p}));
    const cards=detected.cards.map(card=>{
     if(card.kind!=='licence')return card;
-    const check=polishQuad(toRot(card.quad),d,w,h),quad=toSrc(check.quad);
+    const orientedQuad=toRot(card.quad);
+    const colour=pinkEnvelope(orientedQuad,d,w,h);
+    const check=colour.verified?colour:polishQuad(orientedQuad,d,w,h);
+    const quad=toSrc(check.quad);
     if(!scan.validQuad(quad))return {...card,
       licenceGuard:{verified:false,reason:'geometria non valida'}};
-    return {...card,quad,licenceGuard:{verified:check.verified,
-      reason:check.reason,edges:check.edges}};
+    // Unverified edge searches must NEVER silently alter four-corner geometry.
+    if(!check.verified)return {...card,geometryReview:true,
+      licenceGuard:{verified:false,reason:check.reason||'bordi non confermati'}};
+    return {...card,quad,licenceGuard:{verified:true,
+      reason:check.reason,method:colour.verified?'pink-envelope':'gradient-edges',
+      edges:check.edges,recoveredPixels:check.recoveredPixels}};
    });
    return {...detected,cards};
   }finally{if(sample!==oriented&&sample!==original)sample.width=sample.height=1;}
  }finally{if(oriented!==original)oriented.width=oriented.height=1;}
 }
-window.DocFixLicenceGuard=Object.freeze({protect,polishQuad,version:'1.9.15'});
+window.DocFixLicenceGuard=Object.freeze({protect,polishQuad,pinkEnvelope,version:'1.9.16'});
 })();
