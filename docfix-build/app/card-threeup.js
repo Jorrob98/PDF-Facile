@@ -1,4 +1,4 @@
-/* DocFix 1.9.15 - independent 3-up detector and 90-degree source normalization.
+/* DocFix 1.9.16 - independent 3-up detector and 90-degree source normalization.
  * Only analyzes a temporary scaled canvas. All final crops originate from
  * the untouched, full-resolution source (one perspective transformation).
  * Offline, no personal data upload, no document text generation. */
@@ -236,5 +236,5 @@ function detect(original){
  if(cards.some(c=>!scan.validQuad(c.quad)))return {cards:[],reason:'angoli non validi'};
  return {cards,orientation:portrait?'left':'none',verified:true};
 }
-window.DocFixThreeUp=Object.freeze({detect,analyzeRGBA,version:'1.9.15'});
+window.DocFixThreeUp=Object.freeze({detect,analyzeRGBA,version:'1.9.16'});
 })();
