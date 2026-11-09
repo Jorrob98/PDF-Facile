@@ -1069,12 +1069,14 @@ function portraitCieTurn(source){
  });
 }
 async function normalizeRaster(original){
- const before=window.DocFixGroup2.recognizeMRZOrientation(original);
  const norm=photoNormalize(original);let processed=norm.processed,rotation=0;
+ const sourceAspect=Math.max(original.width,original.height)/Math.max(1,Math.min(original.width,original.height));
+ const cardEvidence=norm.cardLikely||(sourceAspect>=1.50&&sourceAspect<=1.73);
+ const before=cardEvidence&&!norm.overPaper?window.DocFixGroup2.recognizeMRZOrientation(original):{trustworthy:false,method:'background-paper'};
  // G2: aspect ratio never determines if 90° or 270° is correct.
  // If an automatic crop hides an otherwise detectable MRZ, keep all source
  // pixels rather than pretending to have recognized the physical card edge.
- let mrz=window.DocFixGroup2.recognizeMRZOrientation(processed);
+ let mrz=cardEvidence?window.DocFixGroup2.recognizeMRZOrientation(processed):{trustworthy:false,method:'background-paper'};
  let preservedSource=false;
  if(before.trustworthy&&!mrz.trustworthy&&processed!==original&&!norm.overPaper){
   processed=original;mrz=before;preservedSource=true;
