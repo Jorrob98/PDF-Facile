@@ -993,7 +993,9 @@ function photoNormalize(original){
  const scan=window.DocFixScanner;let processed=original,confidence=0,how='Foto completa',review=false,cardLikely=false,sourceQuad=null,precise=false,backLike=false;
  // Single photo = one document. Multi-contour analysis can confuse a card with a
  // shadow or with the inner printed area and crop off the actual edges.
- const onPaper=window.DocFixOverPaper?.detect?.(original)||null;
+ let onPaper=null;
+ try{onPaper=window.DocFixOverPaper?.detect?.(original)||null;}
+ catch(error){console.warn('DocFix: analisi tessera su foglio non riuscita',error);}
  const found=onPaper||scan.detectDocument(original),area=found.status==='found'?scan.area(found.quad):0;
  // 1.7: avoid a second destructive crop when the source is already a tightly
  // cropped ISO card or A-series page. In those cases inner frames/text boxes can
