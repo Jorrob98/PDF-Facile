@@ -99,6 +99,46 @@ const ids=x=>x.map(e=>e.id).join(',');
  assert.ok(editor.includes('editQuad=null;editSource=null;'),'closing the editor must release scratch image references');
 }
 {
+ // Regression tests for repeated input, source restoration and clipboard status.
+ const matcher=between(index,'function sameSelectedFile(a,b){','function addFiles(files){');
+ const sameSelectedFile=new Function(matcher+'return sameSelectedFile;')();
+ const uploaded={name:'WhatsApp-2026-11-09.jpg',type:'image/jpeg',size:45681,lastModified:1700000123456};
+ const identical={...uploaded},different={...uploaded,lastModified:uploaded.lastModified+1};
+ assert.equal(sameSelectedFile(uploaded,identical),true,'same WhatsApp file reselected must be recognized');
+ assert.equal(sameSelectedFile(uploaded,different),false,'distinct photos sharing name and size must not be rejected');
+ assert.equal(sameSelectedFile(uploaded,{...uploaded,name:'altro.jpg'}),false,'same size does not imply same image');
+ assert.equal(sameSelectedFile({...uploaded,lastModified:0},{...uploaded,lastModified:0}),false,
+  'unknown modification timestamps cannot establish an accidental duplicate');
+ const upload=between(index,'function addFiles(files){','// Pure, testable ordering decision.');
+ assert.ok(upload.includes('sourceFiles.some(s=>sameSelectedFile(s.file,f))'),
+  'file validation must reject duplicate metadata before enqueuing');
+ assert.ok(!index.includes("addFiles(files);status(files.length===1?"),
+  'clipboard success text must not overwrite an addFiles rejection');
+ assert.ok(index.includes('nextSourceId=1;nextLoadBatch=1;dragSource=-1;'),
+  'a new practice must reset all loading and drag counters');
+ const undo='function undoRemove(){'+between(index,'function undoRemove(){',"$('undo-remove').onclick=undoRemove;");
+ const testUndo=(count,src=[],position=0)=>{
+  const warnings=[],history=[],source={id:8,file:{size:512,name:'test.jpg'}},entry={id:'removed',sourceIndex:8};
+  const context={busy:false,lastRemoved:{entry,index:position,source,sourcePosition:0},
+   entries:Array.from({length:count},(_,i)=>({id:'p'+i})),sourceFiles:src.slice(),
+   MAX_PAGES:40,MAX_FILES:12,MAX_TOTAL:100*1048576,
+   note:s=>warnings.push(s),repaint:()=>history.push('repaint'),status:s=>history.push(s)};
+  vm.runInNewContext(undo+'undoRemove();',context);
+  return {...context,warnings,history};
+ };
+ const atLimit=testUndo(40);
+ assert.equal(atLimit.sourceFiles.length,0,'40-page undo failure must not leave orphan source files');
+ assert.equal(atLimit.entries.length,40,'40-page undo must not add a 41st page');
+ assert.ok(atLimit.lastRemoved,'failed undo remains recoverable');
+ const atFileLimit=testUndo(0,Array.from({length:12},(_,i)=>({id:i+30,file:{size:1}})));
+ assert.equal(atFileLimit.sourceFiles.length,12,'12-file undo failure cannot add an orphan');
+ assert.equal(atFileLimit.entries.length,0,'file-limit failure cannot restore page without its source');
+ const restored=testUndo(1,[{id:1,file:{size:200}}],0);
+ assert.equal(restored.entries[0].id,'removed','successful undo restores removed page at its index');
+ assert.equal(restored.sourceFiles[0].id,8,'undo restores its source in original source order');
+ assert.equal(restored.lastRemoved,null,'successful undo clears lastRemoved record');
+}
+{
  // Never clear a resized reference if resize() returned the original.
  const deskew=between(index,'function estimateFineDeskew(','function rotateFineCanvas(');
  assert.equal(deskew.split('s.width=s.height=1').length-1,3);
