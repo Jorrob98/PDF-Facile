@@ -1,4 +1,4 @@
-/* DocFix 1.9.15: verify the four physical licence edges before source crop.
+/* DocFix 1.9.16: verify the four physical licence edges before source crop.
  * Local/offline only. Original photo is never overwritten. Other document
  * types and the proven 2-up detector are not modified.
  */
