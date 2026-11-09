@@ -1,0 +1,95 @@
+/* DocFix 1.9.24 — Conservative final alignment of Italian driving-licence cards.
+ * Uses the external plastic-to-white-matte boundary, never printed table lines
+ * or a portrait. One perspective transform only; otherwise retain source.
+ */
+(()=>{'use strict';
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function white(d,k){return d[k]>=238&&d[k+1]>=238&&d[k+2]>=238;}
+function trace(d,w,h,side){
+ const horizontal=side==='top'||side==='bottom',forward=side==='top'||side==='left';
+ const along=horizontal?w:h,depth=horizontal?h:w,limit=Math.min(Math.floor(depth*.22),105);
+ const points=[];
+ for(let j=0;j<=36;j++){
+  const u=Math.round((.10+.80*j/36)*(along-1));
+  const at=t=>{
+   const v=forward?t:depth-1-t,k=(horizontal?(v*w+u):(u*w+v))*4;
+   return white(d,k);
+  };
+  // Require a genuine exterior white strip, not a white character inside.
+  if(!at(0)||!at(1))continue;
+  for(let v=2;v<limit-3;v++){
+   if(at(v-2)&&at(v-1)&&!at(v)&&!at(v+1)&&!at(v+2)){
+    points.push([u,forward?v:depth-1-v]);break;
+   }
+  }
+ }
+ if(points.length<22||points[points.length-1][0]-points[0][0]<along*.58)return null;
+ const regression=arr=>{
+  const mx=arr.reduce((a,p)=>a+p[0],0)/arr.length,my=arr.reduce((a,p)=>a+p[1],0)/arr.length;
+  let top=0,den=0;for(const p of arr){top+=(p[0]-mx)*(p[1]-my);den+=(p[0]-mx)**2;}
+  const a=top/Math.max(1,den),b=my-a*mx;
+  return {a,b};
+ };
+ let fit=regression(points);
+ const filtered=points.filter(p=>Math.abs(p[1]-(fit.a*p[0]+fit.b))<=Math.max(3,depth*.009));
+ if(filtered.length<20)return null;
+ fit=regression(filtered);
+ const rms=Math.sqrt(filtered.reduce((n,p)=>n+(p[1]-(fit.a*p[0]+fit.b))**2,0)/filtered.length);
+ if(rms>Math.max(2.3,depth*.0065)||Math.abs(fit.a)>.115)return null;
+ return {...fit,rms,points:filtered.length};
+}
+function analyzeRGBA(data,w,h){
+ if(!data||w<250||h<165||data.length<w*h*4)return null;
+ const top=trace(data,w,h,'top'),bottom=trace(data,w,h,'bottom');
+ const left=trace(data,w,h,'left'),right=trace(data,w,h,'right');
+ if(!top||!bottom||!left||!right)return null;
+ // Four complete white-backed physical sides must form a near rectangle.
+ if(Math.abs(top.a-bottom.a)>.035||Math.abs(left.a-right.a)>.035||
+    Math.abs(top.a+left.a)>.050||Math.abs(bottom.a+right.a)>.050)return null;
+ const meet=(vertical,horizontal)=>{
+  const den=1-vertical.a*horizontal.a;if(Math.abs(den)<.8)return null;
+  const x=(vertical.a*horizontal.b+vertical.b)/den;
+  return {x,y:horizontal.a*x+horizontal.b};
+ };
+ const raw=[meet(left,top),meet(right,top),meet(right,bottom),meet(left,bottom)];
+ if(raw.some(p=>!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)||
+  p.x<-.008*w||p.y<-.008*h||p.x>w-1+.008*w||p.y>h-1+.008*h))return null;
+ const len=(a,b)=>Math.hypot(raw[a].x-raw[b].x,raw[a].y-raw[b].y);
+ const cw=(len(0,1)+len(2,3))/2,ch=(len(1,2)+len(3,0))/2,ratio=cw/Math.max(1,ch);
+ const area=Math.abs(raw.reduce((s,p,i)=>s+p.x*raw[(i+1)%4].y-p.y*raw[(i+1)%4].x,0))/2/(w*h);
+ if(ratio<1.43||ratio>1.82||area<.72||area>1.015||cw<w*.76||ch<h*.76)return null;
+ const angleDeg=(Math.atan(top.a)+Math.atan(bottom.a))*90/Math.PI;
+ if(Math.abs(angleDeg)<.40&&raw.every((p,i)=>Math.hypot(
+  p.x-[0,w-1,w-1,0][i],p.y-[0,0,h-1,h-1][i])<Math.min(w,h)*.018))return null;
+ // Keep a pixel of safety margin where image pixels exist.
+ const cx=raw.reduce((s,p)=>s+p.x,0)/4,cy=raw.reduce((s,p)=>s+p.y,0)/4;
+ const pad=Math.min(1.5,Math.min(w,h)*.0025);
+ const q=raw.map(p=>({
+  x:clamp(p.x+Math.sign(p.x-cx)*pad,0,w-1)/w,
+  y:clamp(p.y+Math.sign(p.y-cy)*pad,0,h-1)/h
+ }));
+ return {quad:q,status:'found',angle:+angleDeg.toFixed(2),ratio:+ratio.toFixed(3),
+  area:+area.toFixed(3),physicallyVerified:true,method:'licence-exterior-white-matte',
+  points:[top.points,bottom.points,left.points,right.points],
+  rms:[top.rms,bottom.rms,left.rms,right.rms].map(v=>+v.toFixed(2))};
+}
+function correct(source){
+ const scan=window.DocFixScanner;if(!source||!scan)return {canvas:source,applied:false,reason:'scanner unavailable'};
+ let s;
+ try{
+  s=scan.resize(source,850);
+  const d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,s.width,s.height).data;
+  const found=analyzeRGBA(d,s.width,s.height);
+  if(!found||!scan.validQuad(found.quad))return {canvas:source,applied:false,reason:'exterior not verified'};
+  const processed=scan.process(source,{crop:true,quad:found.quad,rotation:0,filter:'original',strength:0},4200);
+  if(!processed||processed.width<240||processed.height<140)throw Error('corrected licence too small');
+  const ratio=processed.width/Math.max(1,processed.height);
+  if(ratio<1.40||ratio>1.90){if(processed!==source)processed.width=processed.height=1;
+   return {canvas:source,applied:false,reason:'unsafe aspect ratio'};}
+  return {canvas:processed,applied:true,verified:true,angle:found.angle,method:found.method};
+ }catch(err){console.warn('DocFix: licence exterior alignment not applied',err);
+  return {canvas:source,applied:false,reason:'safe fallback'};
+ }finally{if(s&&s!==source)s.width=s.height=1;}
+}
+window.DocFixLicenceFinish=Object.freeze({analyzeRGBA,correct,version:'1.9.24'});
+})();
