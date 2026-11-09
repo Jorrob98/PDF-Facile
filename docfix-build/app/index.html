@@ -1478,7 +1478,9 @@ async function makeImageEntries(file,index,total=1,meta={}){
     fixed.geometryReview=true;fixed.review=true;
     fixed.how+=' · bordo fisico patente da verificare prima dell’uso';
    }else if(c.kind==='licence'&&c.licenceGuard?.verified===true){
-    fixed.how+=' · 4 bordi fisici patente verificati prima del ritaglio';
+    fixed.how+=c.licenceGuard.method==='pink-envelope'
+     ?' · contorno della plastica rosa recuperato dalla foto originale'
+     :' · 4 bordi fisici patente verificati prima del ritaglio';
    }
    out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),
     sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,
@@ -1547,7 +1549,7 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
  const item=document.createElement('article');item.className='page-card'+(e.review?' needs-check':'');
  const pv=document.createElement('button');pv.type='button';pv.className='preview';pv.onclick=()=>openCorrection(i);pv.title='Apri pagina '+(i+1)+' per controllarla';
  const img=document.createElement('img');img.src=thumb(e.processed);img.alt='Anteprima pagina '+(i+1);
- const tag=document.createElement('span');tag.className='tag'+(e.review?' warning':'');tag.textContent=e.cropVerified===false?'Bordi da correggere':e.qualityReview?'Qualità da controllare':e.review?'Verifica consigliata':'Elaborata';
+ const tag=document.createElement('span');tag.className='tag'+(e.review?' warning':'');tag.textContent=e.geometryReview||e.cropVerified===false?'Bordi da verificare':e.qualityReview?'Qualità da controllare':e.review?'Verifica consigliata':'Elaborata';
  const count=document.createElement('span');count.className='page-number';count.textContent='Pagina '+(i+1);pv.append(img,tag,count);
  const info=document.createElement('div');info.className='card-info';const name=document.createElement('strong');name.textContent=e.title;name.title=e.title;
  const desc=document.createElement('small');desc.textContent=e.how;
