@@ -445,6 +445,31 @@ const ids=x=>x.map(e=>e.id).join(',');
    'rose envelope must not be applied without colour proof');
  }
 
+
+ // Regression from the real licence screenshot: 'three cards detected' cannot
+ // be confused with 'four physical licence edges verified'.
+ {
+  const normalize=between(index,'async function normalizeKnownCard(','// Never let an earlier 2-up success');
+  const three=between(index,"if(decision.mode==='three'){",'const multi=verified?sourceCards:');
+  assert.ok(three.includes("sourceVerified:c.kind!=='licence'||c.licenceGuard?.verified===true"),
+   'unverified licence may not enter sourceVerified perspective branch');
+  assert.ok(normalize.includes("else if(multiSafe&&cardKind==='licence')"),
+   'unverified licence must use independent conservative fallback');
+  assert.ok(normalize.includes("quad=expandQuadSafe(sourceQuad,.105)"),
+   'unverified licence must keep a substantial safety margin');
+  assert.ok(three.includes("fixed.cropVerified=false"),
+   'unverified physical licence border must not display a crop success badge');
+  assert.ok(three.includes("c.licenceGuard?.verified!==true"),
+   'missing guard or failed guard must be treated as unverified');
+  const raw=between(index,'function expandQuadSafe(','function safeRefineMultiQuad(');
+  const expand=new Function(raw+'return expandQuadSafe;')();
+  const q=[{x:.25,y:.30},{x:.55,y:.30},{x:.55,y:.50},{x:.25,y:.50}];
+  const out=expand(q,.105);
+  assert.ok(out[0].x<q[0].x&&out[0].y<q[0].y&&
+   out[2].x>q[2].x&&out[2].y>q[2].y,'safety ROI must expand in all directions');
+  assert.ok(q[0].x===.25&&q[0].y===.30,'fallback must not mutate original quad');
+ }
+
  // The verified two-card engine must not hide a third independent document.
  {
   const geometry=between(index,'function quadBounds(q){','function crossOverlap(');
