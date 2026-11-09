@@ -1424,16 +1424,16 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
   ?{angle:0,trustworthy:false,method:'layout-only'}
   :window.DocFixGroup2.recognizeMRZOrientation(processed);
  const osd=mrz.trustworthy?{angle:0,review:false,trustworthy:true}
-  :orientationKnown?{angle:0,review:false,trustworthy:false}
+  :orientationKnown&&cardKind!=='identity'?{angle:0,review:false,trustworthy:false}
   :await inferTextOrientation(processed);
  if(mrz.trustworthy&&mrz.angle){rotation=mrz.angle;processed=rotate(processed,rotation)}
  else if(osd.trustworthy&&osd.angle){rotation=osd.angle;processed=rotate(processed,rotation)}
  // A perspective-corrected card must not be re-deskewed or cropped again.
  const deskew=multiSafe?(cardKind==='licence'?straightenLicenceWithoutCutting(processed):{canvas:processed,applied:false,angle:0,residual:0,verified:true}):fineDeskewCard(processed,{cardKind});
  if(deskew.applied)processed=deskew.canvas;
- const orientationReview=!mrz.trustworthy&&!osd.trustworthy&&textLines(processed).vertical;
+ const orientationReview=!mrz.trustworthy&&!osd.trustworthy&&(cardKind==='identity'||textLines(processed).vertical);
  const geometryReview=!physicalVerified||confidence<.78,quality=qualityAudit(processed,tightened?null:quad),qualityReview=quality.review,review=geometryReview||orientationReview||qualityReview;
- const method=orientationKnown?'Foto ruotata di 90° per normalizzare le tessere':mrz.trustworthy?'Verso verificato dalla zona MRZ':osd.trustworthy?'Verso verificato dal testo':'Orientamento non confermato';
+ const method=mrz.trustworthy?'Verso verificato dalla zona MRZ':osd.trustworthy?'Verso verificato dal testo':orientationKnown?'Disposizione normalizzata, verso da verificare':'Orientamento non confermato';
  const qualityNote=quality.issues.length?' · '+quality.issues.join(' · '):'';
  const cropNote=multiSafe?(physicalVerified?'4 bordi rilevati sull’originale · prospettiva corretta una volta':'CONTROLLARE I BORDI · il ritaglio automatico non è riuscito'):fine?.refined?'bordi rifiniti':'';
  const deskewNote=deskew.applied?' · raddrizzato '+Math.abs(deskew.angle).toFixed(1)+'° · residuo '+Math.abs(deskew.residual||0).toFixed(1)+'°':(!deskew.verified&&cardKind==='cf'?' · raddrizzamento non applicato: nessun miglioramento verificato':'');
