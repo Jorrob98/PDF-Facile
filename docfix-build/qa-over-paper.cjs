@@ -48,6 +48,6 @@ assert.ok(index.includes("catch(error){console.warn('DocFix: analisi tessera su 
 assert.ok(index.includes('if(cardLikely&&!onPaper&&!licenceRear)'),'MRZ not trimmed again after crop');
 assert.ok(index.includes('&&!norm.overPaper'),'false source MRZ never reverses proven over-paper crop');
 assert.ok(index.includes('const cardEvidence=norm.cardLikely||'),'A4 printed paper cannot claim a trustworthy CIE MRZ');
-assert.ok(index.includes("let mrz=cardEvidence?window.DocFixGroup2.recognizeMRZOrientation(processed)"),'MRZ orientation not read from unisolated printed paper');
+assert.ok(index.includes("let mrz=cardEvidence&&!norm.licenceRear?window.DocFixGroup2.recognizeMRZOrientation(processed)"),'MRZ orientation not read from unisolated printed paper');
 assert.ok(index.includes('function portraitCieTurn('),'sideways CIE orientation fallback present');
 console.log('DocFix over-paper regression PASS: portrait front, neutral MRZ, no-card rejection, pixel ownership and integration');
