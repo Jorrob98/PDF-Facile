@@ -9,6 +9,7 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const index=read('app/index.html');
 const physical=read('app/card-physical-edges.js');
 const cards3=read('app/card-threeup.js');
+const cards3Polish=read('app/card-threeup-polish.js');
 const licenceGuardCode=read('app/card-licence-guard.js');
 const cards2=read('app/card-texture-crop.js');
 const pdfCode=read('app/group5-export.js');
@@ -92,6 +93,8 @@ const ids=x=>x.map(e=>e.id).join(',');
  const tripleOrientation=between(index,'async function normalizeKnownCard(','// Never let an earlier 2-up success hide a third independently confirmed card.');
  assert.ok(index.includes("sourceVerified:c.materialVerified===true&&(c.kind!=='licence'||c.licenceGuard?.verified===true)"),
    'three-up unclassified cards cannot claim physically verified borders');
+ assert.ok(index.includes('materialVerified:false,physicalReview:true'),
+   'three-card material failure must preserve the page with an explicit review warning');
  assert.ok(tripleOrientation.includes("orientationKnown&&cardKind!=='identity'?"),
    'inconclusive MRZ on 3-up identity must fall back to text orientation, not layout');
  assert.ok(tripleOrientation.includes("(cardKind==='identity'||textLines(processed).vertical)"),
@@ -99,6 +102,23 @@ const ids=x=>x.map(e=>e.id).join(',');
  assert.ok(tripleOrientation.includes("mrz.trustworthy?'Verso verificato dalla zona MRZ':osd.trustworthy?"),
    'actual MRZ/text proof must take precedence over camera layout in the UI');
 
+}
+{
+ // A failed image readback must release both scratch and rotated analysis canvases.
+ const original={width:350,height:600};
+ const sample={width:600,height:300,getContext:()=>({getImageData:()=>{throw Error('synthetic readback failure')}})};
+ let rotated=null;
+ const win={DocFixScanner:{resize:()=>sample}};
+ const document={createElement:()=>rotated={width:0,height:0,getContext:()=>({translate(){},rotate(){},drawImage(){}})}};
+ vm.runInNewContext(cards3Polish,{window:win,document,Math,Float32Array});
+ const detected={verified:true,orientation:'left',cards:[{},{},{}]};
+ assert.throws(()=>win.DocFixThreeUpPolish.refine(original,detected),/synthetic readback failure/);
+ assert.equal(sample.width,1,'three-up scratch canvas must be freed after readback failure');
+ assert.equal(rotated.width,1,'rotated analysis canvas must be freed after readback failure');
+ assert.equal(original.width,350,'failed analysis must not destroy the original photograph');
+ win.DocFixScanner.resize=()=>{throw Error('synthetic resize failure')};
+ assert.throws(()=>win.DocFixThreeUpPolish.refine(original,detected),/synthetic resize failure/);
+ assert.equal(rotated.width,1,'rotated analysis canvas must be freed after resize failure');
 }
 (async()=>{
  const w={};
