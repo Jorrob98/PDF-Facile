@@ -19,6 +19,32 @@
   return {pageW:w,pageH:h,x:0,y:0,w,h};
  }
  function validJpeg(data){return data.length>128&&data[0]===255&&data[1]===216&&data[data.length-2]===255&&data[data.length-1]===217}
+ // A JPEG can have the correct SOI/EOI bytes and still contain no image.
+ // Validate actual image header structure and dimensions before inserting it in PDF.
+ function jpegInfo(data){
+  if(!validJpeg(data))return null;
+  let pos=2,width=0,height=0,sos=false;
+  while(pos+3<data.length){
+   if(data[pos++]!==255)return null;
+   while(pos<data.length&&data[pos]===255)pos++;
+   if(pos>=data.length)return null;
+   const marker=data[pos++];
+   if(marker===0xD9)break;
+   if(marker===0xD8||(marker>=0xD0&&marker<=0xD7)||marker===0x01)continue;
+   if(pos+2>data.length)return null;
+   const len=(data[pos]<<8)|data[pos+1];
+   if(len<2||pos+len>data.length)return null;
+   if(([0xC0,0xC1,0xC2,0xC3,0xC5,0xC6,0xC7,0xC9,0xCA,0xCB,0xCD,0xCE,0xCF]).includes(marker)){
+    if(len<8)return null;
+    height=(data[pos+3]<<8)|data[pos+4];
+    width=(data[pos+5]<<8)|data[pos+6];
+    if(width<1||height<1)return null;
+   }
+   if(marker===0xDA){sos=true;break}
+   pos+=len;
+  }
+  return width&&height&&sos?{width,height}:null;
+ }
  async function create(entries,{encodeJPEG,mode='document',onProgress=()=>{},yieldFn=async()=>{}}={}){
   if(!Array.isArray(entries)||!entries.length||entries.length>MAX_PAGES)throw Error('Numero di pagine PDF non valido');
   if(typeof encodeJPEG!=='function')throw Error('Codificatore JPEG mancante');
@@ -34,7 +60,9 @@
    const c=entries[i]?.processed;
    if(!c?.width||!c?.height||c.width<32||c.height<32)throw Error(`Pagina ${i+1} non valida: ricontrolla la foto originale.`);
    const data=new Uint8Array(await encodeJPEG(c));
-   if(!validJpeg(data))throw Error(`La pagina ${i+1} non è stata esportata come JPEG valido.`);
+   const jpeg=jpegInfo(data);
+   if(!jpeg||jpeg.width!==c.width||jpeg.height!==c.height)
+    throw Error(`Pagina ${i+1}: JPEG incompleto o dimensioni non corrispondenti; il PDF non è stato scaricato.`);
    const n=ids[i],b=layout(c.width,c.height,mode);
    obj(n,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${b.pageW} ${b.pageH}] /Resources << /XObject << /Im${i} ${n+1} 0 R >> >> /Contents ${n+2} 0 R >>`);
    stream(n+1,`<< /Type /XObject /Subtype /Image /Width ${c.width} /Height ${c.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${data.length} >>`,data);
@@ -59,5 +87,5 @@
   const raw=sources[0].replace(/\.[^.]+$/,'').normalize('NFKC').replace(/[\\/:*?"<>|\x00-\x1F\x7F]/g,' ').replace(/\s+/g,' ').trim().replace(/^[.\s-]+/,'').slice(0,72)||'documento';
   return `${raw}-docfix.pdf`;
  }
- window.DocFixGroup5=Object.freeze({create,layout,validate,filename,version:'5.1-smart-name'});
+ window.DocFixGroup5=Object.freeze({create,layout,validate,filename,jpegInfo,version:'5.2-jpeg-header-validation'});
 })();
