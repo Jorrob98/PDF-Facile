@@ -56,6 +56,28 @@ function analyzeRGBA(data,w,h){
   const bw=c.r-c.l+1,bh=c.b-c.t+1,major=Math.max(bw,bh),minor=Math.min(bw,bh);
   const coverage=bw*bh/(w*h),material=c.pixels/(bw*bh);
   if(coverage<.075||coverage>.75||material<.24||major<Math.min(w,h)*.32)continue;
+  // A face portrait may have almost the same rose colour and aspect ratio.
+  // Check spatial support and reject any rose rectangle surrounded by the
+  // cyan material of a larger identity card.
+  const quadrants=[0,0,0,0],totals=[0,0,0,0];
+  const qstep=Math.max(2,Math.round(Math.min(bw,bh)/44));
+  for(let y=c.t+Math.round(bh*.07);y<c.b-Math.round(bh*.07);y+=qstep)
+   for(let x=c.l+Math.round(bw*.07);x<c.r-Math.round(bw*.07);x+=qstep){
+    const qi=(y>(c.t+c.b)/2?2:0)+(x>(c.l+c.r)/2?1:0);
+    quadrants[qi]+=raw[y*w+x];totals[qi]++;
+   }
+  if(quadrants.some((v,i)=>v/Math.max(1,totals[i])<.12))continue;
+  const sx=Math.max(3,Math.round(bw*.57)),sy=Math.max(3,Math.round(bh*.57));
+  const x0=Math.max(2,c.l-sx),x1=Math.min(w-2,c.r+sx);
+  const y0=Math.max(2,c.t-sy),y1=Math.min(h-2,c.b+sy);
+  let cyan=0,around=0;
+  for(let y=y0;y<=y1;y+=3)for(let x=x0;x<=x1;x+=3){
+   if(x>=c.l&&x<=c.r&&y>=c.t&&y<=c.b)continue;
+   const k=(y*w+x)*4,r=data[k],g=data[k+1],b=data[k+2];
+   cyan+=Number(b-r>8&&b-g>-4&&b-(r+g)*.5>5);
+   around++;
+  }
+  if(around>=80&&cyan/around>.16)continue;
   const projectedMinor=major/1.586;
   if(minor<projectedMinor*.70||minor>projectedMinor*1.20)continue;
   // An uncoloured security margin can be present on any edge.
