@@ -96,7 +96,11 @@ jobs:
           grep -F "document.addEventListener('paste'" verify/app/index.html
           grep -F "function qualityAudit" verify/app/index.html
           grep -F "Qualità da controllare" verify/app/index.html
-          grep -F "alreadyDocumentShape" verify/app/index.html
+          grep -F "function singleCropGate(original,candidate,kind='generic')" verify/app/index.html
+          grep -F "if(tightPage&&area<.86)" verify/app/index.html
+          grep -F "if(tightCard&&area<.86)" verify/app/index.html
+          grep -F "try{sourceCards=window.DocFixRealCrop?.detect?.(original)" verify/app/index.html
+          grep -F "try{tripleRaw=window.DocFixThreeUp?.detect?.(original)" verify/app/index.html
           grep -F "trimCardBackground(processed,backLike)" verify/app/index.html
           grep -F 'class="advanced-options"' verify/app/index.html
           grep -F "version:'1.9.23'" verify/app/index.html
