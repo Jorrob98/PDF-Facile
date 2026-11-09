@@ -480,7 +480,7 @@ const ids=x=>x.map(e=>e.id).join(',');
  {
   const normalize=between(index,'async function normalizeKnownCard(','// Never let an earlier 2-up success');
   const three=between(index,"if(decision.mode==='three'){",'const multi=verified?sourceCards:');
-  assert.ok(three.includes("sourceVerified:c.kind!=='licence'||c.licenceGuard?.verified===true"),
+  assert.ok(three.includes("sourceVerified:c.materialVerified===true&&(c.kind!=='licence'||c.licenceGuard?.verified===true)"),
    'unverified licence may not enter sourceVerified perspective branch');
   assert.ok(normalize.includes("else if(multiSafe&&cardKind==='licence')"),
    'unverified licence must use independent conservative fallback');
