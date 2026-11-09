@@ -56,6 +56,9 @@ jobs:
           node --check app\card-threeup.js
           node --check app\card-threeup-polish.js
           node --check app\card-licence-guard.js
+          node --check app\card-licence-finish.js
+          node --check qa-licence-finish.cjs
+          node qa-licence-finish.cjs
           node --check app\group2-orientation.js
           node --check app\group3-quality.js
           node --check app\group5-export.js
