@@ -181,6 +181,32 @@ const ids=x=>x.map(e=>e.id).join(',');
   assert.equal(original.width,1200,'MRZ detection modified source');
  }
 
+
+ // Contour detection historically leaked scratch canvases on early returns.
+ {
+  const module=read('app/group1-safe-crop.js');
+  const created=[];
+  const scan={
+   resize(){const c={width:50,height:50,getContext(){return {
+    getImageData(){return {data:new Uint8ClampedArray(c.width*c.height*4)}}
+   }}};created.push(c);return c;},
+   validQuad:()=>true,area:()=>.2,
+   detectDocument:()=>({status:'uncertain'}),
+   defaultQuad:()=>[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9},{x:.1,y:.9}]
+  };
+  const win={DocFixScanner:scan};
+  vm.runInNewContext(module,{window:win,Math,Uint8Array,Uint32Array,Int32Array,Float32Array});
+  const original={width:500,height:300};
+  const quad=[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9},{x:.1,y:.9}];
+  assert.equal(win.DocFixGroup1.candidateFromBackground(original),null);
+  win.DocFixGroup1.refineQuad(original,quad);
+  win.DocFixGroup1.validateLegacy(original,{status:'found',quad});
+  assert.equal(created.length,3,'test must exercise three different edge-analysis paths');
+  assert.ok(created.every(c=>c.width===1&&c.height===1),
+    'all physical-edge scratch canvases must be freed');
+  assert.equal(original.width,500,'physical-edge analysis destroyed original input');
+ }
+
  // One JPEG thumbnail per unchanged processed canvas; no double compression.
  {
   const thumbCode=between(index,'const thumbsCache=new WeakMap();','function repaint(){');
