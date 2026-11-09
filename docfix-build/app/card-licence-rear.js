@@ -78,7 +78,7 @@ function analyzeRGBA(data,w,h){
    {x:best.R/w,y:best.B/h},{x:best.L/w,y:best.B/h}],
   confidence:.82,cardLikely:true,needsReview:true,physicallyVerified:false,
   isLicenceBackCandidate:true,method:'licence-rear-rose-material',
-  reason:'Retro patente isolato dalla superficie rosa · verifica i quattro bordi',
+  reason:'Patente isolata dalla superficie rosa · verifica i quattro bordi',
   evidence:{material:+best.material.toFixed(3),coverage:+best.coverage.toFixed(3),
    estimatedNeutralBand:+best.missing.toFixed(1)}};
 }
@@ -96,11 +96,18 @@ function detect(original){
   try{
    const guard=window.DocFixLicenceGuard?.polishQuad?.(candidate.quad,rgba,sample.width,sample.height);
    if(guard?.verified===true&&scan.validQuad(guard.quad)){
-    candidate.quad=guard.quad;
+    const bounds=q=>({l:Math.min(...q.map(p=>p.x)),r:Math.max(...q.map(p=>p.x)),
+     t:Math.min(...q.map(p=>p.y)),b:Math.max(...q.map(p=>p.y))});
+    const base=bounds(candidate.quad),next=bounds(guard.quad);
+    // Inner text lines must never win over the coloured plastic envelope.
+    const containsMaterial=next.l<=base.l+.004&&next.r>=base.r-.004
+     &&next.t<=base.t+.004&&next.b>=base.b-.004;
+    if(containsMaterial){candidate.quad=guard.quad;
     candidate.physicallyVerified=true;
     candidate.needsReview=false;
     candidate.confidence=.91;
-    candidate.reason='Retro patente · quattro bordi fisici verificati';
+    candidate.reason='Patente · quattro bordi fisici verificati';
+    }
    }
   }catch(_){/* material fallback is retained */}
   return candidate;
