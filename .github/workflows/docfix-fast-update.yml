@@ -172,7 +172,7 @@ jobs:
           grep -F "jpegInfo" verify/app/group5-export.js
           grep -F "while(queue.length&&host()?.isBusy?.())" verify/app/ocr-max.js
           grep -F "withResizedCanvas" verify/app/index.html
-          grep -F "realJPEG" verify/qa-stability-guard.cjs
+          grep -F "realJPEG" qa-stability-guard.cjs
           grep -F "q[2].y+7/h" verify/app/card-threeup-polish.js
           grep -F "DocFix 1.9.15" verify/app/index.html
           grep -F "materialVerified:allTypes" verify/app/card-threeup-polish.js
