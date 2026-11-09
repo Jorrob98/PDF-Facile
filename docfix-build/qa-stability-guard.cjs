@@ -5,6 +5,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const root=__dirname;
+require('./qa-over-paper.cjs');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const index=read('app/index.html');
 const physical=read('app/card-physical-edges.js');
