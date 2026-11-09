@@ -33,18 +33,30 @@
  function signature(source){
   const ratio=source.width/source.height;if(ratio<1.30||ratio>2.02||source.width<140||source.height<95)return {candidate:false,score:0};
   const w=720,h=Math.max(120,Math.round(720/ratio));const c=document.createElement('canvas');c.width=w;c.height=h;
+  try{
   const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(source,0,0,w,h);
   const pix=g.getImageData(0,0,w,h).data,row=new Float32Array(h),threshold=130;
   for(let y=0;y<h;y++){let transitions=0,previous=false;for(let x=Math.floor(w*.04);x<Math.ceil(w*.96);x++){const i=(y*w+x)*4,gray=pix[i]*.299+pix[i+1]*.587+pix[i+2]*.114;const dark=gray<threshold;if(dark&&!previous)transitions++;previous=dark;}row[y]=transitions;}
   const thresholdTransitions=16,top=bandStats(row,.025,.30,thresholdTransitions),bottom=bandStats(row,.70,.975,thresholdTransitions);
   const qualifies=b=>b.longRuns>=2&&b.maxRun>=10&&b.covered>=27&&b.mean>=12,hasBarcode=barcodeEvidence(pix,w,h);
   return {candidate:hasBarcode&&qualifies(bottom)&&bottom.mean>top.mean*1.2&&bottom.covered>top.covered*1.15,score:bottom.mean+bottom.covered*.16+bottom.longRuns*5,top,bottom};
+  }finally{c.width=c.height=1;}
  }
  function recognizeMRZOrientation(source){
   const ratio=Math.max(source.width,source.height)/Math.min(source.width,source.height);if(ratio<1.30||ratio>2.02)return {angle:0,trustworthy:false,method:'not-card'};
-  const small=scan.resize(source,900),hits=[];for(const a of CANDIDATES){const rr=rotateCanvas(small,a),result=signature(rr);if(result.candidate)hits.push({angle:a,score:result.score,top:result.top,bottom:result.bottom});if(rr!==small)rr.width=rr.height=1;}
-  hits.sort((a,b)=>b.score-a.score);if(hits.length===1)return {...hits[0],method:'mrz',trustworthy:true};
-  return {angle:0,method:'mrz-inconclusive',trustworthy:false,candidates:hits.map(h=>h.angle)};
+  const small=scan.resize(source,900),hits=[];
+  try{
+   for(const a of CANDIDATES){
+    const rr=rotateCanvas(small,a);
+    try{
+     const result=signature(rr);
+     if(result.candidate)hits.push({angle:a,score:result.score,top:result.top,bottom:result.bottom});
+    }finally{if(rr!==small)rr.width=rr.height=1;}
+   }
+   hits.sort((a,b)=>b.score-a.score);
+   if(hits.length===1)return {...hits[0],method:'mrz',trustworthy:true};
+   return {angle:0,method:'mrz-inconclusive',trustworthy:false,candidates:hits.map(h=>h.angle)};
+  }finally{if(small!==source)small.width=small.height=1;}
  }
  window.DocFixGroup2=Object.freeze({normalizedAngle,rotateCanvas,signature,recognizeMRZOrientation,version:'group2-superrun-20261105'});
 })();
