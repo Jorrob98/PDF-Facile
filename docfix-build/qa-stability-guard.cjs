@@ -89,6 +89,13 @@ const ids=x=>x.map(e=>e.id).join(',');
    'photo layout must never claim verified text orientation');
  assert.ok(index.includes("cardKind:c.kind||'generic'"),
    'three-up identity card must use the MRZ orientation verifier');
+ const tripleOrientation=between(index,'async function normalizeKnownCard(','// Never let an earlier 2-up success hide a third independently confirmed card.');
+ assert.ok(tripleOrientation.includes("orientationKnown&&cardKind!=='identity'?"),
+   'inconclusive MRZ on 3-up identity must fall back to text orientation, not layout');
+ assert.ok(tripleOrientation.includes("(cardKind==='identity'||textLines(processed).vertical)"),
+   'unknown identity orientation must be marked for review even when horizontal');
+ assert.ok(tripleOrientation.includes("mrz.trustworthy?'Verso verificato dalla zona MRZ':osd.trustworthy?"),
+   'actual MRZ/text proof must take precedence over camera layout in the UI');
 
 }
 (async()=>{
