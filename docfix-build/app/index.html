@@ -1642,16 +1642,16 @@ function moveEntry(from,to){if(busy||from===to||from<0||to<0||from>=entries.leng
  const [item]=entries.splice(from,1);entries.splice(to,0,item);manuallyOrdered=true;lastPdfSize=null;repaint();status('Ordine delle pagine aggiornato: il PDF seguirà questo ordine.');}
 function discardUnusedSource(id){if(id===activeSource||pending.some(x=>x.id===id)||entries.some(e=>e.sourceIndex===id))return;sourceFiles=sourceFiles.filter(s=>s.id!==id)}
 function removeEntry(index){if(busy||index<0||index>=entries.length)return;
- const [entry]=entries.splice(index,1),source=sourceFiles.find(s=>s.id===entry.sourceIndex);
- lastRemoved={entry,index,source};discardUnusedSource(entry.sourceIndex);lastPdfSize=null;repaint();status('Pagina eliminata. Puoi annullare la rimozione.');}
-function undoRemove(){if(busy||!lastRemoved)return;const {entry,index,source}=lastRemoved;
+ const [entry]=entries.splice(index,1),sourcePosition=sourceFiles.findIndex(s=>s.id===entry.sourceIndex),source=sourceFiles[sourcePosition];
+ lastRemoved={entry,index,source,sourcePosition};discardUnusedSource(entry.sourceIndex);lastPdfSize=null;repaint();status('Pagina eliminata. Puoi annullare la rimozione.');}
+function undoRemove(){if(busy||!lastRemoved)return;const {entry,index,source,sourcePosition}=lastRemoved;
  // Validate every limit before changing either collection. An unsuccessful undo
  // must not leave an orphan source file occupying memory or a source slot.
  if(entries.length>=MAX_PAGES){note('Impossibile annullare: massimo 40 pagine.');return;}
  if(!source){note('Impossibile ripristinare: il file originale non è più disponibile.');return;}
  if(!sourceFiles.some(s=>s.id===source.id)){
   if(sourceFiles.length>=MAX_FILES||sourceFiles.reduce((a,s)=>a+s.file.size,0)+source.file.size>MAX_TOTAL){note('Impossibile annullare: limite massimo di file raggiunto.');return;}
-  sourceFiles.push(source);
+  sourceFiles.splice(Math.max(0,Math.min(sourcePosition??sourceFiles.length,sourceFiles.length)),0,source);
  }
  entries.splice(Math.min(index,entries.length),0,entry);lastRemoved=null;lastPdfSize=null;repaint();status('Pagina ripristinata.');}
 $('undo-remove').onclick=undoRemove;
