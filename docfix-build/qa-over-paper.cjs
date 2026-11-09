@@ -54,6 +54,8 @@ assert.ok(index.includes("let mrz=cardEvidence&&!norm.licenceRear?window.DocFixG
 assert.ok(index.includes('function portraitCieTurn('),'sideways CIE orientation fallback present');
 assert.ok(index.includes("let licenceRear=null,onPaper=null")&&index.includes("const found=onPaper||licenceRear||scan.detectDocument(original)"),
  'blue CIE candidate must be checked before pink licence material');
+assert.ok(index.includes('if(!e.geometryReview&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))'),
+ 'a disputed source quad must not preselect a portrait in manual editor');
 assert.ok(index.includes("if(!e.geometryReview&&found.status==='found'"),
  'failed automatic crop must open manual correction at the full original');
 console.log('DocFix over-paper regression PASS: portrait front, neutral MRZ, no-card rejection, pixel ownership and integration');
