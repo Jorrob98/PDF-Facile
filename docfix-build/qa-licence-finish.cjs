@@ -37,7 +37,10 @@ assert.equal(api.isLicenceMaterial(mock),true,'rose licence must enter photo fin
 assert.equal(api.correct(mock).applied,true);assert.equal(passes,1,'only one perspective warp');
 assert.equal(mock.width,w,'original canvas is never freed');
 const rough=[{x:.02,y:.02},{x:.98,y:.02},{x:.98,y:.98},{x:.02,y:.98}];
+// The real scanner never returns another unrelated source as its scratch image.
+win.DocFixScanner.resize=c=>c;
 const refined=api.refineOriginal(mock,rough);
+win.DocFixScanner.resize=()=>mock;
 assert.equal(refined?.verified,true,'four outer edges must be found on original image before any crop');
 assert.equal(refined?.quad.length,4,'return four normalized ORIGINAL-image coordinates');
 assert.equal(passes,1,'source refinement only estimates corners: no extra resampling');

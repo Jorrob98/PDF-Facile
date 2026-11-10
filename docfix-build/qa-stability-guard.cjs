@@ -8,6 +8,7 @@ const root=__dirname;
 require('./qa-over-paper.cjs');
 require('./qa-licence-rear.cjs');
 require('./qa-crop-fallback.cjs');
+require('./qa-threeup-geometry.cjs');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const index=read('app/index.html');
 const physical=read('app/card-physical-edges.js');
@@ -162,7 +163,7 @@ const ids=x=>x.map(e=>e.id).join(',');
  assert.ok(index.includes("cardKind:c.kind||'generic'"),
    'three-up identity card must use the MRZ orientation verifier');
  const tripleOrientation=between(index,'async function normalizeKnownCard(','// Never let an earlier 2-up success hide a third independently confirmed card.');
- assert.ok(index.includes("sourceVerified:c.materialVerified===true&&(c.kind!=='licence'||c.licenceGuard?.verified===true)"),
+ assert.ok(index.includes("sourceVerified:c.physicalEdgesVerified===true"),
    'three-up unclassified cards cannot claim physically verified borders');
  assert.ok(index.includes('materialVerified:false,physicalReview:true'),
    'three-card material failure must preserve the page with an explicit review warning');
@@ -207,7 +208,7 @@ const ids=x=>x.map(e=>e.id).join(',');
  const bytes=await blob.arrayBuffer(),head=new TextDecoder().decode(new Uint8Array(bytes).slice(0,900));
  assert.ok(head.includes('/Count 6'),'PDF must declare all 6 pages');
  assert.equal(exportAPI.validate(blob,6),blob);
- assert.equal(exportAPI.filename(source),'DocFix-1.9.27-6-tessere.pdf',
+ assert.equal(exportAPI.filename(source),'DocFix-1.9.28-6-tessere.pdf',
    'versioned PDF should not collide with previous Downloads');
  await assert.rejects(()=>exportAPI.create([{processed:{width:0,height:0}}],{encodeJPEG:async()=>realJPEG}),
    /non valida/,'invalid canvas must never produce a PDF');
@@ -470,7 +471,7 @@ const ids=x=>x.map(e=>e.id).join(',');
  }
 
 
- // 1.9.27: recover a pale driving-licence border from the rose plastic,
+ // 1.9.28: recover a pale driving-licence border from the rose plastic,
  // not from the printed text. Use synthetic raster only, never a client ID.
  {
   const source=read('app/card-licence-guard.js'),w=1000,h=600;
@@ -551,8 +552,8 @@ const ids=x=>x.map(e=>e.id).join(',');
  {
   const normalize=between(index,'async function normalizeKnownCard(','// Never let an earlier 2-up success');
   const three=between(index,"if(decision.mode==='three'){",'let multi=verified?sourceCards:null;');
-  assert.ok(three.includes("sourceVerified:c.materialVerified===true&&(c.kind!=='licence'||c.licenceGuard?.verified===true)"),
-   'unverified licence may not enter sourceVerified perspective branch');
+  assert.ok(three.includes("sourceVerified:c.physicalEdgesVerified===true"),
+   'material classification must never establish physical contour verification');
   assert.ok(normalize.includes("else if(multiSafe&&cardKind==='licence')"),
    'unverified licence must use independent conservative fallback');
   assert.ok(normalize.includes("quad=expandQuadSafe(sourceQuad,.105)"),
