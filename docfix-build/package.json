@@ -1,6 +1,6 @@
 {
   "name": "docfix-desktop",
-  "version": "1.9.31",
+  "version": "1.9.32",
   "description": "DocFix Desktop by Jorrob",
   "author": "Jorrob",
   "main": "main.js",
@@ -45,7 +45,7 @@
         }
       ],
       "icon": "build/icon.png",
-      "artifactName": "DocFix_Setup_1.9.31.exe"
+      "artifactName": "DocFix_Setup_1.9.32.exe"
     },
     "nsis": {
       "oneClick": true,
