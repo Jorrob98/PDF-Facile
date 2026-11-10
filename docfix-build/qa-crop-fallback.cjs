@@ -33,8 +33,15 @@ const win={
  }
 };
 const silent={warn(){}};
-const run=new Function('window','quadCardRatio','trimCardBackground','console',code+'return {singleCropGate,photoNormalize};');
-const {singleCropGate,photoNormalize}=run(win,ratio,c=>c,silent);
+// Inject the same safety-margin helper used by the actual application.
+const expandQuadSafe=(q,pad=.025)=>{
+ const cx=q.reduce((v,p)=>v+p.x,0)/4,cy=q.reduce((v,p)=>v+p.y,0)/4;
+ return q.map(p=>({x:Math.max(0,Math.min(1,cx+(p.x-cx)*(1+pad*2))),
+  y:Math.max(0,Math.min(1,cy+(p.y-cy)*(1+pad*2)))}));
+};
+const run=new Function('window','quadCardRatio','trimCardBackground','expandQuadSafe','console',
+ code+'return {singleCropGate,photoNormalize};');
+const {singleCropGate,photoNormalize}=run(win,ratio,c=>c,expandQuadSafe,silent);
 const reset=()=>{state.blue=null;state.pink=null;state.generic=defaultGeneric;state.warpFails=false;state.legacyFails=false;state.blueFails=false};
 reset();state.blue=scannedCard;
 let result=photoNormalize(original);
