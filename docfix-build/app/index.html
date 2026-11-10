@@ -60,7 +60,7 @@ body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,tr
 <section id="dropzone" role="button" tabindex="0" aria-label="Carica foto o PDF" class="dropzone"><span class="upload-icon">↥</span><h2>Trascina qui i documenti</h2><p>Oppure selezionali dal dispositivo</p><div class="choose">+ Aggiungi foto o PDF</div><small>JPG, PNG, WebP, PDF · più file insieme · Ctrl+O per aprire · Ctrl+V per incollare una foto</small></section><input hidden id="picker" type="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp" multiple>
 <section id="workspace" class="workspace" hidden><div class="result-header"><div><div class="eyebrow">RISULTATO</div><h2>Le tue pagine</h2></div><span id="summary" class="pill"></span></div><p id="status" role="status" class="status" aria-live="polite"></p><div id="progress-wrap" class="progress-wrap" hidden><div id="progress-bar" class="progress-bar"></div></div><div class="review-row"><span>Controlla le anteprime; usa le frecce per scegliere l’ordine delle pagine.</span><strong id="review-count"></strong></div><div class="batch-toolbar"><button type="button" id="add-more" class="add-more">＋ Aggiungi altre foto o PDF</button><button type="button" id="reverse-files" class="add-more" hidden>↕ Inverti ordine file</button><span id="queue-count" role="status" aria-live="polite" hidden></span><button type="button" id="undo-remove" class="undo-remove" hidden>↶ Annulla eliminazione</button></div><div id="cards" class="pages"></div><div id="warnings" class="warnings" hidden></div><details class="advanced-options"><summary>Opzioni PDF</summary><div class="quality-choice"><label for="pdf-quality">Qualità del PDF</label><select id="pdf-quality" aria-label="Qualità del PDF"><option value="high" selected>Alta qualità · consigliata</option><option value="compact">PDF più leggero</option></select><small>Alta qualità preserva maggiormente scritte e dettagli; foto già sfocate non possono essere recuperate.</small></div><div class="layout-choice"><label for="pdf-layout">Impaginazione</label><select id="pdf-layout" aria-label="Impaginazione PDF"><option value="document" selected>Forma originale del documento</option><option value="a4">A4 per stampare · documento intero centrato</option></select><small>Il PDF rispetta sempre le proporzioni e non taglia i bordi. L’opzione A4 aggiunge margini bianchi per la stampa.</small></div><div class="layout-choice"><label for="crop-engine">Motore ritaglio</label><select id="crop-engine" aria-label="Motore ritaglio"><option value="smart" selected>Preciso · verifica 4 bordi reali</option><option value="legacy">Compatibilità · motore precedente</option></select><small>La scelta vale per i prossimi documenti caricati. Con bordi incerti la foto viene conservata e puoi usare Correggi. Puoi tornare al motore precedente.</small></div></details><div class="action-bar"><button type="button" id="download" disabled class="download">↓ Scarica PDF pronto</button><button type="button" id="download-ready" hidden class="reset" title="Salva subito le pagine già elaborate, anche se manca un documento">↓ Salva pagine disponibili</button><button type="button" id="reset" class="reset">+ Nuovo documento</button></div><p id="sizes" class="sizes"></p></section>
 <div class="bottom"><div class="bottom-icon">♧</div><div><strong>Privacy sotto controllo</strong><span>PDF e correzioni restano sul PC. Se attivi OCR MAX Cloud, solo le immagini necessarie all’OCR vengono inviate ai provider cloud che hai configurato.</span></div></div></main>
-<footer>DocFix Desktop · Versione 1.9.32 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
+<footer>DocFix Desktop · Versione 1.9.33 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
 <div id="editor" class="editor-overlay" hidden><div class="editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-title"><div class="editor-head"><div><span class="eyebrow">CORREZIONE</span><h2 id="edit-title">Pagina</h2></div><button type="button" id="edit-close" aria-label="Chiudi">×</button></div><p>Sposta i quattro punti se il bordo è sbagliato. Qui trovi solo ciò che serve.</p><div class="editor-frame"><img id="editor-image" alt="Documento da correggere"><div id="corners" class="corners"><svg class="quad" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon id="frame-poly" points=""/></svg></div></div><div class="editor-actions"><button type="button" id="edit-left">↶ Sinistra 90°</button><button type="button" id="edit-rotate">↷ Destra 90°</button><button type="button" id="edit-flip">↻ Capovolgi 180°</button><button type="button" id="edit-full">Usa pagina completa</button><button type="button" id="edit-cancel">Annulla</button><button type="button" id="edit-apply" class="confirm">✓ Applica ritaglio</button></div></div></div>
 <script src="./group3-quality.js"></script><script src="./group5-export.js"></script><script>/* DocFix 37 — single, hardened PDF.js engine for every PDF operation. */
 'use strict';
@@ -805,7 +805,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -1192,7 +1192,21 @@ function portraitCieTurn(source){
   return 0;
  });
 }
+function preserveFullA4Page(original){
+ let classification=null;
+ try{classification=window.DocFixPageGuard?.detect?.(original)||null;}
+ catch(error){console.warn('DocFix: controllo A4 non disponibile',error);}
+ if(classification?.page!==true)return null;
+ // Full-page declarations are not plastic cards. Never invoke a generic
+ // single-card crop, pair split or geometric deskew on this scan.
+ return {processed:original,rotation:0,confidence:1,review:false,
+  cropped:false,sourceQuad:null,cropVerified:undefined,geometryReview:false,
+  orientationReview:false,qualityReview:false,qualityIssues:[],qualityMetrics:null,
+  pageProtected:true,how:'Dichiarazione / foglio A4 riconosciuto · pagina intera conservata'};
+}
 async function normalizeRaster(original){
+ const completePage=preserveFullA4Page(original);
+ if(completePage)return completePage;
  const norm=photoNormalize(original);let processed=norm.processed,rotation=0;
  const sourceAspect=Math.max(original.width,original.height)/Math.max(1,Math.min(original.width,original.height));
  const cardEvidence=norm.cardLikely||(sourceAspect>=1.50&&sourceAspect<=1.73);
@@ -1665,6 +1679,10 @@ function chooseMultiCardMode(sourceCards,triple){
 }
 async function makeImageEntries(file,index,total=1,meta={}){
  const original=await imageCanvas(file,total);
+ const completePage=preserveFullA4Page(original);
+ if(completePage)return [{kind:'raster',original,...completePage,source:file.name,title:file.name,
+  sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,
+  batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false,threeUp:false}];
  // A portrait image containing two landscape cards is analyzed in one pass.
  const portrait=original.height/Math.max(1,original.width);
  let sourceCards=null,tripleRaw=null;
@@ -1709,7 +1727,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
      orientationKnown:triple.orientation==='left',cardKind:c.kind||'generic',threeUp:true});
    if(!multiCropHealthy(fixed.processed)){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · Verifica consigliata';}
    if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
-   fixed.how+=' · DocFix 1.9.32 · '+(c.materialVerified?('classificato '+(c.kind||'tessera')+' / '+(c.sideGuess||'verso incerto')):'tipo e verso da verificare');
+   fixed.how+=' · DocFix 1.9.33 · '+(c.materialVerified?('classificato '+(c.kind||'tessera')+' / '+(c.sideGuess||'verso incerto')):'tipo e verso da verificare');
    if(c.geometryReview&&fixed.cropVerified!==true){fixed.geometryReview=true;fixed.review=true;fixed.how+=' · bordo da verificare';}
    if(c.kind==='licence'&&c.licenceGuard?.verified!==true&&fixed.cropVerified!==true){
     fixed.cropVerified=false;fixed.cropped=false;
@@ -1801,7 +1819,7 @@ window.DocFixDesktopDiagnostics=Object.freeze({
  safeRefineMultiQuad,tightenSeparatedCardCanvas,estimateFineDeskew,fineDeskewCard,straightenLicenceWithoutCutting,
  warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
  safeMultiCropPreview:(original,candidate)=>window.DocFixScanner.process(original,{crop:true,quad:expandQuadSafe(candidate.quad,.028),rotation:0,filter:'original',strength:0},2200),
- orderedIncoming,reverseFileOrder,detectPhysicalLines:(c)=>window.DocFixPhysicalEdges?.detect?.(c),detectOriginalCard:(c,q)=>window.DocFixOnePass?.detect?.(c,q),detectTextureCards:(c)=>window.DocFixRealCrop?.detect?.(c),verifyPair:(c,q)=>window.DocFixPairProof?.verify?.(c,q),detectSidewaysPair:(c)=>window.DocFixSidewaysPair?.detect?.(c),detectThreeCards:(c)=>window.DocFixThreeUp?.detect?.(c),polishThreeCards:(c,r)=>window.DocFixThreeUpPolish?.refine?.(c,r),protectLicence:(c,r)=>window.DocFixLicenceGuard?.protect?.(c,r),finishLicence:(c)=>window.DocFixLicenceFinish?.correct?.(c),refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.9.32'
+ orderedIncoming,reverseFileOrder,detectPhysicalLines:(c)=>window.DocFixPhysicalEdges?.detect?.(c),detectOriginalCard:(c,q)=>window.DocFixOnePass?.detect?.(c,q),detectTextureCards:(c)=>window.DocFixRealCrop?.detect?.(c),verifyPair:(c,q)=>window.DocFixPairProof?.verify?.(c,q),detectSidewaysPair:(c)=>window.DocFixSidewaysPair?.detect?.(c),detectThreeCards:(c)=>window.DocFixThreeUp?.detect?.(c),polishThreeCards:(c,r)=>window.DocFixThreeUpPolish?.refine?.(c,r),protectLicence:(c,r)=>window.DocFixLicenceGuard?.protect?.(c,r),finishLicence:(c)=>window.DocFixLicenceFinish?.correct?.(c),refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.9.33'
 });
 function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
  // The page's existing /Rotate is already applied in pdf.js previews.
@@ -2076,8 +2094,10 @@ function regroupLatestTwoUpSources(force=false){
  ordered.forEach(e=>e.pairGroup=a+'|'+b);applyFourCardLabels(ordered,slots);return true;
 }
 function twoByTwoCandidateMeta(counts,sameTwoFileBatch,portraitTwoUp){
- const complete=counts[0]===2&&counts[1]===2,hasTwo=counts.includes(2),onePlusOne=counts[0]===1&&counts[1]===1;
- return complete||hasTwo||(onePlusOne&&sameTwoFileBatch&&portraitTwoUp);
+ // Two portrait pages uploaded together are NOT proof of four ID cards.
+ // An earlier version would split two A4 declarations in half here.
+ const complete=counts[0]===2&&counts[1]===2,hasTwo=counts.includes(2);
+ return complete||hasTwo;
 }
 function threeByTwoState(){
  const imageSources=sourceFiles.filter(s=>!/\.pdf$/i.test(s.file.name)&&s.file.type!=='application/pdf');
@@ -2100,15 +2120,20 @@ function twoByTwoState(){
 }
 async function rebuildSourceAsTwoUp(sourceId,sourcePos){
  const oldIndex=entries.findIndex(e=>e.sourceIndex===sourceId),old=entries[oldIndex];
- if(oldIndex<0||!old?.original)return false;
+ if(oldIndex<0||!old?.original||old.pageProtected===true)return false;
  const texture=window.DocFixRealCrop?.detect?.(old.original)?.cards;
  const verified=texture?.length===2&&texture.every(c=>c.confidence>=.80&&window.DocFixScanner.validQuad(c.quad));
  let candidates=verified?texture:stackedCardCandidatesByGap(old.original);
  if(candidates.length!==2)candidates=stackedCardCandidatesRecovery(old.original);
  if(candidates.length!==2)return false;
+ // Gap-based candidates are not proof of two separate plastic documents.
+ // Require the physical edges of BOTH cards before replacing the page.
+ const proof=window.DocFixPairProof?.verify?.(old.original,candidates);
+ if(proof?.verified!==true||proof.cards?.length!==2)return false;
+ candidates=proof.cards;
  const made=[];
  for(let i=0;i<2;i++){
-  const fixed=await normalizeKnownCard(old.original,candidates[i].quad,'Recupero 2x2 · tessera '+(i+1),candidates[i].confidence,{multiSafe:true,sourceVerified:verified,cardKind:i===0?'cf':'ci'});
+  const fixed=await normalizeKnownCard(old.original,candidates[i].quad,'Recupero 2x2 · tessera '+(i+1),candidates[i].confidence,{multiSafe:true,sourceVerified:true,cardKind:i===0?'cf':'ci'});
   if(!multiCropHealthy(fixed.processed)){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · Ritaglio prudente: controlla i bordi'}
   made.push({kind:'raster',original:old.original,...fixed,source:old.source,title:old.source+' · tessera '+(i+1),sourceIndex:sourceId,loadBatch:old.loadBatch??null,batchPos:old.batchPos??sourcePos,batchSize:2,splitSlot:i,splitCount:2,twoUp:true,recoveredTwoUp:true});
  }
