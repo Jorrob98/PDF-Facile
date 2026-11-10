@@ -29,6 +29,7 @@ const mock={width:w,height:h,getContext:()=>({getImageData:()=>({data:source})})
 let passes=0;
 win.DocFixScanner={resize:()=>mock,validQuad:q=>q.length===4&&q.every(p=>p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1),
  process:(src,state)=>{assert.strictEqual(src,mock);assert.equal(state.crop,true);passes++;return {width:675,height:420}}};
+assert.equal(api.isLicenceMaterial(mock),true,'rose licence must enter photo finishing path');
 assert.equal(api.correct(mock).applied,true);assert.equal(passes,1,'only one perspective warp');
 assert.equal(mock.width,w,'original canvas is never freed');
 const html=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
