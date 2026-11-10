@@ -3,7 +3,11 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const script=fs.readFileSync(path.join(__dirname,'app/card-licence-finish.js'),'utf8');
 const win={};
-vm.runInNewContext(script,{window:win,Math,Uint8Array,Number,Array,console});
+let lastRoi=null;
+const fakeDocument={createElement(){lastRoi={width:1,height:1,
+ getContext:()=>({drawImage(){},translate(){},rotate(){},
+  getImageData:()=>({data:source})})};return lastRoi;}};
+vm.runInNewContext(script,{window:win,document:fakeDocument,Math,Uint8Array,Number,Array,console});
 const api=win.DocFixLicenceFinish,w=689,h=452;
 function make(kind='rotated'){
  const a=new Uint8ClampedArray(w*h*4);
@@ -32,6 +36,14 @@ win.DocFixScanner={resize:()=>mock,validQuad:q=>q.length===4&&q.every(p=>p.x>=0&
 assert.equal(api.isLicenceMaterial(mock),true,'rose licence must enter photo finishing path');
 assert.equal(api.correct(mock).applied,true);assert.equal(passes,1,'only one perspective warp');
 assert.equal(mock.width,w,'original canvas is never freed');
+const rough=[{x:.02,y:.02},{x:.98,y:.02},{x:.98,y:.98},{x:.02,y:.98}];
+const refined=api.refineOriginal(mock,rough);
+assert.equal(refined?.verified,true,'four outer edges must be found on original image before any crop');
+assert.equal(refined?.quad.length,4,'return four normalized ORIGINAL-image coordinates');
+assert.equal(passes,1,'source refinement only estimates corners: no extra resampling');
+assert.equal(lastRoi.width,1,'source-refinement temporary ROI must be freed');
+assert.equal(mock.width,w,'the untouched source survives source-first refinement');
+
 // An incomplete outer perimeter can resemble a safe rectangle; never
 // silently crop it, even when the rose material occupies most of the image.
 const threeSide=source.slice();
@@ -63,6 +75,8 @@ assert.ok(html.includes('card-licence-finish.js'),'module included');
 assert.ok(html.includes("cardKind==='licence'?window.DocFixLicenceFinish?.correct?.(processed)"),'multi-card integration');
 assert.ok(html.includes("const licenceFinish=possibleLicence?window.DocFixLicenceFinish?.correct?.(processed)"),'already-cropped WhatsApp photo must reach the same physical engine');
 assert.ok(html.includes("if(multiSafe&&sourceVerified&&cardKind!=='licence')"),'pink colour bounding boxes may not claim four physical licence corners');
+assert.ok(html.includes("refineOriginal?.(original,sourceQuad"),'licence must locate physical corners on untouched source first');
+assert.ok(html.includes("cardKind==='licence'&&!physicalVerified"),'verified source geometry may not be warped a second time');
 assert.ok(html.includes("quad=expandQuadSafe(sourceQuad,.105)"),'source photo retains a safe margin until four actual edges are tested');
 assert.ok(html.includes("const quad=kind==='licence'?expandQuadSafe(found.quad,.055)"),'standalone licence retains physical border for final alignment');
 assert.ok(html.includes("const deskew=licenceFinish?.applied?"),'never rotate twice');
