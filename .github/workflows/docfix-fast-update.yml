@@ -1,8 +1,8 @@
 name: Build DocFix Fast Incremental Update
-# SUPER RUN FINAL 1.9.27
-# final source sync 1.9.27: protective physical-edge guard
-# retry verified multi-card 1.9.27
-# OCR MAX final rebuild 1.9.27
+# SUPER RUN FINAL 1.9.29
+# final source sync 1.9.29: protective physical-edge guard
+# retry verified multi-card 1.9.29
+# OCR MAX final rebuild 1.9.29
 
 on:
   push:
@@ -44,7 +44,7 @@ jobs:
           mkdir -p build
           base64 -d build/icon.b64 > build/icon.png
 
-      - name: Validate DocFix 1.9.27 updater progress and workflow
+      - name: Validate DocFix 1.9.29 updater progress and workflow
         shell: bash
         working-directory: docfix-build
         run: |
@@ -59,6 +59,9 @@ jobs:
           node --check app/group1-safe-crop.js
           node --check app/card-physical-edges.js
           node --check app/card-onepass.js
+          node --check app/card-quad-audit.js
+          node --check qa-quad-audit.cjs
+          node qa-quad-audit.cjs
           node --check app/card-texture-crop.js
           node --check app/card-threeup.js
           node --check app/card-threeup-polish.js
@@ -75,7 +78,7 @@ jobs:
           grep -F "listen(18654)" main.js
           grep -F "pendingSecondInstance" main.js
           grep -F "if(show)showWindow('load-complete')" main.js
-          grep -F "1.9.27" package.json
+          grep -F "1.9.29" package.json
           test "$(find app/vendor/tesseract-core -name 'tesseract-core*.wasm.js' | wc -l)" -ge 4
           test -f app/vendor/pdfjs/pdf.min.mjs
           test -f app/vendor/pdfjs/pdf.worker.min.mjs
@@ -89,8 +92,8 @@ jobs:
           cp -a app/. pack/app/
           cp build/icon.png pack/build/icon.png
 
-          npx --no-install asar pack pack DocFix-1.9.27-app.asar
-          npx --no-install asar extract DocFix-1.9.27-app.asar verify
+          npx --no-install asar pack pack DocFix-1.9.29-app.asar
+          npx --no-install asar extract DocFix-1.9.29-app.asar verify
           node --check verify/main.js
           grep -F "startup-fallback'),300" verify/main.js
           grep -F "STARTUP_BUNDLE_OK" verify/main.js
@@ -106,8 +109,8 @@ jobs:
           grep -F "try{tripleRaw=window.DocFixThreeUp?.detect?.(original)" verify/app/index.html
           grep -F "trimCardBackground(processed,backLike)" verify/app/index.html
           grep -F 'class="advanced-options"' verify/app/index.html
-          grep -F "version:'1.9.27'" verify/app/index.html
-          grep -F "const VERSION='1.9.27'" verify/app/stability.js
+          grep -F "version:'1.9.29'" verify/app/index.html
+          grep -F "const VERSION='1.9.29'" verify/app/stability.js
           grep -F "DocFixOCRCloud" verify/preload.js
           grep -F "registerOcrHandlers" verify/main.js
           grep -F "OCR MAX" verify/app/ocr-max.js
@@ -159,6 +162,9 @@ jobs:
           grep -F "card-threeup-polish.js" verify/app/index.html
           grep -F "card-licence-guard.js" verify/app/index.html
           grep -F "card-licence-finish.js" verify/app/index.html
+          grep -F "card-quad-audit.js" verify/app/index.html
+          grep -F 'id="crop-engine"' verify/app/index.html
+          grep -F "four physical continuous edges" verify/app/card-quad-audit.js
           grep -F "refineOriginal?.(original,sourceQuad" verify/app/index.html
           grep -F "four-outer-edges-on-original" verify/app/card-licence-finish.js
           grep -F "protectLicence" verify/app/index.html
@@ -182,13 +188,13 @@ jobs:
           grep -F "straightenLicenceWithoutCutting" verify/app/index.html
           grep -F "const licenceFinish=possibleLicence?" verify/app/index.html
           grep -F "sixPageUniqueExport" verify/main.js
-          grep -F "DocFix-1.9.27-6-tessere.pdf" verify/app/group5-export.js
+          grep -F "DocFix-1.9.29-6-tessere.pdf" verify/app/group5-export.js
           grep -F "jpegInfo" verify/app/group5-export.js
           grep -F "while(queue.length&&host()?.isBusy?.())" verify/app/ocr-max.js
           grep -F "withResizedCanvas" verify/app/index.html
           grep -F "realJPEG" qa-stability-guard.cjs
           grep -F "q[2].y+7/h" verify/app/card-threeup-polish.js
-          grep -F "DocFix 1.9.27" verify/app/index.html
+          grep -F "DocFix 1.9.29" verify/app/index.html
           grep -F "materialVerified:allTypes" verify/app/card-threeup-polish.js
           grep -F "DocFixThreeUpPolish" verify/app/card-threeup-polish.js
           grep -F "outerQuad" verify/app/card-threeup.js
@@ -232,15 +238,15 @@ jobs:
           grep -F "stacked-gap-color" verify/app/index.html
           grep -F "Inverti ordine file" verify/app/index.html
           grep -F "openUpdateProgress" verify/app/stability.js
-          grep -F "1.9.27" verify/package.json
+          grep -F "1.9.29" verify/package.json
           test -f verify/app/vendor/pdfjs/pdf.min.mjs
           test -f verify/app/vendor/tessdata/eng.traineddata.gz
           test -f verify/app/vendor/tessdata/ita.traineddata.gz
 
-          size=$(stat -c%s DocFix-1.9.27-app.asar)
+          size=$(stat -c%s DocFix-1.9.29-app.asar)
           if [ "$size" -lt 1000000 ]; then echo "app.asar troppo piccolo: $size"; exit 1; fi
           echo "APP_ASAR_SIZE=$size" >> "$GITHUB_ENV"
-          echo "APP_ASAR_SHA=$(sha256sum DocFix-1.9.27-app.asar | awk '{print $1}')" >> "$GITHUB_ENV"
+          echo "APP_ASAR_SHA=$(sha256sum DocFix-1.9.29-app.asar | awk '{print $1}')" >> "$GITHUB_ENV"
 
       - name: Run Electron functional self-test before publishing
         shell: bash
@@ -268,7 +274,7 @@ jobs:
           shafile="DocFix_Aggiornamento_${short}.sha256"
           cat > update.nsi <<'NSI'
           Unicode true
-          Name "Aggiornamento DocFix 1.9.27"
+          Name "Aggiornamento DocFix 1.9.29"
           OutFile "__UPDATER_EXE__"
           RequestExecutionLevel user
           SetCompressor /SOLID lzma
@@ -330,7 +336,7 @@ jobs:
 
             backup_ok:
               SetOutPath "$INSTDIR\resources"
-              File /oname=app.asar.new "DocFix-1.9.27-app.asar"
+              File /oname=app.asar.new "DocFix-1.9.29-app.asar"
 
               ClearErrors
               FileOpen $3 "$INSTDIR\resources\app.asar.new" r
@@ -357,17 +363,17 @@ jobs:
 
             install_ok:
               FileOpen $2 "$INSTDIR\resources\docfix-version.txt" w
-              FileWrite $2 "1.9.27"
+              FileWrite $2 "1.9.29"
               FileClose $2
               FileOpen $2 "$INSTDIR\resources\docfix-update-status.txt" w
-              FileWrite $2 "OK 1.9.27"
+              FileWrite $2 "OK 1.9.29"
               FileClose $2
               Delete "$INSTDIR\resources\app.asar.bak"
 
               Sleep 700
               ExecShell "open" "$INSTDIR\DocFix.exe"
               IfSilent success_silent 0
-              MessageBox MB_ICONINFORMATION|MB_OK "DocFix è stato aggiornato alla versione 1.9.27.$\r$\n$\r$\nIl programma è stato riaperto."
+              MessageBox MB_ICONINFORMATION|MB_OK "DocFix è stato aggiornato alla versione 1.9.29.$\r$\n$\r$\nIl programma è stato riaperto."
             success_silent:
               SetErrorLevel 0
               Goto done
@@ -416,7 +422,7 @@ jobs:
           echo "UPDATER_SHA=$sha"
           file "$updater" | grep -Ei 'PE32|MS Windows'
 
-      - name: Publish verified DocFix 1.9.27 simplified update
+      - name: Publish verified DocFix 1.9.29 simplified update
         shell: bash
         working-directory: docfix-build
         env:
@@ -429,7 +435,7 @@ jobs:
           shafile="DocFix_Aggiornamento_${short}.sha256"
           tag="v$version"
           title="DocFix Desktop $version"
-          notes='DocFix 1.9.27: il retro patente italiana viene verificato sui quattro bordi della fotografia originale PRIMA di qualsiasi ritaglio. Prospettiva raddrizzata con una sola trasformazione, margini plastica conservati. Se gli angoli fisici non sono affidabili mantiene il ritaglio prudente precedente. OCR, CF, CIE, ordine dei documenti e PDF invariati. Test di stabilita e regressione aggiunti.'
+          notes='DocFix 1.9.29: nuovo controllo dei quattro bordi esterni prima del ritaglio, confronto di contorni alternativi e prospettiva corretta da quattro angoli sulla foto originale. Migliorato il recupero di CIE e tessere su fondo scuro o foglio A4 e delle foto con tre documenti. Conserva la foto quando non puo verificare la geometria. Nel menu Opzioni PDF disponibile motore Compatibilita per tornare al precedente. OCR, ordine, export PDF e aggiornamenti non alterati. I casi reali difficili richiedono ancora collaudo.'
 
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" "$updater" "$shafile" --clobber
