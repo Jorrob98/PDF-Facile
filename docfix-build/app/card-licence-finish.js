@@ -1,4 +1,4 @@
-/* DocFix 1.9.25 — Conservative final alignment of Italian driving-licence cards.
+/* DocFix 1.9.26 — Conservative final alignment of Italian driving-licence cards.
  * Uses the external plastic-to-white-matte boundary, never printed table lines
  * or a portrait. One perspective transform only; otherwise retain source.
  */
@@ -53,6 +53,8 @@ function analyzeRGBA(data,w,h){
   const x=(vertical.a*horizontal.b+vertical.b)/den;
   return {x,y:horizontal.a*x+horizontal.b};
  };
+ // An inferred side is only a preview hypothesis. It must never be treated
+ // as proof that an automatic perspective crop will preserve all the plastic.
  const L=left||{a:right?.a||-top.a,b:0},R=right||{a:left?.a||-top.a,b:w-1};
  const raw=[meet(L,top),meet(R,top),meet(R,bottom),meet(L,bottom)];
  if(raw.some(p=>!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)||
@@ -97,21 +99,29 @@ function isLicenceMaterial(source){
 }
 function correct(source){
  const scan=window.DocFixScanner;if(!source||!scan)return {canvas:source,applied:false,reason:'scanner unavailable'};
- let s;
+ let s,processed=null;
  try{
   s=scan.resize(source,850);
   const d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,s.width,s.height).data;
   const found=analyzeRGBA(d,s.width,s.height);
   if(!found||!scan.validQuad(found.quad))return {canvas:source,applied:false,reason:'exterior not verified'};
-  const processed=scan.process(source,{crop:true,quad:found.quad,rotation:0,filter:'original',strength:0},4200);
-  if(!processed||processed.width<240||processed.height<140)throw Error('corrected licence too small');
+  // Three edges are not enough to determine the full physical border:
+  // leave the source untouched and request manual inspection instead.
+  if(found.physicallyVerified!==true)return {canvas:source,applied:false,
+   verified:false,needsReview:true,reason:'only three physical sides',
+   sides:found.points.filter(n=>n>0).length};
+  processed=scan.process(source,{crop:true,quad:found.quad,rotation:0,filter:'original',strength:0},4200);
+  if(!processed||processed===source||processed.width<240||processed.height<140)throw Error('corrected licence too small');
   const ratio=processed.width/Math.max(1,processed.height);
-  if(ratio<1.40||ratio>1.90){if(processed!==source)processed.width=processed.height=1;
-   return {canvas:source,applied:false,reason:'unsafe aspect ratio'};}
-  return {canvas:processed,applied:true,verified:found.physicallyVerified,needsReview:found.needsReview,angle:found.angle,method:found.method};
+  if(ratio<1.40||ratio>1.90)return {canvas:source,applied:false,reason:'unsafe aspect ratio'};
+  const accepted=processed;processed=null;
+  return {canvas:accepted,applied:true,verified:true,needsReview:false,angle:found.angle,method:found.method};
  }catch(err){console.warn('DocFix: licence exterior alignment not applied',err);
   return {canvas:source,applied:false,reason:'safe fallback'};
- }finally{if(s&&s!==source)s.width=s.height=1;}
+ }finally{
+  if(processed&&processed!==source)processed.width=processed.height=1;
+  if(s&&s!==source)s.width=s.height=1;
+ }
 }
-window.DocFixLicenceFinish=Object.freeze({analyzeRGBA,isLicenceMaterial,correct,version:'1.9.25'});
+window.DocFixLicenceFinish=Object.freeze({analyzeRGBA,isLicenceMaterial,correct,version:'1.9.26'});
 })();
