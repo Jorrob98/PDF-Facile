@@ -66,7 +66,8 @@ assert.equal(broken.width,1,'scratch must be freed after pixel readback throws')
 const index=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 assert.ok(index.includes('card-licence-rear.js'),'licence module must be loaded');
 assert.ok(index.includes("singleCropGate(original,onPaper,'blue')")&&index.includes("singleCropGate(original,licenceRear,'licence')"),'whole blue CIE must take precedence over rose skin detector');
-assert.ok(index.includes("if(cardLikely&&kind==='generic')"),'no second blue-card trim on licence');
+assert.ok(index.includes("if(cardLikely&&kind==='generic'&&!String(found.method||'').includes('quad-audit'))"),
+ 'a four-edge verified contour must not receive a second destructive colour trim');
 assert.ok(index.includes('if(tightCard&&area<.86)'),'card-shaped original cannot be recropped at a portrait');
 assert.ok(index.includes("return fail('inner','Area colorata troppo piccola")&&index.includes("return fail('inner','Possibile cornice interna"),'small unverified portrait crops must be rejected');
 assert.ok(index.includes('let mrz=cardEvidence&&!norm.licenceRear?'),'licence reverse must not claim a CIE MRZ');
