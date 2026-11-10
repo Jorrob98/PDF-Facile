@@ -1,4 +1,4 @@
-/* DocFix 1.9.26 — Conservative final alignment of Italian driving-licence cards.
+/* DocFix 1.9.27 — Conservative final alignment of Italian driving-licence cards.
  * Uses the external plastic-to-white-matte boundary, never printed table lines
  * or a portrait. One perspective transform only; otherwise retain source.
  */
@@ -62,7 +62,7 @@ function analyzeRGBA(data,w,h){
  const len=(a,b)=>Math.hypot(raw[a].x-raw[b].x,raw[a].y-raw[b].y);
  const cw=(len(0,1)+len(2,3))/2,ch=(len(1,2)+len(3,0))/2,ratio=cw/Math.max(1,ch);
  const area=Math.abs(raw.reduce((s,p,i)=>s+p.x*raw[(i+1)%4].y-p.y*raw[(i+1)%4].x,0))/2/(w*h);
- if(ratio<1.43||ratio>1.82||area<.72||area>1.015||cw<w*.76||ch<h*.76)return null;
+ if(ratio<1.43||ratio>1.82||area<.54||area>1.015||cw<w*.65||ch<h*.65)return null;
  const angleDeg=(Math.atan(top.a)+Math.atan(bottom.a))*90/Math.PI;
  if(Math.abs(angleDeg)<.40&&raw.every((p,i)=>Math.hypot(
   p.x-[0,w-1,w-1,0][i],p.y-[0,0,h-1,h-1][i])<Math.min(w,h)*.018))return null;
@@ -77,6 +77,51 @@ function analyzeRGBA(data,w,h){
   area:+area.toFixed(3),physicallyVerified:!!(left&&right),needsReview:!(left&&right),method:'licence-exterior-white-matte',
   points:[top.points,bottom.points,left?.points||0,right?.points||0],
   rms:[top.rms,bottom.rms,left?.rms||0,right?.rms||0].map(v=>+v.toFixed(2))};
+}
+
+/* Locate all four physical edges in an ORIGINAL source photo, before any
+ * perspective crop can clip the white background. Coordinates map back to
+ * the uploaded image so only ONE final sampling is needed.
+ * In three-up portrait photos, the licence is turned to the same left-facing
+ * landscape view as the existing three-card detector.
+ */
+function refineOriginal(original,rough,{rotatedLeft=false}={}){
+ const scan=window.DocFixScanner;
+ if(!original||!scan?.validQuad?.(rough)||!Array.isArray(rough))return null;
+ const xs=rough.map(p=>p.x),ys=rough.map(p=>p.y);
+ const left=Math.min(...xs),right=Math.max(...xs),top=Math.min(...ys),bottom=Math.max(...ys);
+ const bw=right-left,bh=bottom-top;
+ if(bw<.035||bh<.035)return null;
+ const pad=.095;
+ const x0=clamp(left-bw*pad,0,1),x1=clamp(right+bw*pad,0,1);
+ const y0=clamp(top-bh*pad,0,1),y1=clamp(bottom+bh*pad,0,1);
+ const sx=x0*original.width,sy=y0*original.height,sw=(x1-x0)*original.width,sh=(y1-y0)*original.height;
+ if(sw<150||sh<110)return null;
+ const scale=Math.min(1,850/Math.max(sw,sh)),rw=Math.round(sw*scale),rh=Math.round(sh*scale);
+ if(rw<180||rh<140)return null;
+ let sample=null;
+ try{
+  sample=document.createElement('canvas');
+  sample.width=rotatedLeft?rh:rw;sample.height=rotatedLeft?rw:rh;
+  const g=sample.getContext('2d',{willReadFrequently:true});
+  if(!g)return null;
+  if(rotatedLeft){g.translate(0,rw);g.rotate(-Math.PI/2);}
+  g.drawImage(original,sx,sy,sw,sh,0,0,rw,rh);
+  if(!isLicenceMaterial(sample))return null;
+  const found=analyzeRGBA(g.getImageData(0,0,sample.width,sample.height).data,sample.width,sample.height);
+  if(!found||found.physicallyVerified!==true)return null;
+  const mapped=found.quad.map(p=>{
+   const ux=rotatedLeft?1-p.y:p.x,uy=rotatedLeft?p.x:p.y;
+   return {x:x0+ux*(x1-x0),y:y0+uy*(y1-y0)};
+  });
+  if(!scan.validQuad(mapped)||mapped.some(p=>p.x<0||p.y<0||p.x>1||p.y>1))return null;
+  const cx=mapped.reduce((n,p)=>n+p.x,0)/4,cy=mapped.reduce((n,p)=>n+p.y,0)/4;
+  const roughCx=(left+right)/2,roughCy=(top+bottom)/2;
+  if(Math.abs(cx-roughCx)>bw*.18||Math.abs(cy-roughCy)>bh*.18)return null;
+  return {quad:mapped,verified:true,angle:found.angle,method:'four-outer-edges-on-original',
+   edges:found.points,rms:found.rms,confidence:.94};
+ }catch(err){console.warn('DocFix: original licence edge refinement skipped',err);return null;
+ }finally{if(sample)sample.width=sample.height=1;}
 }
 function isLicenceMaterial(source){
  const scanner=window.DocFixScanner;if(!scanner||!source)return false;
@@ -123,5 +168,5 @@ function correct(source){
   if(s&&s!==source)s.width=s.height=1;
  }
 }
-window.DocFixLicenceFinish=Object.freeze({analyzeRGBA,isLicenceMaterial,correct,version:'1.9.26'});
+window.DocFixLicenceFinish=Object.freeze({analyzeRGBA,isLicenceMaterial,refineOriginal,correct,version:'1.9.27'});
 })();
