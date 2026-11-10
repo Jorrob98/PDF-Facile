@@ -1,5 +1,5 @@
 name: Temporary DocFix Windows Build
-# SUPER RUN FINAL 1.9.29
+# SUPER RUN FINAL 1.9.30
 
 on:
   push:
@@ -57,6 +57,9 @@ jobs:
           node --check app\card-physical-edges.js
           node --check app\card-onepass.js
           node --check app\card-quad-audit.js
+          node --check app\card-sideways-pair.js
+          node --check qa-sideways-pair.cjs
+          node qa-sideways-pair.cjs
           node --check qa-quad-audit.cjs
           node qa-quad-audit.cjs
           node --check app\card-texture-crop.js
@@ -208,7 +211,7 @@ jobs:
         shell: pwsh
         working-directory: docfix-build
         run: |
-          $installer=(Resolve-Path 'dist\DocFix_Setup_1.9.29.exe').Path
+          $installer=(Resolve-Path 'dist\DocFix_Setup_1.9.30.exe').Path
           $p=Start-Process -FilePath $installer -ArgumentList '/S' -PassThru -Wait
           if($p.ExitCode -ne 0){ throw "Installazione fallita: exit $($p.ExitCode)" }
           Start-Sleep -Seconds 3
@@ -269,7 +272,7 @@ jobs:
         shell: pwsh
         working-directory: docfix-build
         run: |
-          $f=Get-Item 'dist\DocFix_Setup_1.9.29.exe'
+          $f=Get-Item 'dist\DocFix_Setup_1.9.30.exe'
           if($f.Length -lt 100000000){ throw "Installer troppo piccolo: $($f.Length)" }
           $hash=(Get-FileHash $f.FullName -Algorithm SHA256).Hash
           Write-Host "SIZE=$($f.Length)"
@@ -278,7 +281,7 @@ jobs:
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DocFix-Setup-Windows-1.9.29
-          path: docfix-build/dist/DocFix_Setup_1.9.29.exe
+          name: DocFix-Setup-Windows-1.9.30
+          path: docfix-build/dist/DocFix_Setup_1.9.30.exe
           if-no-files-found: error
           retention-days: 7
