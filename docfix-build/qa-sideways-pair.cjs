@@ -55,7 +55,9 @@ console.log('DocFix sideways pair PASS: split, touching cards, safety warnings, 
  const host={
   DocFixRealCrop:{detect:()=>({cards:[]})},
   DocFixThreeUp:{detect:()=>null},
-  DocFixSidewaysPair:{detect:()=>fixture}
+  DocFixSidewaysPair:{detect:()=>fixture},
+  DocFixPairProof:{verify:(source,cards)=>cards.every(c=>c.physicallyVerified===true)
+   ?{verified:true,cards}:{verified:false,reason:'synthetic incomplete external contour'}}
  };
  const factory=new Function('window','imageCanvas','chooseMultiCardMode','multiCardCandidates',
   'normalizeKnownCard','normalizeRaster','multiCropHealthy','cropMode','console',
