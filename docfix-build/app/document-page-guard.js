@@ -5,7 +5,7 @@
 function analyzeRGBA(data,w,h){
  if(!data||data.length<w*h*4||w<220||h<220)return {page:false,reason:'image size'};
  const ratio=Math.max(w,h)/Math.min(w,h);
- if(ratio<1.28||ratio>1.63)return {page:false,reason:'not A4-like'};
+ if(ratio<1.30||ratio>1.51)return {page:false,reason:'not A4-like'};
  const nx=5,ny=5,white=new Uint16Array(nx*ny),total=new Uint16Array(nx*ny);
  const longSideIsVertical=h>=w;
  let light=0,count=0,ink=0;
