@@ -100,5 +100,5 @@ function detect(original){
   return found&&scanner.validQuad(found.quad)?found:null;
  }finally{if(sample!==original)sample.width=sample.height=1;}
 }
-window.DocFixOverPaper=Object.freeze({analyzeRGBA,detect,version:'1.9.30'});
+window.DocFixOverPaper=Object.freeze({analyzeRGBA,detect,version:'1.9.31'});
 })();
