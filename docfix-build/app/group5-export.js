@@ -81,7 +81,7 @@
  function filename(entries){
   // A version-stamped filename makes it impossible to confuse a newly
   // generated 6-card PDF with an older Downloads copy.
-  if((entries||[]).length===6&&(entries||[]).every(e=>e.threeUp))return 'DocFix-1.9.25-6-tessere.pdf';
+  if((entries||[]).length===6&&(entries||[]).every(e=>e.threeUp))return 'DocFix-1.9.26-6-tessere.pdf';
   const sources=[...new Set((entries||[]).map(e=>String(e?.source||'').trim()).filter(Boolean))];
   if(sources.length!==1)return 'documenti-docfix.pdf';
   const raw=sources[0].replace(/\.[^.]+$/,'').normalize('NFKC').replace(/[\\/:*?"<>|\x00-\x1F\x7F]/g,' ').replace(/\s+/g,' ').trim().replace(/^[.\s-]+/,'').slice(0,72)||'documento';
