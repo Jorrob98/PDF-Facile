@@ -39,9 +39,12 @@ const expandQuadSafe=(q,pad=.025)=>{
  return q.map(p=>({x:Math.max(0,Math.min(1,cx+(p.x-cx)*(1+pad*2))),
   y:Math.max(0,Math.min(1,cy+(p.y-cy)*(1+pad*2)))}));
 };
-const run=new Function('window','quadCardRatio','trimCardBackground','expandQuadSafe','console',
+// Preserve all legacy acceptance expectations, then exercise the separate
+// strict four-edge path with the SAME photo-normalization implementation.
+let mode='legacy';
+const run=new Function('window','quadCardRatio','trimCardBackground','expandQuadSafe','cropMode','console',
  code+'return {singleCropGate,photoNormalize};');
-const {singleCropGate,photoNormalize}=run(win,ratio,c=>c,expandQuadSafe,silent);
+const {singleCropGate,photoNormalize}=run(win,ratio,c=>c,expandQuadSafe,()=>mode,silent);
 const reset=()=>{state.blue=null;state.pink=null;state.generic=defaultGeneric;state.warpFails=false;state.legacyFails=false;state.blueFails=false};
 reset();state.blue=scannedCard;
 let result=photoNormalize(original);
@@ -106,4 +109,24 @@ assert.ok(index.includes("try{tripleRaw=window.DocFixThreeUp?.detect?.(original)
  '3-up detector must be isolated from import failures');
 assert.ok(index.includes("try{multi=multiCardCandidates(original)"),
  'multi-card fallback errors must not delete the uploaded source');
-console.log('DocFix crop gate PASS: A4 blue/rose cards, face safety, alternative detectors, scanner/warp error recovery');
+// Strict mode: an attractive colour box alone is NOT four physical corners.
+reset();mode='smart';state.blue=scannedCard;
+win.DocFixScanner.resize=c=>c;
+win.DocFixScanner.defaultQuad=()=>q(.035,.035,.965,.965);
+win.DocFixQuadAudit={inspectCanvas:()=>({verified:false,reason:'synthetic interrupted outer edge'})};
+win.DocFixOnePass={detect:()=>null};
+result=photoNormalize(original);
+assert.strictEqual(result.processed,original,'uncertain four-edge geometry keeps the actual original');
+assert.equal(result.review,true,'strict rejected crop is shown for manual verification');
+// A passing audit may refine the existing colour candidate without a second crop.
+win.DocFixQuadAudit.inspectCanvas=()=>({verified:true,quad:box,confidence:.94});
+result=photoNormalize(original);
+assert.notStrictEqual(result.processed,original,'four real supported sides can produce a crop');
+assert.ok(result.how.includes('Quattro bordi fisici'),'physical proof is visible in review text');
+// Multi-detector recovery should work when the old single-image detector fails.
+reset();win.DocFixOnePass.detect=()=>({quad:box,physicallyVerified:true,
+ verified:true,confidence:.92,method:'quad-audit / synthetic'});
+result=photoNormalize(original);
+assert.notStrictEqual(result.processed,original,'strict alternative physical candidate can rescue rejected image');
+mode='legacy';reset();
+console.log('DocFix crop gate PASS: old behavior preserved, strict 4-edge rejection, verified upgrade and alternative candidate');
