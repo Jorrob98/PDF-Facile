@@ -1568,7 +1568,7 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
   // Material colour classifies a document; it does NOT verify physical edges.
   // This matters for WhatsApp photos of three mixed Italian cards.
   let found=null;
-  try{found=window.DocFixOnePass?.detect?.(original,sourceQuad,{rotatedLeft:threeUp&&orientationKnown,auditEnabled:threeUp&&cropMode()==='smart',format:'card'})||null;}
+  try{found=forceLandscapeLeft?null:(window.DocFixOnePass?.detect?.(original,sourceQuad,{rotatedLeft:threeUp&&orientationKnown,auditEnabled:threeUp&&cropMode()==='smart',format:'card'})||null);}
   catch(error){console.warn('DocFix: rilevatore bordi opzionale non riuscito',error);}
   const sourceArea=scan.area(sourceQuad),candidateArea=found?.quad?scan.area(found.quad):0;
   const fullOutline=found?.verified&&scan.validQuad(found.quad)
