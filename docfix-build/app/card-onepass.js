@@ -94,9 +94,20 @@
   ];
   return {quad:q,confidence:.81,method:'one-pass-background-segmentation',score:best.score,component:best};
  }
- function detect(original,rough){
+ function mapFromLeftTurn(q){return q.map(p=>({x:1-p.y,y:p.x}));}
+ function detect(original,rough,{rotatedLeft=false}={}){
   const scan=window.DocFixScanner;if(!scan?.validQuad?.(rough))return null;
-  const roi=region(original,rough),c=roi.canvas,choices=[];
+  const roi=region(original,rough),raw=roi.canvas,choices=[];
+  // A 3-up WhatsApp photo can contain sideways cards. Rotate only the
+  // temporary ROI, not the uploaded source or the saved crop coordinates.
+  const turned=rotatedLeft&&raw.height>raw.width*1.10;
+  let c=raw;
+  if(turned){
+   c=document.createElement('canvas');c.width=raw.height;c.height=raw.width;
+   const g=c.getContext('2d',{alpha:false,willReadFrequently:true});
+   g.translate(0,raw.width);g.rotate(-Math.PI/2);g.drawImage(raw,0,0);
+  }
+  const release=()=>{if(c!==raw)c.width=c.height=1;raw.width=raw.height=1;};
   const add=(obj,origin)=>{
    if(!obj?.quad||!scan.validQuad(obj.quad))return;
    const ratio=shape(obj.quad,c.width,c.height),coverage=scan.area(obj.quad);
@@ -119,9 +130,10 @@
   }catch(err){console.warn('DocFix single-pass analysis failed',err);}
   choices.sort((a,b)=>b.score-a.score);
   const best=choices[0]||null;
-  if(!best){c.width=c.height=1;return null;}
-  const quad=best.quad.map(p=>({x:roi.x0+p.x*(roi.x1-roi.x0),y:roi.y0+p.y*(roi.y1-roi.y0)}));
-  c.width=c.height=1;
+  if(!best){release();return null;}
+  const mapped=turned?mapFromLeftTurn(best.quad):best.quad;
+  const quad=mapped.map(p=>({x:roi.x0+p.x*(roi.x1-roi.x0),y:roi.y0+p.y*(roi.y1-roi.y0)}));
+  release();
   if(!scan.validQuad(quad))return null;
   // An expanded search region must never take the card belonging to the other half.
   const center={x:quad.reduce((sum,p)=>sum+p.x,0)/4,y:quad.reduce((sum,p)=>sum+p.y,0)/4};
@@ -129,5 +141,5 @@
   if(center.x<bounds.x0-.025||center.x>bounds.x1+.025||center.y<bounds.y0-.025||center.y>bounds.y1+.025)return null;
   return {quad,verified:true,confidence:best.confidence,method:best.method,support:best.support,score:best.score};
  }
- window.DocFixOnePass=Object.freeze({detect,detectColorRect:colorCandidate,version:'source-first-1.9.7'});
+ window.DocFixOnePass=Object.freeze({detect,detectColorRect:colorCandidate,mapFromLeftTurn,version:'source-first-1.9.28'});
 })();
