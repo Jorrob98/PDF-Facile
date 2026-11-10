@@ -40,7 +40,12 @@ assert.strictEqual(kept.processed,original);
 assert.equal(kept.cropped,false);
 assert.equal(kept.review,false);
 assert.equal(kept.pageProtected,true);
-assert.ok(index.includes('const completePage=preserveFullA4Page(original);'),'both image and scanned PDF input are guarded');
+assert.ok(index.includes('const completePage=skipPageGuard?null:preserveFullA4Page(original);'),
+ 'scanned PDF pages still use automatic A4 guard');
+assert.ok(index.includes("mode==='cards'?null:preserveFullA4Page(original,mode==='page')"),
+ 'image uploads support automatic, explicit complete A4 page and card modes');
+assert.ok(index.includes('documentMode:documentMode()'),'the selected mode is captured for each incoming batch');
+assert.ok(index.includes('id="document-mode"'),'full-page override is available before adding files');
 assert.ok(index.includes('if(oldIndex<0||!old?.original||old.pageProtected===true)return false;'),'no recovery split on declaration');
 assert.ok(index.includes('const proof=window.DocFixPairProof?.verify?.(old.original,candidates);'),'previous gap-only split must require both external perimeters');
 assert.ok(index.includes('if(proof?.verified!==true||proof.cards?.length!==2)return false;'),'unverified split is forbidden');
