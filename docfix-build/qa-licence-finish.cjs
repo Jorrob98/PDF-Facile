@@ -32,6 +32,32 @@ win.DocFixScanner={resize:()=>mock,validQuad:q=>q.length===4&&q.every(p=>p.x>=0&
 assert.equal(api.isLicenceMaterial(mock),true,'rose licence must enter photo finishing path');
 assert.equal(api.correct(mock).applied,true);assert.equal(passes,1,'only one perspective warp');
 assert.equal(mock.width,w,'original canvas is never freed');
+// An incomplete outer perimeter can resemble a safe rectangle; never
+// silently crop it, even when the rose material occupies most of the image.
+const threeSide=source.slice();
+for(let y=0;y<h;y++)for(let x=w-14;x<w;x++){
+ const k=(y*w+x)*4;threeSide[k]=183;threeSide[k+1]=132;threeSide[k+2]=146;
+}
+const partialSource={width:w,height:h,getContext:()=>({getImageData:()=>({data:threeSide})})};
+win.DocFixScanner.resize=()=>partialSource;
+const partial=api.correct(partialSource);
+assert.equal(partial.applied,false,'a missing outer side must never launch a destructive crop');
+assert.strictEqual(partial.canvas,partialSource,'the original must remain intact with incomplete edges');
+assert.equal(partialSource.width,w,'never free a rejected input canvas');
+assert.equal(passes,1,'a 3-side candidate must not request an extra perspective warp');
+// A failed output must release its temporary canvas, not its original.
+win.DocFixScanner.resize=()=>mock;
+let rejected=null;
+win.DocFixScanner.process=()=>{rejected={width:120,height:90};return rejected};
+const invalid=api.correct(mock);
+assert.equal(invalid.applied,false,'invalid corrected geometry is rejected');
+assert.strictEqual(invalid.canvas,mock);
+assert.equal(rejected.width,1,'invalid temporary canvas must be freed');
+assert.equal(mock.width,w,'the uploaded source must survive failed correction');
+win.DocFixScanner.process=()=>mock;
+const accidentalSource=api.correct(mock);
+assert.equal(accidentalSource.applied,false,'scanner must not accept returning the input as a correction');
+assert.equal(mock.width,w,'rejecting alias result must not dispose uploaded image');
 const html=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 assert.ok(html.includes('card-licence-finish.js'),'module included');
 assert.ok(html.includes("cardKind==='licence'?window.DocFixLicenceFinish?.correct?.(processed)"),'multi-card integration');
@@ -40,4 +66,6 @@ assert.ok(html.includes("if(multiSafe&&sourceVerified&&cardKind!=='licence')"),'
 assert.ok(html.includes("quad=expandQuadSafe(sourceQuad,.105)"),'source photo retains a safe margin until four actual edges are tested');
 assert.ok(html.includes("const quad=kind==='licence'?expandQuadSafe(found.quad,.055)"),'standalone licence retains physical border for final alignment');
 assert.ok(html.includes("const deskew=licenceFinish?.applied?"),'never rotate twice');
+assert.ok(html.includes("sourceQuad:licenceFinish?.applied?null:quad"),'manual correction never reuses stale pre-deskew coordinates');
+assert.ok(html.includes("if(c.geometryReview&&fixed.cropVerified!==true)"),'verified four-edge recovery must not retain obsolete geometry warning');
 console.log('DocFix licence exterior PASS: 2.8-degree synthetic skew, 4 borders, no portrait, no source damage, one warp');
