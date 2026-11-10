@@ -66,12 +66,18 @@ console.log('DocFix sideways pair PASS: split, touching cards, safety warnings, 
     cropVerified:false,geometryReview:true,confidence};
   },
   async()=>({processed:document,how:'foto conservata',review:true}),()=>true,()=>mode,console);
+ // A colour-only hypothesis must never invent a second page from one card.
+ const uncertain=await load({name:'unverified-side-by-side.jpg'},11,1,{batchId:7,batchSize:1});
+ assert.equal(uncertain.length,1,'unverified pair must not create false extra documents');
+ assert.ok(uncertain[0].how.includes('possibili due tessere'),'operator receives a manual split warning');
+ const verified={...fixture,physicallyVerified:true,cards:fixture.cards.map(c=>({...c,physicallyVerified:true}))};
+ host.DocFixSidewaysPair.detect=()=>verified;
  const a=await load({name:'whatsapp-retro.jpg'},12,2,{batchId:8,batchSize:2});
  const b=await load({name:'whatsapp-fronte.jpg'},13,2,{batchId:8,batchSize:2});
  assert.equal(a.length+b.length,4,'two WhatsApp double-card images must result in FOUR previews');
  assert.deepEqual([...a,...b].map(x=>x.splitSlot),[0,1,0,1],'two independent pages are retained from each source');
  assert.ok(calls.every(x=>x.forceLandscapeLeft===true),'each extracted sideways card is rotated before OCR');
- assert.ok(calls.every(x=>x.sourceVerified===false),'unverified corners remain marked for review');
+ assert.ok(calls.every(x=>x.sourceVerified===true),'only verified four-edge splits may be accepted automatically');
  mode='legacy';const fallback=await load({name:'legacy.jpg'},14,1,{batchId:9,batchSize:1});
  assert.equal(fallback.length,1,'rollback must bypass the new sideways detector');
  console.log('DocFix 2x2 WhatsApp integration PASS: four pages, original order, rotation, safe review, rollback');
