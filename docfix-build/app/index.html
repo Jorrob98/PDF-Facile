@@ -1064,7 +1064,8 @@ function photoNormalize(original){
  }
  if(found&&selected?.ok){
   try{
-   const quad=found.quad.map(p=>({...p}));
+   // Never crop the rose plastic tight before locating its real outer edges.
+   const quad=kind==='licence'?expandQuadSafe(found.quad,.055):found.quad.map(p=>({...p}));
    processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
    if(!processed?.width||!processed?.height)throw Error('Ritaglio senza immagine valida');
    confidence=found.confidence;sourceQuad=quad;
