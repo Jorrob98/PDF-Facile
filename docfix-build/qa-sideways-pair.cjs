@@ -60,20 +60,25 @@ console.log('DocFix sideways pair PASS: split, touching cards, safety warnings, 
    ?{verified:true,cards}:{verified:false,reason:'synthetic incomplete external contour'}}
  };
  const factory=new Function('window','imageCanvas','chooseMultiCardMode','multiCardCandidates',
-  'normalizeKnownCard','normalizeRaster','multiCropHealthy','cropMode','console',
+  'normalizeKnownCard','normalizeRaster','multiCropHealthy','cropMode','preserveFullA4Page','documentMode','console',
   code+';return makeImageEntries;');
  const load=factory(host,async()=>document,()=>({mode:'fallback',conflict:false}),
   ()=>[],async(src,q,label,confidence,options)=>{
    calls.push(options);return {processed:{width:800,height:510},how:'',review:true,
     cropVerified:false,geometryReview:true,confidence};
   },
-  async()=>({processed:document,how:'foto conservata',review:true}),()=>true,()=>mode,console);
+  async()=>({processed:document,how:'foto conservata',review:true}),()=>true,()=>mode,
+  (src,force)=>force?{processed:src,how:'Foglio A4 intero',pageProtected:true}:null,()=> 'auto',console);
  // A colour-only hypothesis must never invent a second page from one card.
  const uncertain=await load({name:'unverified-side-by-side.jpg'},11,1,{batchId:7,batchSize:1});
  assert.equal(uncertain.length,1,'unverified pair must not create false extra documents');
  assert.ok(uncertain[0].how.includes('possibili due tessere'),'operator receives a manual split warning');
  const verified={...fixture,physicallyVerified:true,cards:fixture.cards.map(c=>({...c,physicallyVerified:true}))};
  host.DocFixSidewaysPair.detect=()=>verified;
+ const intact=await load({name:'declaration.jpeg'},11,1,{batchId:7,batchSize:1,documentMode:'page'});
+ assert.equal(intact.length,1,'one photographed declaration is one page');
+ assert.equal(intact[0].pageProtected,true,'force whole page bypasses split detectors');
+ assert.strictEqual(intact[0].processed,document);
  const a=await load({name:'whatsapp-retro.jpg'},12,2,{batchId:8,batchSize:2});
  const b=await load({name:'whatsapp-fronte.jpg'},13,2,{batchId:8,batchSize:2});
  assert.equal(a.length+b.length,4,'two WhatsApp double-card images must result in FOUR previews');
