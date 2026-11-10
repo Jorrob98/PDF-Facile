@@ -58,6 +58,11 @@ assert.notEqual(result.processed,original,'rose licence can be cropped on A4-sha
 assert.equal(result.licenceRear,true);
 assert.equal(result.review,true,'unverified rose borders remain a warning');
 assert.equal(result.physicallyVerified,false);
+// A false blue island cannot prevent the real rose licence from being found.
+reset();state.blue={...scannedCard,quad:face};state.pink=pinkCard;
+result=photoNormalize(original);
+assert.equal(result.licenceRear,true,'rejected cyan portrait must not suppress independent pink licence detection');
+assert.equal(result.overPaper,true,'accepted pink licence is tracked as over-paper card');
 reset();state.blue={...scannedCard,quad:face};
 result=photoNormalize(original);
 assert.equal(result.processed,original,'small portrait cannot become the entire identity document');
