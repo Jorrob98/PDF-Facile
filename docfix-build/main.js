@@ -331,7 +331,7 @@ async function runSelfTest(){
         out.stackedRecovery=recovered.length===2;
         out.twoByTwoGate=typeof window.DocFixDesktopDiagnostics?.twoByTwoState==='function';
         const meta=window.DocFixDesktopDiagnostics?.twoByTwoCandidateMeta;
-        out.onePlusOneRecovery=typeof meta==='function'&&meta([1,1],true,true)===true&&meta([1,1],false,true)===false&&meta([2,1],false,false)===true&&meta([2,2],false,false)===true;
+        out.onePlusOneRecovery=typeof meta==='function'&&meta([1,1],true,true)===false&&meta([1,1],false,true)===false&&meta([2,1],false,false)===true&&meta([2,2],false,false)===true; // A4 declarations must never trigger card recovery from upload count alone
         const border=document.createElement('canvas');border.width=1000;border.height=700;const bg=border.getContext('2d');
         bg.fillStyle='#8b8b8b';bg.fillRect(0,0,1000,700);
         bg.fillStyle='#d6eaf3';bg.fillRect(150,150,700,440);
