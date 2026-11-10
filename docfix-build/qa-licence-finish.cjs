@@ -75,7 +75,8 @@ assert.equal(accidentalSource.applied,false,'scanner must not accept returning t
 assert.equal(mock.width,w,'rejecting alias result must not dispose uploaded image');
 const html=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 assert.ok(html.includes('card-licence-finish.js'),'module included');
-assert.ok(html.includes("cardKind==='licence'?window.DocFixLicenceFinish?.correct?.(processed)"),'multi-card integration');
+assert.ok(html.includes("cardKind==='licence'&&!physicalVerified?window.DocFixLicenceFinish?.correct?.(processed)"),
+ 'multi-card correction only uses a second pass when original physical edges were not verified');
 assert.ok(html.includes("const licenceFinish=possibleLicence?window.DocFixLicenceFinish?.correct?.(processed)"),'already-cropped WhatsApp photo must reach the same physical engine');
 assert.ok(html.includes("if(multiSafe&&sourceVerified&&cardKind!=='licence')"),'pink colour bounding boxes may not claim four physical licence corners');
 assert.ok(html.includes("refineOriginal?.(original,sourceQuad"),'licence must locate physical corners on untouched source first');
