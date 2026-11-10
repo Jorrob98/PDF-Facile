@@ -30,6 +30,9 @@ function image({shadow=false,insideText=true,low=false}={}){
  }
  return a;
 }
+// Real WhatsApp uploads may show a landscape ID card rotated by 90°.
+const portrait=[{x:260,y:46},{x:430,y:46},{x:430,y:337},{x:260,y:337}].map(p=>({x:p.x/w,y:p.y/h}));
+assert.ok(api.geometry(portrait,w,h,{format:'card'}),'a sideways card must not be rejected solely for being vertical');
 const original=image(),saved=original.slice();
 const chosen=api.inspectRGBA(original,w,h,norm,{format:'card'});
 assert.equal(chosen.verified,true,'four physical sides must be verifiable');
