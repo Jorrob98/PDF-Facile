@@ -70,5 +70,6 @@ assert.ok(index.includes("if(cardLikely&&kind==='generic')"),'no second blue-car
 assert.ok(index.includes('if(tightCard&&area<.86)'),'card-shaped original cannot be recropped at a portrait');
 assert.ok(index.includes("return fail('inner','Area colorata troppo piccola")&&index.includes("return fail('inner','Possibile cornice interna"),'small unverified portrait crops must be rejected');
 assert.ok(index.includes('let mrz=cardEvidence&&!norm.licenceRear?'),'licence reverse must not claim a CIE MRZ');
-assert.ok(index.includes("cropVerified:norm.overPaper?norm.physicallyVerified:undefined"),'unverified licence must be flagged in preview');
+assert.ok(index.includes("cropVerified:licenceFinish?.applied?licenceFinish.verified:(norm.overPaper?norm.physicallyVerified:undefined)"),
+ 'a corrected licence may be marked verified ONLY after its physical edges pass');
 console.log('DocFix licence reverse PASS: paper background, CIE regression, canvas cleanup and integration');
