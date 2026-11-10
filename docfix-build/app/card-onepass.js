@@ -95,7 +95,7 @@
   return {quad:q,confidence:.81,method:'one-pass-background-segmentation',score:best.score,component:best};
  }
  function mapFromLeftTurn(q){return q.map(p=>({x:1-p.y,y:p.x}));}
- function detect(original,rough,{rotatedLeft=false}={}){
+ function detect(original,rough,{rotatedLeft=false,auditEnabled=false,format='card'}={}){
   const scan=window.DocFixScanner;if(!scan?.validQuad?.(rough))return null;
   const roi=region(original,rough),raw=roi.canvas,choices=[];
   // A 3-up WhatsApp photo can contain sideways cards. Rotate only the
@@ -115,11 +115,20 @@
    const img=c.getContext('2d',{willReadFrequently:true}).getImageData(0,0,c.width,c.height).data;
    const support=window.DocFixGroup1?.edgeSupport?.(obj.quad.map(p=>({x:p.x*c.width,y:p.y*c.height})),img,c.width,c.height);
    if(!support)return;
-   // Require the REAL external boundary, not an internal printed line.
-   if(support.sidesOk<3||support.strength<17.5)return;
+   // Conservative four-edge audit is opt-in for a new scan; the previous
+   // engine remains exactly selectable through the compatibility setting.
+   const audited=auditEnabled?window.DocFixQuadAudit?.inspectCanvas?.(c,obj.quad,{format}):null;
+   if(auditEnabled&&!audited?.verified)return;
+   if(!auditEnabled&&(support.sidesOk<3||support.strength<17.5))return;
    const physical=(obj.method||'').includes('physical')?1:0;
-   const score=support.strength*.45+support.sidesOk*6-Math.abs(ratio-1.586)*24+Math.min(.8,coverage)*5+physical*2;
-   choices.push({quad:obj.quad,score,confidence:Math.min(.94,.76+support.sidesOk*.04),method:origin+' / '+(obj.method||''),support,ratio});
+   const score=audited?.verified
+     ?audited.score+support.sidesOk*1.1
+     :support.strength*.45+support.sidesOk*6-Math.abs(ratio-1.586)*24+Math.min(.8,coverage)*5+physical*2;
+   choices.push({quad:audited?.verified?audited.quad:obj.quad,score,
+    confidence:audited?.verified?audited.confidence:Math.min(.94,.76+support.sidesOk*.04),
+    method:(audited?.verified?'quad-audit / ':'')+origin+' / '+(obj.method||''),
+    support:audited?.verified?audited.support:support,ratio,
+    physicallyVerified:audited?.verified===true});
   };
   try{
    add(window.DocFixGroup1?.candidateFromBackground?.(c),'original-background');
@@ -141,5 +150,5 @@
   if(center.x<bounds.x0-.025||center.x>bounds.x1+.025||center.y<bounds.y0-.025||center.y>bounds.y1+.025)return null;
   return {quad,verified:true,confidence:best.confidence,method:best.method,support:best.support,score:best.score};
  }
- window.DocFixOnePass=Object.freeze({detect,detectColorRect:colorCandidate,mapFromLeftTurn,version:'source-first-1.9.28'});
+ window.DocFixOnePass=Object.freeze({detect,detectColorRect:colorCandidate,mapFromLeftTurn,version:'source-first-1.9.29'});
 })();
