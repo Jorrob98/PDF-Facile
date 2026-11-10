@@ -25,9 +25,9 @@ function geometry(q,w,h,{format='card'}={}){
  });
  if(cross.some(v=>v<80))return null;
  const width=(ds[0]+ds[2])/2,height=(ds[1]+ds[3])/2;
- const ratio=width/height,coverage=area(q);
- const bounds=format==='card'?[1.37,1.92]:[.55,2.5];
- if(ratio<bounds[0]||ratio>bounds[1]||coverage<.095||coverage>.94)return null;
+ const ratio=width/height,shape=Math.max(ratio,1/ratio),coverage=area(q);
+ const bounds=format==='card'?[1.37,1.92]:[1,2.5];
+ if(shape<bounds[0]||shape>bounds[1]||coverage<.095||coverage>.94)return null;
  if(Math.max(ds[0],ds[2])/Math.min(ds[0],ds[2])>1.42||
     Math.max(ds[1],ds[3])/Math.min(ds[1],ds[3])>1.42)return null;
  for(let i=0;i<4;i++){
@@ -36,7 +36,7 @@ function geometry(q,w,h,{format='card'}={}){
   const cos=(a.x*b.x+a.y*b.y)/(Math.hypot(a.x,a.y)*Math.hypot(b.x,b.y));
   if(Math.abs(cos)>.58)return null; // implausible camera perspective
  }
- return {p,ratio,coverage,width,height,ds};
+ return {p,ratio,shape,coverage,width,height,ds};
 }
 function inspectRGBA(rgba,w,h,quad,opts={}){
  const source=geometry(quad,w,h,opts);
@@ -100,7 +100,7 @@ function inspectRGBA(rgba,w,h,quad,opts={}){
  if(gain<.82||gain>1.20)return {verified:false,reason:'unexpected area change'};
  const support=Math.min(...sides.map(x=>x.coverage));
  const score= support*35+sides.reduce((n,x)=>n+x.strength,0)/4*.6+
-    result.coverage*12-Math.abs(result.ratio-1.585)*15;
+    result.coverage*12-Math.abs(result.shape-1.585)*15;
  return {verified:true,quad:nq,score,confidence:clamp(.77+support*.16,0,.95),
   reason:'four physical continuous edges',support:{sidesOk:4,
    strength:sides.reduce((n,x)=>n+x.strength,0)/4,
