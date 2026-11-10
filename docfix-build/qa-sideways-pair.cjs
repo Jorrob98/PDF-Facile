@@ -43,3 +43,37 @@ assert.ok(index.includes('processed=rotate(processed,270);rotation=270'),'separa
 assert.ok(index.includes("cropMode()==='smart'"),'legacy mode preserves old behavior');
 assert.ok(index.includes("splitCount:2,twoUp:true"),'two-source upload produces four separate previews');
 console.log('DocFix sideways pair PASS: split, touching cards, safety warnings, no fake pairs, rotation, rollback');
+// Integration: TWO separate WhatsApp files must produce FOUR real page entries,
+// and legacy mode must still use the previous single-photo fallback.
+(async()=>{
+ const start=index.indexOf('async function makeImageEntries('),end=index.indexOf('window.DocFixDesktopDiagnostics=',start);
+ assert.ok(start>=0&&end>start,'two-card import function is reachable');
+ const code=index.slice(start,end);
+ const fixture=detect(scene(),w,h);
+ const document={width:900,height:1025},calls=[];
+ let mode='smart';
+ const host={
+  DocFixRealCrop:{detect:()=>({cards:[]})},
+  DocFixThreeUp:{detect:()=>null},
+  DocFixSidewaysPair:{detect:()=>fixture}
+ };
+ const factory=new Function('window','imageCanvas','chooseMultiCardMode','multiCardCandidates',
+  'normalizeKnownCard','normalizeRaster','multiCropHealthy','cropMode','console',
+  code+';return makeImageEntries;');
+ const load=factory(host,async()=>document,()=>({mode:'fallback',conflict:false}),
+  ()=>[],async(src,q,label,confidence,options)=>{
+   calls.push(options);return {processed:{width:800,height:510},how:'',review:true,
+    cropVerified:false,geometryReview:true,confidence};
+  },
+  async()=>({processed:document,how:'foto conservata',review:true}),()=>true,()=>mode,console);
+ const a=await load({name:'whatsapp-retro.jpg'},12,2,{batchId:8,batchSize:2});
+ const b=await load({name:'whatsapp-fronte.jpg'},13,2,{batchId:8,batchSize:2});
+ assert.equal(a.length+b.length,4,'two WhatsApp double-card images must result in FOUR previews');
+ assert.deepEqual([...a,...b].map(x=>x.splitSlot),[0,1,0,1],'two independent pages are retained from each source');
+ assert.ok(calls.every(x=>x.forceLandscapeLeft===true),'each extracted sideways card is rotated before OCR');
+ assert.ok(calls.every(x=>x.sourceVerified===false),'unverified corners remain marked for review');
+ mode='legacy';const fallback=await load({name:'legacy.jpg'},14,1,{batchId:9,batchSize:1});
+ assert.equal(fallback.length,1,'rollback must bypass the new sideways detector');
+ console.log('DocFix 2x2 WhatsApp integration PASS: four pages, original order, rotation, safe review, rollback');
+})().catch(err=>{console.error(err);process.exitCode=1});
+
