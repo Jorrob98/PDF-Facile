@@ -7,6 +7,17 @@ const a=index.indexOf('async function normalizeKnownCard(');
 const b=index.indexOf('// Never let an earlier 2-up success',a);
 assert.ok(a>=0&&b>a,'normalizer must be present');
 const snippet=index.slice(a,b);
+assert.ok(snippet.includes('rotatedLeft:threeUp&&orientationKnown'),
+ '3-up portrait images must use the rotated ROI border detector');
+const vm=require('node:vm');
+const onepass=fs.readFileSync(path.join(__dirname,'app/card-onepass.js'),'utf8'),onepassWindow={};
+vm.runInNewContext(onepass,{window:onepassWindow,Math,Uint8Array,Uint32Array,Int32Array});
+const p=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}];
+const mapped=onepassWindow.DocFixOnePass.mapFromLeftTurn(p);
+const xy=mapped.map(v=>[v.x,v.y].join(',')).join(';');
+assert.equal(xy,'1,0;1,1;0,1;0,0',
+ 'restore rotated card corners to original portrait-photo coordinates');
+
 const area=q=>Math.abs(q.reduce((s,p,i)=>s+p.x*q[(i+1)%4].y-p.y*q[(i+1)%4].x,0))/2;
 const validQuad=q=>Array.isArray(q)&&q.length===4&&q.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));
 const rough=[{x:.10,y:.12},{x:.90,y:.12},{x:.90,y:.88},{x:.10,y:.88}];
