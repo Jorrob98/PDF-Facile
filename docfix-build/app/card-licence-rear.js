@@ -1,4 +1,4 @@
-/* DocFix 1.9.29 — conservative licence plastic locator for a single photo.
+/* DocFix 1.9.30 — conservative licence plastic locator for a single photo.
  * Specialized for pale/rose Italian driving-licence backs lying on printed paper.
  * Does not affect already verified blue CIE cards, grouped cards or PDFs.
  */
@@ -135,5 +135,5 @@ function detect(original){
   return candidate;
  }finally{if(sample!==original)sample.width=sample.height=1;}
 }
-window.DocFixLicenceRear=Object.freeze({detect,analyzeRGBA,version:'1.9.29'});
+window.DocFixLicenceRear=Object.freeze({detect,analyzeRGBA,version:'1.9.30'});
 })();
