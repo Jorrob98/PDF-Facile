@@ -1042,7 +1042,9 @@ function photoNormalize(original){
   if(decision.ok){found=onPaper;kind='blue';selected=decision;}
   else errors.push('CIE: '+decision.reason);
  }
- if(!found&&!onPaper){
+ // A rejected blue-card candidate must not suppress an independent, safe
+ // Italian-licence detector; accepted CIE crops are unchanged.
+ if(!found){
   try{licenceRear=window.DocFixLicenceRear?.detect?.(original)||null;}
   catch(error){errors.push('patente: '+String(error?.message||error));console.warn('DocFix: analisi retro patente non riuscita',error);}
   if(licenceRear){
