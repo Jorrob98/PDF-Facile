@@ -836,7 +836,7 @@ function syncActions(){
  dl.textContent=incomplete?'↓ Scarica PDF ('+available.length+' pagine · set incompleto)':'↓ Scarica PDF pronto';
  const save=$('download-ready');
  save.hidden=!available.length||(!incomplete&&!busy&&!pending.length);
- save.disabled=emergencyExporting||exporting||available.length===0;
+ save.disabled=emergencyExporting||exporting||available.length===0||entries.some(e=>e.manualPending===true);
  save.textContent='↓ Salva '+available.length+' '+(available.length===1?'pagina disponibile':'pagine disponibili');
  $('queue-count').hidden=!pending.length&&!processing;
  $('queue-count').textContent=processing?'Elaborazione '+completedInBatch+'/'+Math.max(totalInBatch,1)+' · in attesa: '+pending.length:pending.length+' file in attesa';
