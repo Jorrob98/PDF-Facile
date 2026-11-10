@@ -47,7 +47,8 @@ const index=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 assert.ok(index.includes('card-over-paper.js'),'module loaded before normalizer');
 assert.ok(index.includes('window.DocFixOverPaper?.detect?.(original)||null'),'photo path checks over-paper first');
 assert.ok(index.includes("console.warn('DocFix: analisi tessera su foglio non riuscita'"),'failed detector must not block importing a photo');
-assert.ok(index.includes("if(cardLikely&&kind==='generic')"),'MRZ not trimmed again after crop');
+assert.ok(index.includes("if(cardLikely&&kind==='generic'&&!String(found.method||'').includes('quad-audit'))"),
+ 'an audited physical border must never be trimmed again; only the compatibility path may use its conservative cleanup');
 assert.ok(index.includes('&&!norm.overPaper'),'false source MRZ never reverses proven over-paper crop');
 assert.ok(index.includes('const cardEvidence=norm.cardLikely||'),'A4 printed paper cannot claim a trustworthy CIE MRZ');
 assert.ok(index.includes("let mrz=cardEvidence&&!norm.licenceRear?window.DocFixGroup2.recognizeMRZOrientation(processed)"),'MRZ orientation not read from unisolated printed paper');
