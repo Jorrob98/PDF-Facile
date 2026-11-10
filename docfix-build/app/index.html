@@ -1763,7 +1763,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
    const fixed=await normalizeKnownCard(original,multi[i].quad,
     (isSideways?'2 tessere verticali separate':'2 tessere rilevate')+' · tessera '+(i+1),
     multi[i].confidence,{multiSafe:true,
-     sourceVerified:cropMode()==='smart'?multi[i].physicallyVerified===true:(verified||(isSideways&&multi[i].physicallyVerified===true),
+     sourceVerified:cropMode()==='smart'?multi[i].physicallyVerified===true:(verified||(isSideways&&multi[i].physicallyVerified===true)),
      cardKind:isSideways?'generic':(meta.batchSize===2?(i===0?'cf':'ci'):'generic'),
      forceLandscapeLeft:isSideways});
    if(!multiCropHealthy(fixed.processed)){
