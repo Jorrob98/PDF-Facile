@@ -167,7 +167,7 @@ jobs:
           grep -F "card-physical-edges.js" verify/app/index.html
           grep -F "card-onepass.js" verify/app/index.html
           grep -F "card-texture-crop.js" verify/app/index.html
-          grep -F "sourceVerified:verified" verify/app/index.html
+          grep -F "sourceVerified:cropMode()==='smart'?multi[i].physicallyVerified===true" verify/app/index.html
           grep -F "textureTwoCards" verify/main.js
           grep -F "card-threeup.js" verify/app/index.html
           grep -F "card-threeup-polish.js" verify/app/index.html
