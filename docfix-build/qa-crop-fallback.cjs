@@ -76,9 +76,11 @@ const alreadyCard={width:1000,height:1586};
 result=photoNormalize(alreadyCard);
 assert.equal(result.processed,alreadyCard,'ISO-card-shaped original is not destructively recropped');
 assert.equal(result.overPaper,false,'rejected blue candidate must not trigger sideways CIE logic');
-reset();state.generic={...scannedCard,quad:q(.2,.2,.85,.75)};
+reset();state.generic={...scannedCard,physicallyVerified:false,quad:q(.2,.2,.85,.75)};
 result=photoNormalize(original);
-assert.equal(result.processed,original,'a generic text/frame contour must not crop inside A4');
+assert.equal(result.processed,original,'an unverified generic text/frame contour must not crop inside A4');
+assert.equal(singleCropGate(original,{...state.generic,physicallyVerified:true},'generic').ok,true,
+ 'only a separately verified four-edge generic contour may override A4 paper heuristics');
 reset();state.blue={...scannedCard,quad:face};
 state.generic={...scannedCard,quad:q(.20,.21,.80,.70)};
 const landscape={width:1300,height:1000};
