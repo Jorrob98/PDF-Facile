@@ -13,6 +13,7 @@ require('./qa-quad-audit.cjs');
 require('./qa-sideways-pair.cjs');
 require('./qa-manual-extra-card.cjs');
 require('./qa-pair-proof.cjs');
+require('./qa-a4-preserve.cjs');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const index=read('app/index.html');
 const physical=read('app/card-physical-edges.js');
