@@ -1026,7 +1026,7 @@ function singleCropGate(original,candidate,kind='generic'){
  // On an A4-shaped PHOTO, only a separately detected card material is
  // permitted to override the old overbroad "already a page" heuristic.
  if(tightPage&&area<.86){
-  if(!material||area<.20)return fail('source-page','Foglio A4: bordi della tessera non confermati');
+  if((!material&&candidate.physicallyVerified!==true)||area<.20)return fail('source-page','Foglio A4: quattro bordi fisici non confermati');
   const xmin=Math.min(...q.map(p=>p.x)),xmax=Math.max(...q.map(p=>p.x));
   const ymin=Math.min(...q.map(p=>p.y)),ymax=Math.max(...q.map(p=>p.y));
   if(xmin<.018||ymin<.018||xmax>.982||ymax>.982)
