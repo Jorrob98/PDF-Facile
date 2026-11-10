@@ -1,4 +1,4 @@
-/* DocFix 1.9.30 — Conservative final alignment of Italian driving-licence cards.
+/* DocFix 1.9.31 — Conservative final alignment of Italian driving-licence cards.
  * Uses the external plastic-to-white-matte boundary, never printed table lines
  * or a portrait. One perspective transform only; otherwise retain source.
  */
@@ -168,5 +168,5 @@ function correct(source){
   if(s&&s!==source)s.width=s.height=1;
  }
 }
-window.DocFixLicenceFinish=Object.freeze({analyzeRGBA,isLicenceMaterial,refineOriginal,correct,version:'1.9.30'});
+window.DocFixLicenceFinish=Object.freeze({analyzeRGBA,isLicenceMaterial,refineOriginal,correct,version:'1.9.31'});
 })();
