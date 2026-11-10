@@ -39,10 +39,10 @@ const expandQuadSafe=(q,pad=.025)=>{
  return q.map(p=>({x:Math.max(0,Math.min(1,cx+(p.x-cx)*(1+pad*2))),
  y:Math.max(0,Math.min(1,cy+(p.y-cy)*(1+pad*2)))}));
 };
-const factory=new Function('window','expandQuadSafe','qualityAudit','textLines',
+const factory=new Function('window','expandQuadSafe','cropMode','qualityAudit','textLines',
  'inferTextOrientation','rotate','fineDeskewCard',
  snippet+';return normalizeKnownCard');
-const normal=factory(win,expandQuadSafe,()=>({review:false,issues:[],metrics:{}}),
+const normal=factory(win,expandQuadSafe,()=> 'legacy',()=>({review:false,issues:[],metrics:{}}),
  ()=>({vertical:false}),async()=>({angle:0,trustworthy:false}),c=>c,
  ()=>({applied:false,verified:true,residual:0,canvas:null}));
 const call=(args={})=>normal(original,rough,'tre tessere',.91,{
