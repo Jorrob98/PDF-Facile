@@ -1070,9 +1070,32 @@ function photoNormalize(original){
    console.warn('DocFix: contorno generico non disponibile',error);
   }
  }
+ // For the precision engine, classify material and CONFIRM its physical
+ // quadrilateral separately: colour masks/printed frames are not crop proof.
+ // Analyse a scratch thumbnail only; all final pixels come from the original.
+ if(found&&cropMode()==='smart'){
+  let sampled=null;
+  try{
+   sampled=scan.resize(original,900);
+   const shape=quadCardRatio(found.quad,original.width,original.height);
+   const check=window.DocFixQuadAudit?.inspectCanvas?.(sampled,found.quad,
+    {format:shape>=1.25&&shape<=2.1?'card':'document'});
+   if(check?.verified){
+    found={...found,quad:check.quad,confidence:Math.max(found.confidence||0,check.confidence),
+     physicallyVerified:true,method:'quad-audit / '+String(found.method||kind),
+     reason:'Quattro bordi fisici esterni verificati prima del ritaglio'};
+   }else{
+    errors.push('Il contorno ipotizzato non presenta quattro bordi fisici continui');
+    found=null;selected=null;
+   }
+  }catch(error){console.warn('DocFix: analisi geometrica opzionale non riuscita',error);
+   errors.push('Controllo dei quattro bordi non disponibile');
+   found=null;selected=null;
+  }finally{if(sampled&&sampled!==original)sampled.width=sampled.height=1;}
+ }
  // Fallback for a full CIE/health-card photo on dark or textured material:
  // compare multiple detectors and require four continuous external edges.
- // Does not replace an already proven CIE, licence or legacy generic crop.
+ // Does not replace an already verified card or the legacy crop engine.
  if(!found&&cropMode()==='smart'){
   try{
    const probe=window.DocFixOnePass?.detect?.(original,scan.defaultQuad(),
