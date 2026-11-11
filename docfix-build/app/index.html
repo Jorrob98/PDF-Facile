@@ -809,7 +809,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-independent-projection.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -1548,12 +1548,21 @@ function multiCropHealthy(canvas){
   return variance>180&&dark/Math.max(1,n)<.88&&light/Math.max(1,n)<.96;
  }catch{return false}
 }
-async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSafe=false,cardKind='generic',sourceVerified=false,orientationKnown=false,threeUp=false,forceLandscapeLeft=false}={}){
+async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSafe=false,cardKind='generic',sourceVerified=false,orientationKnown=false,threeUp=false,forceLandscapeLeft=false,conservativeSegment=false}={}){
  const scan=window.DocFixScanner;
  const fine=multiSafe?null:window.DocFixGroup1?.refineQuad?.(original,sourceQuad);
  const baseQuad=multiSafe?sourceQuad:(fine?.refined?fine.quad:sourceQuad);
  let quad=baseQuad.map(p=>({...p})),processed=null,tightened=false,tightMethod='',physicalVerified=!multiSafe;
- if(multiSafe&&sourceVerified&&cardKind!=='licence'){
+ if(multiSafe&&conservativeSegment){
+  // The two independent projections agree about document locations, NOT
+  // necessarily the four plastic corners. Crop once with protective margins
+  // and explicitly leave the resulting card marked for verification.
+  quad=sourceQuad.map(p=>({...p}));
+  processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
+  physicalVerified=false;
+  confidence=Math.min(.75,confidence);
+  tightMethod='due mappe indipendenti · bordi esterni da verificare';
+ }else if(multiSafe&&sourceVerified&&cardKind!=='licence'){
   // Verified physical contours on the untouched original: exactly one perspective warp.
   quad=sourceQuad.map(p=>({...p}));
   processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
@@ -1769,11 +1778,38 @@ async function makeImageEntries(file,index,total=1,meta={}){
    else detectorProblems.push('possibili due tessere: bordi non confermati · usa Aggiungi tessera dalla foto');
  }
  }
+ // Only after established multi-card paths fail, compare TWO independent
+ // projection masks (colour and backdrop) on a small offline scratch image.
+ // It can recover two or three cards without forcing an unsafe four-corner
+ // "verified" flag. The prior engines still take precedence.
+ let projection=null;
+ if(cropMode()==='smart'&&!verified){
+  try{projection=window.DocFixIndependentProjection?.detect?.(original)||null;}
+  catch(error){console.warn('DocFix: proiezioni separate non applicate',error);}
+  if(projection?.verifiedSplit&&[2,3].includes(projection.cards?.length)){
+   multi=projection.cards;
+  }else projection=null;
+ }
+ if(projection?.cards?.length===3){
+  const out=[];
+  for(let i=0;i<3;i++){
+   const card=projection.cards[i],p=card.quad;
+   const vertical=(p[3].y-p[0].y)*original.height>(p[1].x-p[0].x)*original.width*1.12;
+   const fixed=await normalizeKnownCard(original,p,'Tre tessere individuate · tessera '+(i+1),card.confidence,
+    {multiSafe:true,cardKind:'generic',sourceVerified:false,conservativeSegment:true,forceLandscapeLeft:vertical});
+   fixed.review=true;fixed.geometryReview=true;fixed.cropped=true;
+   fixed.how+=' · Separazione proposta da due mappe indipendenti: verifica ciascun bordo';
+   out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),
+    sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,
+    splitSlot:i,splitCount:3,threeUp:true,twoUp:false});
+  }
+  return out;
+ }
  // A two-up classification alone does NOT prove two complete documents.
  // The new safety gate only affects precision mode; compatibility keeps its
  // existing working workflow and is always available for manual rollback.
  let uncertainPair=false;
- if(multi?.length===2&&cropMode()==='smart'){
+ if(multi?.length===2&&cropMode()==='smart'&&!projection){
   const proof=window.DocFixPairProof?.verify?.(original,multi);
   if(proof?.verified&&proof.cards?.length===2)multi=proof.cards;
   else{
@@ -1785,22 +1821,29 @@ async function makeImageEntries(file,index,total=1,meta={}){
  if(multi?.length===2){
   const out=[];
   for(let i=0;i<multi.length;i++){
-   const isSideways=!!sideways;
+   const isSideways=!!sideways&&!projection;
    const fixed=await normalizeKnownCard(original,multi[i].quad,
-    (isSideways?'2 tessere verticali separate':'2 tessere rilevate')+' · tessera '+(i+1),
+    (projection?'2 tessere da proiezioni indipendenti':isSideways?'2 tessere verticali separate':'2 tessere rilevate')+' · tessera '+(i+1),
     multi[i].confidence,{multiSafe:true,
      sourceVerified:cropMode()==='smart'?multi[i].physicallyVerified===true:(verified||(isSideways&&multi[i].physicallyVerified===true)),
      // The number of uploaded photos does not determine a card's identity.
      // Classify only from actual document evidence, never batch position.
      cardKind:'generic',
-     forceLandscapeLeft:isSideways});
+     forceLandscapeLeft:isSideways||(!!projection&&
+       (multi[i].quad[3].y-multi[i].quad[0].y)*original.height>
+       (multi[i].quad[1].x-multi[i].quad[0].x)*original.width*1.12),
+     conservativeSegment:!!projection});
    if(!multiCropHealthy(fixed.processed)){
     fixed.review=true;fixed.geometryReview=true;
     fixed.how+=' · Ritaglio prudente: controlla i bordi';
    }
    if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
    if(decision.conflict){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · '+decision.reason;}
-   if(sideways){
+   if(projection){
+    fixed.review=true;fixed.geometryReview=true;fixed.cropped=true;
+    fixed.how+=' · Separazione proposta da due mappe indipendenti: verifica ciascun bordo';
+   }
+   if(isSideways){
     fixed.how+=' · due tessere affiancate: ritaglio separato e rotazione 90°';
     if(fixed.cropVerified!==true){fixed.review=true;fixed.geometryReview=true;
      fixed.how+=' · controlla quattro bordi prima del PDF';}
@@ -1829,7 +1872,7 @@ window.DocFixDesktopDiagnostics=Object.freeze({
  safeRefineMultiQuad,tightenSeparatedCardCanvas,estimateFineDeskew,fineDeskewCard,straightenLicenceWithoutCutting,
  warmVerticalTrim,qualityAudit,trimCardBackground,photoNormalize,multiCropHealthy,
  safeMultiCropPreview:(original,candidate)=>window.DocFixScanner.process(original,{crop:true,quad:expandQuadSafe(candidate.quad,.028),rotation:0,filter:'original',strength:0},2200),
- orderedIncoming,reverseFileOrder,detectPhysicalLines:(c)=>window.DocFixPhysicalEdges?.detect?.(c),detectOriginalCard:(c,q)=>window.DocFixOnePass?.detect?.(c,q),detectTextureCards:(c)=>window.DocFixRealCrop?.detect?.(c),verifyPair:(c,q)=>window.DocFixPairProof?.verify?.(c,q),detectSidewaysPair:(c)=>window.DocFixSidewaysPair?.detect?.(c),detectThreeCards:(c)=>window.DocFixThreeUp?.detect?.(c),polishThreeCards:(c,r)=>window.DocFixThreeUpPolish?.refine?.(c,r),protectLicence:(c,r)=>window.DocFixLicenceGuard?.protect?.(c,r),finishLicence:(c)=>window.DocFixLicenceFinish?.correct?.(c),refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.9.34'
+ orderedIncoming,reverseFileOrder,detectPhysicalLines:(c)=>window.DocFixPhysicalEdges?.detect?.(c),detectOriginalCard:(c,q)=>window.DocFixOnePass?.detect?.(c,q),detectTextureCards:(c)=>window.DocFixRealCrop?.detect?.(c),projectionCards:(c)=>window.DocFixIndependentProjection?.detect?.(c),verifyPair:(c,q)=>window.DocFixPairProof?.verify?.(c,q),detectSidewaysPair:(c)=>window.DocFixSidewaysPair?.detect?.(c),detectThreeCards:(c)=>window.DocFixThreeUp?.detect?.(c),polishThreeCards:(c,r)=>window.DocFixThreeUpPolish?.refine?.(c,r),protectLicence:(c,r)=>window.DocFixLicenceGuard?.protect?.(c,r),finishLicence:(c)=>window.DocFixLicenceFinish?.correct?.(c),refineQuad:(c,q)=>window.DocFixGroup1?.refineQuad?.(c,q),version:'1.9.34'
 });
 function textRotation(items,pageRotate){let angles=[0,0,0,0],chars=0;for(const t of items||[]){const n=(t.str||'').replace(/\s+/g,'').length;if(!n)continue;const m=t.transform||[];const angle=(Math.round(Math.atan2(m[1]||0,m[0]||1)*2/Math.PI)+4)%4;angles[angle]+=n;chars+=n}let best=angles.indexOf(Math.max(...angles));const dominance=chars?angles[best]/chars:0;
  // The page's existing /Rotate is already applied in pdf.js previews.
