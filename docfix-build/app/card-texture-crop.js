@@ -87,8 +87,12 @@ function connectedCards(mask,w,h){
    if(edge&&head%2===0)border.push([x,y]);
   }
   const bw=xmax-xmin+1,bh=ymax-ymin+1,area=tail;
-  if(area<.045*w*h||bw<.26*w||bh<.15*h||bw/bh<1.18||bw/bh>2.18)continue;
-  const fill=area/(bw*bh);if(fill<.48)continue;
+  // Match both horizontal and vertical Italian ID cards. The older code
+  // discarded portrait-shaped (90-degree WhatsApp) cards before measuring
+  // their physical corners.
+  const shape=Math.max(bw/bh,bh/bw);
+  if(area<.023*w*h||bw<.15*w||bh<.10*h||shape<1.22||shape>2.25)continue;
+  const fill=area/(bw*bh);if(fill<.42)continue;
   cards.push({xmin,ymin,xmax,ymax,area,fill,border,cx:sx/area,cy:sy/area});
  }
  return cards.sort((a,b)=>b.area-a.area).slice(0,8);
@@ -104,8 +108,8 @@ function rectifyBox(component,w,h){
   }
   xvec.sort((a,b)=>a-b);yvec.sort((a,b)=>a-b);
   const lo=Math.max(0,Math.floor(points.length*.002)),hi=Math.min(points.length-1,Math.ceil(points.length*.998));
-  const x0=xvec[lo],x1=xvec[hi],y0=yvec[lo],y1=yvec[hi],ww=x1-x0,hh=y1-y0,ratio=ww/hh;
-  if(ratio<1.36||ratio>1.93)continue;
+  const x0=xvec[lo],x1=xvec[hi],y0=yvec[lo],y1=yvec[hi],ww=x1-x0,hh=y1-y0,ratio=ww/hh,shape=Math.max(ratio,1/Math.max(.0001,ratio));
+  if(shape<1.35||shape>1.93)continue;
   const score=(ww*hh)*(1+Math.abs(ratio-1.586)*.09)+Math.abs(ang)*3;
   if(!best||score<best.score)best={ang,cs,sn,x0,x1,y0,y1,ww,hh,ratio,score};
  }
@@ -130,12 +134,19 @@ function analyzeRGBA(pixels,w,h){
    const result=rectifyBox(c,w,h);
    if(!result)continue;
    const coverage=c.area/(w*h);
-   if(result.ratio<1.38||result.ratio>1.85||coverage<.075||coverage>.38)continue;
-   if(result.quad.some(p=>p.x<.01||p.x>.99||p.y<.01||p.y>.99))continue;
-   const confidence=Math.min(.97,.76+(.18*Math.min(1,c.fill))+.025*(result.ratio>1.46&&result.ratio<1.74));
-   cards.push({quad:result.quad,confidence,method:'source-background-texture',angle:result.ang,coverage,ratio:result.ratio,maskFill:c.fill});
+   const physicalRatio=Math.max(result.ratio,1/result.ratio);
+   if(physicalRatio<1.38||physicalRatio>1.85||coverage<.035||coverage>.44)continue;
+   if(result.quad.some(p=>p.x<.008||p.x>.992||p.y<.008||p.y>.992))continue;
+   const confidence=Math.min(.97,.76+(.18*Math.min(1,c.fill))+.025*(physicalRatio>1.46&&physicalRatio<1.74));
+   cards.push({quad:result.quad,confidence,method:'source-background-texture',angle:result.ang,coverage,ratio:physicalRatio,rotated90:result.ratio<1,maskFill:c.fill});
   }
-  cards.sort((a,b)=>a.quad.reduce((t,p)=>t+p.y,0)-b.quad.reduce((t,p)=>t+p.y,0));
+  // Consistent reading order for both stacked and side-by-side cards.
+  if(cards.length>1){
+   const center=c=>({x:c.quad.reduce((v,p)=>v+p.x,0)/4,y:c.quad.reduce((v,p)=>v+p.y,0)/4});
+   const xspread=Math.max(...cards.map(c=>center(c).x))-Math.min(...cards.map(c=>center(c).x));
+   const yspread=Math.max(...cards.map(c=>center(c).y))-Math.min(...cards.map(c=>center(c).y));
+   cards.sort((a,b)=>xspread>yspread?center(a).x-center(b).x:center(a).y-center(b).y);
+  }
   if(!best||Math.abs(cards.length-2)<Math.abs(best.cards.length-2))best={cards,threshold};
   if(cards.length===2)break;
  }
@@ -149,5 +160,5 @@ function detect(original){
  finally{if(sample!==original)sample.width=sample.height=1;}
  return output;
 }
-window.DocFixRealCrop=Object.freeze({detect,analyzeRGBA,version:'1.9.8'});
+window.DocFixRealCrop=Object.freeze({detect,analyzeRGBA,version:'1.9.34'});
 })();
