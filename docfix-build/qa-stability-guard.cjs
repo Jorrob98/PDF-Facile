@@ -16,6 +16,7 @@ require('./qa-pair-proof.cjs');
 require('./qa-a4-preserve.cjs');
 require('./qa-card-orientation.cjs');
 require('./qa-independent-projection.cjs');
+require('./qa-blue-orientation.cjs');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const index=read('app/index.html');
 const physical=read('app/card-physical-edges.js');
