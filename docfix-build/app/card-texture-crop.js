@@ -162,9 +162,10 @@ function analyzeRGBA(pixels,w,h){
   const intersection=dx*dy,areaU=(u.x1-u.x0)*(u.y1-u.y0),areaV=(v.x1-v.x0)*(v.y1-v.y0);
   return intersection/Math.max(1e-9,areaU+areaV-intersection);
  };
+ const unfiltered=attempts.map(a=>a.cards.slice());
  for(const attempt of attempts){
   attempt.cards=attempt.cards.filter(card=>{
-   const support=attempts.reduce((n,other)=>n+(other.cards.some(c=>overlap(card,c)>.80)?1:0),0);
+   const support=unfiltered.reduce((n,group)=>n+(group.some(c=>overlap(card,c)>.80)?1:0),0);
    card.thresholdSupport=support;
    return support>=2;
   });
