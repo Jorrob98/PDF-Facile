@@ -39,7 +39,27 @@ function predictBackground(lab,w,h){
    }
   }return result;
  }
- return {left:smooth(left),right:smooth(right)};
+ const l=smooth(left),r=smooth(right);
+ // Cards near the left/right photograph edges must not become background
+ // training pixels. Use top-to-bottom continuity when an edge is occluded.
+ function fixOccludedEdge(arr){
+  const margin=Math.max(4,Math.round(h*.065)),end=h-margin;
+  const top=[0,0,0],bottom=[0,0,0];
+  for(let y=1;y<margin;y++)for(let c=0;c<3;c++){
+   top[c]+=arr[y*3+c];bottom[c]+=arr[(h-1-y)*3+c];
+  }
+  for(let c=0;c<3;c++){top[c]/=(margin-1);bottom[c]/=(margin-1)}
+  for(let y=margin;y<end;y++){
+   const t=(y-margin)/Math.max(1,end-margin),k=y*3;
+   const e0=top[0]+(bottom[0]-top[0])*t;
+   const e1=top[1]+(bottom[1]-top[1])*t;
+   const e2=top[2]+(bottom[2]-top[2])*t;
+   const d0=arr[k]-e0,d1=arr[k+1]-e1,d2=arr[k+2]-e2;
+   if(d0*d0+d1*d1+d2*d2>46*46){arr[k]=e0;arr[k+1]=e1;arr[k+2]=e2}
+  }
+ }
+ fixOccludedEdge(l);fixOccludedEdge(r);
+ return {left:l,right:r};
 }
 function maskFromColor(lab,w,h,bg,threshold){
  const mask=new Uint8Array(w*h);
@@ -91,7 +111,7 @@ function connectedCards(mask,w,h){
   // discarded portrait-shaped (90-degree WhatsApp) cards before measuring
   // their physical corners.
   const shape=Math.max(bw/bh,bh/bw);
-  if(area<.023*w*h||bw<.15*w||bh<.10*h||shape<1.22||shape>2.25)continue;
+  if(area<.023*w*h||bw<.15*w||bh<.10*h||shape>2.25)continue;
   const fill=area/(bw*bh);if(fill<.42)continue;
   cards.push({xmin,ymin,xmax,ymax,area,fill,border,cx:sx/area,cy:sy/area});
  }
@@ -100,7 +120,8 @@ function connectedCards(mask,w,h){
 function rectifyBox(component,w,h){
  const points=component.border;if(points.length<90)return null;
  let best=null;
- for(let ang=-9;ang<=9.00001;ang+=.5){
+ const scanAngles=(from,to,step)=>{
+ for(let ang=from;ang<=to+.00001;ang+=step){
   const a=ang*Math.PI/180,cs=Math.cos(a),sn=Math.sin(a),xvec=[],yvec=[];
   for(let j=0;j<points.length;j++){
    const [x,y]=points[j],dx=x-component.cx,dy=y-component.cy;
@@ -112,6 +133,13 @@ function rectifyBox(component,w,h){
   if(shape<1.35||shape>1.93)continue;
   const score=(ww*hh)*(1+Math.abs(ratio-1.586)*.09)+Math.abs(ang)*3;
   if(!best||score<best.score)best={ang,cs,sn,x0,x1,y0,y1,ww,hh,ratio,score};
+ }
+ };
+ scanAngles(-9,9,.5);
+ // Wider deskew is costly: only search beyond 9° if the initial solution
+ // was absent or pinned to the edge of the normal search interval.
+ if(!best||Math.abs(best.ang)>=8.5){
+  scanAngles(-32,-9.5,1.5);scanAngles(9.5,32,1.5);
  }
  if(!best)return null;
  const p=Math.max(1,Math.min(w,h)*.0025),{cs,sn}=best;
