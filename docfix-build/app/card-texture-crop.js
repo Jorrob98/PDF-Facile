@@ -227,6 +227,52 @@ function analyzeRGBA(pixels,w,h){
   if(!best||Math.abs(cards.length-2)<Math.abs(best.cards.length-2))best={cards,threshold};
   if(cards.length===2)break;
  }
+
+ // Optional last-resort recovery for TWO extremely low-contrast documents.
+ // Never replace an already recognized card, and never trust one faint mask.
+ // The 8 and 6 thresholds must independently confirm two nearly identical,
+ // non-overlapping four-sided rectangles; pair proof will still audit originals.
+ if(best?.cards?.length===0){
+  const atLowThreshold=(threshold)=>{
+   let bits=mendHorizontalGlare(maskFromColor(lab,w,h,bg,threshold),w,h);
+   const k=Math.max(2,Math.round(Math.min(w,h)*.007));
+   bits=morph(morph(bits,w,h,k,k,false),w,h,k,k,true);
+   bits=morph(morph(bits,w,h,1,1,true),w,h,1,1,false);
+   const cards=[];
+   for(const c of connectedCards(bits,w,h)){
+    const result=rectifyBox(c,w,h);if(!result)continue;
+    const coverage=c.area/(w*h),shape=Math.max(result.ratio,1/result.ratio);
+    if(shape<1.38||shape>1.85||coverage<.035||coverage>.44)continue;
+    if(result.quad.some(p=>p.x<.008||p.x>.992||p.y<.008||p.y>.992))continue;
+    cards.push({quad:result.quad,confidence:.82,method:'low-contrast-two-threshold-provisional',
+     angle:result.ang,coverage,ratio:shape,rotated90:result.ratio<1,maskFill:c.fill});
+   }
+   return cards.length===2?cards:null;
+  };
+  const a=atLowThreshold(8),b=a?atLowThreshold(6):null;
+  if(a&&b){
+   const bounds=c=>{
+    const xs=c.quad.map(p=>p.x),ys=c.quad.map(p=>p.y);
+    return {x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys)};
+   };
+   const iou=(c,d)=>{
+    const p=bounds(c),q=bounds(d);
+    const intersection=Math.max(0,Math.min(p.x1,q.x1)-Math.max(p.x0,q.x0))*
+     Math.max(0,Math.min(p.y1,q.y1)-Math.max(p.y0,q.y0));
+    const a=(p.x1-p.x0)*(p.y1-p.y0),b=(q.x1-q.x0)*(q.y1-q.y0);
+    return intersection/Math.max(1e-8,a+b-intersection);
+   };
+   const stable=a.every(c=>b.some(other=>iou(c,other)>=.87));
+   const separate=iou(a[0],a[1])<.12;
+   if(stable&&separate){
+    const mid=c=>({x:c.quad.reduce((s,p)=>s+p.x,0)/4,
+     y:c.quad.reduce((s,p)=>s+p.y,0)/4});
+    const va=mid(a[0]),vb=mid(a[1]),leftToRight=Math.abs(va.x-vb.x)>Math.abs(va.y-vb.y);
+    a.sort((c,d)=>leftToRight?mid(c).x-mid(d).x:mid(c).y-mid(d).y);
+    return {cards:a,threshold:8,reason:'doppio contorno debole da verificare'};
+   }
+  }
+ }
  return best||{cards:[],reason:'bordi non confermati'};
 }
 function detect(original){
