@@ -121,7 +121,11 @@ result=photoNormalize(original);
 assert.strictEqual(result.processed,original,'uncertain four-edge geometry keeps the actual original');
 assert.equal(result.review,true,'strict rejected crop is shown for manual verification');
 // A passing audit may refine the existing colour candidate without a second crop.
-win.DocFixQuadAudit.inspectCanvas=()=>({verified:true,quad:box,confidence:.94});
+// A geometry box without independent side evidence is never enough.
+win.DocFixQuadAudit.inspectCanvas=()=>({verified:true,quad:box,confidence:.94,support:{sidesOk:3}});
+result=photoNormalize(original);
+assert.strictEqual(result.processed,original,'three supported edges cannot produce an automatic crop');
+win.DocFixQuadAudit.inspectCanvas=()=>({verified:true,quad:box,confidence:.94,support:{sidesOk:4}});
 result=photoNormalize(original);
 assert.notStrictEqual(result.processed,original,'four real supported sides can produce a crop');
 assert.ok(result.how.includes('Quattro bordi fisici'),'physical proof is visible in review text');
