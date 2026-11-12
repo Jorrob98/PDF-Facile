@@ -46,7 +46,7 @@ console.log('DocFix sideways pair PASS: split, touching cards, safety warnings, 
 // Integration: TWO separate WhatsApp files must produce FOUR real page entries,
 // and legacy mode must still use the previous single-photo fallback.
 (async()=>{
- const start=index.indexOf('async function makeImageEntries('),end=index.indexOf('window.DocFixDesktopDiagnostics=',start);
+ const start=index.indexOf('function decideTwoUpProof('),end=index.indexOf('window.DocFixDesktopDiagnostics=',start);
  assert.ok(start>=0&&end>start,'two-card import function is reachable');
  const code=index.slice(start,end);
  const fixture=detect(scene(),w,h);
