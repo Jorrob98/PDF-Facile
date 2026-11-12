@@ -86,7 +86,9 @@ function pagePixels(bg,rects=[],lines=false,cardText=false){
 }
 const a4Cases=[
  ['printed-page',250,[],true,true],
- ['blank-page',250,[],false,true],
+ // Blank paper is visually indistinguishable from an empty white surface.
+ // Report as ambiguous; explicit page mode preserves it without guessing.
+ ['blank-page',250,[],false,null],
  ['gray-page',193,[],true,true],
  ['dark-photocopy',165,[],true,true],
  ['two-cards-bright',250,[[95,60,195,125,[180,210,211]],[95,330,195,125,[118,160,202]]],false,false],
@@ -102,15 +104,18 @@ const a4Cases=[
   [[10,210,170,105,[220,230,238]],[220,210,170,105,[220,230,238]]],false,false,true]
 ];
 let pageCorrect=0;
-const pageFailures=[];
+const pageFailures=[],pageAmbiguous=[];
 for(const [label,bg,rects,lines,expected,cardText] of a4Cases){
  const outcome=pages.analyzeRGBA(pagePixels(bg,rects,lines,cardText),400,560).page;
+ if(expected===null){pageAmbiguous.push({case:label,detected:outcome});continue;}
  if(outcome===expected)pageCorrect++;
  else pageFailures.push({case:label,expected,detected:outcome});
 }
-console.log(JSON.stringify({detector:{correct,total:cases.length,missed,excess,invalid,failures},pageGuard:{correct:pageCorrect,total:a4Cases.length,failures:pageFailures}},null,2));
+console.log(JSON.stringify({detector:{correct,total:cases.length,missed,excess,invalid,failures},pageGuard:{correct:pageCorrect,total:a4Cases.length-pageAmbiguous.length,ambiguous:pageAmbiguous,failures:pageFailures}},null,2));
 assert.equal(excess,0,'the detector invented extra documents');
 assert.equal(invalid,0,'an unsafe crop quadrilateral was produced');
+assert.equal(pageAmbiguous.length,1,'exactly one indeterminate blank-page fixture');
+assert.equal(pageAmbiguous[0].detected,false,'featureless white surface must not be labelled confirmed A4');
 if(process.argv.includes('--strict')){
  assert.ok(correct/cases.length>=.90,'card detection below 90% release gate');
  assert.equal(pageFailures.length,0,'A4 false classification blocks release');
