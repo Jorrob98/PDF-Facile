@@ -122,7 +122,7 @@ function rectifyBox(component,w,h){
 function analyzeRGBA(pixels,w,h){
  if(!pixels||w<200||h<250)return {cards:[],reason:'immagine piccola'};
  const lab=toLab(pixels,w,h),bg=predictBackground(lab,w,h);
- const attempts=[];
+ let best=null;
  for(const threshold of [30,26,34,38]){
   let bits=maskFromColor(lab,w,h,bg,threshold);
   let k=Math.max(2,Math.round(Math.min(w,h)*.007));
@@ -147,32 +147,10 @@ function analyzeRGBA(pixels,w,h){
    const yspread=Math.max(...cards.map(c=>center(c).y))-Math.min(...cards.map(c=>center(c).y));
    cards.sort((a,b)=>xspread>yspread?center(a).x-center(b).x:center(a).y-center(b).y);
   }
-  attempts.push({cards,threshold});
+  if(!best||Math.abs(cards.length-2)<Math.abs(best.cards.length-2))best={cards,threshold};
+  if(cards.length===2)break;
  }
- // Cross-threshold consensus protects against one-off shadows and false splits.
- // Candidate count is not a proxy for document type.
- const bounds=c=>{
-  const xs=c.quad.map(p=>p.x),ys=c.quad.map(p=>p.y);
-  return {x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys)};
- };
- const overlap=(a,b)=>{
-  const u=bounds(a),v=bounds(b);
-  const dx=Math.max(0,Math.min(u.x1,v.x1)-Math.max(u.x0,v.x0));
-  const dy=Math.max(0,Math.min(u.y1,v.y1)-Math.max(u.y0,v.y0));
-  const intersection=dx*dy,areaU=(u.x1-u.x0)*(u.y1-u.y0),areaV=(v.x1-v.x0)*(v.y1-v.y0);
-  return intersection/Math.max(1e-9,areaU+areaV-intersection);
- };
- const unfiltered=attempts.map(a=>a.cards.slice());
- for(const attempt of attempts){
-  attempt.cards=attempt.cards.filter(card=>{
-   const support=unfiltered.reduce((n,group)=>n+(group.some(c=>overlap(card,c)>.80)?1:0),0);
-   card.thresholdSupport=support;
-   return support>=2;
-  });
-  attempt.score=attempt.cards.reduce((n,c)=>n+c.thresholdSupport*.5+c.confidence+c.maskFill*.2,0);
- }
- attempts.sort((a,b)=>b.score-a.score||Math.abs(a.threshold-30)-Math.abs(b.threshold-30));
- return attempts[0]||{cards:[],reason:'bordi non confermati'};
+ return best||{cards:[],reason:'bordi non confermati'};
 }
 function detect(original){
  const scan=window.DocFixScanner;if(!scan||!original)return {cards:[],reason:'scanner non disponibile'};
