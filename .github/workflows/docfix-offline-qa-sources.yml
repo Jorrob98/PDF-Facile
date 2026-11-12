@@ -1,0 +1,28 @@
+name: DocFix offline QA source bundle
+on:
+  push:
+    paths:
+      - '.github/workflows/docfix-offline-qa-sources.yml'
+  workflow_dispatch:
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout DocFix build branch
+        uses: actions/checkout@v4
+      - name: Prepare local renderer code and tests only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa-src
+          cp -a docfix-build/app qa-src/
+          cp docfix-build/package.json qa-src/package.json
+          cp docfix-build/qa-*.cjs qa-src/
+          printf 'Source-only bundle; no customer documents.\n' > qa-src/README.txt
+      - name: Export source for local private benchmarking
+        uses: actions/upload-artifact@v4
+        with:
+          name: docfix-private-local-qa-source
+          path: qa-src/
+          retention-days: 1
+          if-no-files-found: error

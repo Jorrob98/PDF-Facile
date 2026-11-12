@@ -1,0 +1,196 @@
+name: Build DocFix Desktop
+
+on:
+  push:
+    branches: [docfix-desktop-build]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: docfix-desktop-build
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: docfix-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Restore application icon
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force build | Out-Null
+          $b64=(Get-Content build\icon.b64 -Raw).Trim()
+          [IO.File]::WriteAllBytes('build\icon.png',[Convert]::FromBase64String($b64))
+
+      - name: Install build dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Bundle PDF and OCR libraries locally
+        run: npm run prepare-vendor
+
+      - name: Static anti-regression checks
+        shell: pwsh
+        run: |
+          node --check main.js
+          node --check qa-stability-guard.cjs
+          node qa-stability-guard.cjs
+          node --check prepare-vendor.js
+          node --check preload.js
+          node --check ocr-cloud-main.js
+          node --check app\ocr-max.js
+          node --check app\group1-safe-crop.js
+          node --check app\card-threeup.js
+          node --check app\card-threeup-polish.js
+          node --check app\card-licence-guard.js
+          node --check app\card-licence-finish.js
+          node --check qa-licence-finish.cjs
+          node qa-licence-finish.cjs
+          node --check app\group2-orientation.js
+          node --check app\group3-quality.js
+          node --check app\group5-export.js
+          if (Select-String -Path app\index.html -Pattern 'cdnjs|cdn.jsdelivr|unpkg.com' -Quiet) { throw 'Riferimento CDN trovato' }
+          if (Select-String -Path app\index.html -Pattern 'serviceWorker|manifest.webmanifest|beforeinstallprompt' -Quiet) { throw 'Residuo PWA trovato' }
+          $required=@(
+            'app\vendor\pdfjs\pdf.min.mjs',
+            'app\vendor\pdfjs\pdf.worker.min.mjs',
+            'app\vendor\pdf-lib\pdf-lib.min.js',
+            'app\vendor\tesseract\tesseract.min.js',
+            'app\vendor\tesseract\worker.min.js',
+            'app\vendor\tessdata\eng.traineddata.gz',
+            'app\vendor\tessdata\ita.traineddata.gz'
+          )
+          foreach($f in $required){ if(!(Test-Path $f)){ throw "Manca $f" } }
+          $cores=(Get-ChildItem app\vendor\tesseract-core\tesseract-core*.wasm.js -ErrorAction SilentlyContinue)
+          if($cores.Count -lt 4){ throw "Core Tesseract incompleti: $($cores.Count)" }
+          $preload=Get-Content preload.js -Raw
+          if($preload -notmatch 'DocFixOCRCloud'){ throw 'Bridge OCR cloud mancante' }
+          $ocr=Get-Content app\ocr-max.js -Raw
+          if($ocr -notmatch 'OCR MAX'){ throw 'Modulo OCR MAX mancante' }
+          if($ocr -notmatch "createWorker\(\['ita','eng'\]"){ throw 'OCR italiano+inglese mancante' }
+          $cloud=Get-Content ocr-cloud-main.js -Raw
+          if($cloud -notmatch 'eu-vision.googleapis.com'){ throw 'Google Vision EU mancante' }
+          if($cloud -notmatch 'prebuilt-read'){ throw 'Azure Read fallback mancante' }
+          if($cloud -notmatch 'prebuilt-idDocument'){ throw 'Azure ID Document mancante' }
+          if($cloud -notmatch 'jsonRequestRetry'){ throw 'Retry cloud OCR mancante' }
+          if($cloud -notmatch 'google-rescue'){ throw 'Google rescue OCR mancante' }
+          if($ocr -notmatch 'docfix:reset'){ throw 'Reset coda OCR mancante' }
+          if($ocr -notmatch 'scheduleWorkerRelease'){ throw 'Rilascio RAM OCR mancante' }
+          if($ocr -notmatch 'labeledFields'){ throw 'Estrazione campi etichettati mancante' }
+          $stability=Get-Content app\stability.js -Raw
+          if($stability -notmatch 'refreshUpdateButton'){ throw 'Controllo automatico aggiornamenti mancante' }
+          if($stability -notmatch 'update.hidden=true'){ throw 'Pulsante aggiornamento non nascosto di default' }
+          if($stability -notmatch 'Aggiornamento disponibile'){ throw 'Etichetta aggiornamento disponibile mancante' }
+          $index=Get-Content app\index.html -Raw
+          if($index -notmatch 'safeMultiCropPreview'){ throw 'Ritaglio sicuro multi-tessera mancante' }
+          if($index -notmatch 'multiCropHealthy'){ throw 'Validazione multi-tessera mancante' }
+          if($index -notmatch 'orderedIncoming'){ throw 'Ordinamento naturale file multipli mancante' }
+          $main=Get-Content main.js -Raw
+          if($main -notmatch 'inputOrder'){ throw 'Self-test ordine file mancante' }
+          if($main -notmatch 'reverseFileOrder'){ throw 'Self-test inversione file mancante' }
+          if($index -notmatch 'stackedCardCandidatesByGap'){ throw 'Rilevatore due tessere sovrapposte mancante' }
+          if($main -notmatch 'stackedEdgeCards'){ throw 'Self-test tessere ai bordi mancante' }
+          if($main -notmatch 'fourCardPairOrder'){ throw 'Self-test 2 file -> 4 anteprime mancante' }
+          if($main -notmatch 'multiRefineSafe'){ throw 'Self-test rifinitura multi-tessera mancante' }
+          if($main -notmatch 'stackedRecovery'){ throw 'Self-test recupero 3/4 mancante' }
+          if($main -notmatch 'twoByTwoGate'){ throw 'Self-test blocco set incompleto mancante' }
+          if($main -notmatch 'onePlusOneRecovery'){ throw 'Self-test recupero 1+1 mancante' }
+          if($main -notmatch 'tightSeparatedCard'){ throw 'Self-test rifinitura bordo tessera mancante' }
+          if($main -notmatch 'cfPhysicalCrop'){ throw 'Self-test bordo codice fiscale mancante' }
+          if($main -notmatch 'fineDeskew'){ throw 'Self-test raddrizzamento fine mancante' }
+          if($main -notmatch 'cfFineDeskew'){ throw 'Self-test raddrizzamento CF mancante' }
+          if($main -notmatch 'deskewResidualVerified'){ throw 'Self-test residuo deskew mancante' }
+          if($index -notmatch 'residuo '){ throw 'Indicatore residuo deskew mancante' }
+          if($index -notmatch 'nessun miglioramento verificato'){ throw 'Fallback deskew verificato mancante' }
+          if($main -notmatch 'diagnosticsCoverage'){ throw 'Copertura diagnostica deskew mancante' }
+          if($index -notmatch 'projection-bands'){ throw 'Deskew doppia banda mancante' }
+          if($index -notmatch 'estimateFineDeskew'){ throw 'Raddrizzamento fine mancante' }
+          if($index -notmatch 'raddrizzato '){ throw 'Stato raddrizzamento fine mancante' }
+          if($index -notmatch "cardKind==='cf'"){ throw 'Modalità dedicata codice fiscale mancante' }
+          if($index -notmatch 'rotatedProbe'){ throw 'Sonda ruotata codice fiscale mancante' }
+          if($index -notmatch 'tightenSeparatedCardCanvas'){ throw 'Secondo ritaglio fisico tessera mancante' }
+          if($index -notmatch 'cropVerified:physicalVerified'){ throw 'Stato bordo fisico rifinito mancante' }
+          if($index -notmatch 'card-threeup-polish.js'){ throw 'Motore rifinitura 6 tessere mancante' }
+          if($index -notmatch 'card-licence-guard.js'){ throw 'Verifica bordi fisici patente non caricata' }
+          if($main -notmatch 'licencePhysicalBorderRecovered'){ throw 'Test recupero bordo patente mancante' }
+          if($main -notmatch 'licenceOtherCardsUntouched'){ throw 'Protezione CF e CI mancante' }
+          if($index -notmatch 'regroupSixCards'){ throw 'Ordinamento 6 tessere mancante' }
+          if($main -notmatch 'threeCardPolish'){ throw 'Self-test rifinitura brevetto mancante' }
+          if($index -notmatch 'planSixCardOrder'){ throw 'Nuovo ordinamento delle 6 tessere mancante' }
+          if($main -notmatch 'sixCardActualOrder'){ throw 'Test ordine documenti mancante' }
+          if($index -notmatch 'straightenLicenceWithoutCutting'){ throw 'Correzione patente mancante' }
+          if($index -notmatch "cardKind==='licence'"){ throw 'Passaggio patente disattivato' }
+          if($main -notmatch 'sixPageUniqueExport'){ throw 'Test nome PDF unico mancante' }
+          if($main -notmatch 'sixCardDarknessRecovery'){ throw 'Test fronte-retro su foto scura mancante' }
+          if($main -notmatch 'sixCardUncertainSafe'){ throw 'Test verso incerto mancante' }
+          if($main -notmatch 'sixCardGrouping'){ throw 'Self-test ordine 6 pagine mancante' }
+          if($index -notmatch 'card-threeup.js'){ throw 'Nuovo motore 3 tessere non caricato' }
+          if($index -notmatch 'threeByTwoState'){ throw 'Stato 6/6 mancante' }
+          if($main -notmatch 'threeCardsFromOne'){ throw 'Test 3 tessere assente' }
+          if($main -notmatch 'threeCardsOrientCorrect'){ throw 'Test rotazione 90 gradi assente' }
+          if($index -notmatch 'twoByTwoCandidateMeta'){ throw 'Decisione recupero 1+1 mancante' }
+          if($index -notmatch 'rebuildSourceAsTwoUp'){ throw 'Ricostruzione sorgente 2x2 mancante' }
+          if($index -notmatch 'stackedCardCandidatesRecovery'){ throw 'Rilevatore di recupero 2x2 mancante' }
+          if($index -notmatch 'recoverIncompleteTwoByTwo'){ throw 'Recupero automatico 3/4 mancante' }
+          if($index -notmatch 'Set incompleto'){ throw 'Avviso set incompleto mancante' }
+          if($index -notmatch 'safeRefineMultiQuad'){ throw 'Rifinitura prudente multi-tessera mancante' }
+          if($index -notmatch 'regroupLatestTwoUpSources'){ throw 'Accoppiamento caricamenti separati mancante' }
+          if($index -notmatch 'Ritaglio prudente: controlla i bordi'){ throw 'Fallback due anteprime prudente mancante' }
+          if($index -notmatch 'set completo 4/4'){ throw 'Indicatore set 4/4 mancante' }
+          if($index -notmatch 'Scambia fronte/retro'){ throw 'Scambio fronte/retro mancante' }
+          if($index -notmatch 'pairedFourCards'){ throw 'Raggruppamento 2x2 mancante' }
+          if($index -notmatch '4 tessere separate'){ throw 'Stato 4 tessere mancante' }
+          if($index -notmatch 'Inverti ordine file'){ throw 'Comando inversione file mancante' }
+          $crop=Get-Content app\group1-safe-crop.js -Raw
+          if($crop -notmatch 'group1-superrun-20261105'){ throw 'Fix limiti ritaglio SUPER RUN mancante' }
+          $main=Get-Content main.js -Raw
+          if($main -notmatch 'no-cache, no-store, must-revalidate'){ throw 'Protezione cache obsoleta mancante' }
+          if($main -notmatch "child.once\('spawn'"){ throw 'Conferma avvio updater mancante' }
+          Write-Host "Controlli statici superati"
+
+      - name: Build Windows installer
+        run: npm run dist
+
+      - name: Smoke test unpacked Windows app
+        shell: pwsh
+        run: |
+          $exe='dist\win-unpacked\DocFix.exe'
+          if(!(Test-Path $exe)){ throw 'DocFix.exe unpacked non trovato' }
+          $p=Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 10
+          if($p.HasExited){ throw "DocFix si e chiuso durante il test. ExitCode=$($p.ExitCode)" }
+          Stop-Process -Id $p.Id -Force
+          Write-Host 'Avvio desktop superato'
+
+      - name: Verify final installer
+        shell: pwsh
+        run: |
+          $version=(Get-Content package.json -Raw | ConvertFrom-Json).version
+          $fileName="DocFix_Setup_$version.exe"
+          $f=Get-Item ("dist\"+$fileName)
+          if($f.Length -lt 50000000){ throw "Installer sospettosamente piccolo: $($f.Length)" }
+          $hash=(Get-FileHash $f.FullName -Algorithm SHA256).Hash
+          "DOCFIX_SETUP_FILE=$fileName" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Installer: $($f.Length) bytes"
+          Write-Host "SHA256: $hash"
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: DocFix-Setup-Windows
+          path: docfix-build/dist/${{ env.DOCFIX_SETUP_FILE }}
+          if-no-files-found: error
+          retention-days: 7
