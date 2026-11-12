@@ -12,6 +12,17 @@ function draw(kind){
   if(kind==='dark-copy')color=[165,165,165];
   if(kind==='yellow-copy')color=[237,220,161];
   if(kind==='light-card-on-white'&&x>155&&x<460&&y>310&&y<535)color=[224,226,230];
+  // Printed cards must not be confused with a document simply because
+  // the pair has several ink/text bands on a pale background.
+  if(kind==='two-text-cards'&&((y>=90&&y<290)||(y>=520&&y<720))&&x>=140&&x<455){
+   color=[220,230,238];
+   if(x>195&&x<380&&y%26<3)color=[43,49,55];
+  }
+  if(kind==='side-by-side-text-cards'&&y>=350&&y<490&&
+     ((x>=45&&x<270)||(x>=325&&x<550))){
+   color=[220,230,238];
+   if(y%24<3)color=[43,49,55];
+  }
   if(kind==='two-cards'){
    color=[51,52,49];
    if((y>90&&y<330||y>450&&y<705)&&x>70&&x<530)color=[228,229,223];
@@ -26,6 +37,10 @@ function draw(kind){
 assert.equal(detector(draw('declaration'),w,h).page,true,'scanned A4 declaration remains one page');
 assert.equal(detector(draw('photo-page'),w,h).page,true,'photographed A4 declaration remains one page');
 assert.equal(detector(draw('two-cards'),w,h).page,false,'two ID cards on a dark desk are not declared A4');
+assert.equal(detector(draw('two-text-cards'),w,h).page,false,
+ 'two printed cards stacked on a white desk are NOT a full A4 declaration');
+assert.equal(detector(draw('side-by-side-text-cards'),w,h).page,false,
+ 'two printed cards side by side are NOT a full A4 declaration');
 assert.equal(detector(draw('dark-copy'),w,h).page,true,'dark photocopy with ink bands is a complete page');
 assert.equal(detector(draw('yellow-copy'),w,h).page,true,'warm-coloured printed A4 stays intact');
 assert.equal(detector(draw('light-card-on-white'),w,h).page,false,'light ID on white must not be mistaken for A4');
