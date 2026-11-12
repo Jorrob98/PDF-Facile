@@ -48,11 +48,28 @@ function verify(original,candidates){
   sample=scan.resize(original,880);
   const result=candidates.map(c=>{
    const test=audit.inspectCanvas(sample,c.quad,{format:'card'});
-   if(!test?.verified||test.support?.sidesOk!==4||!scan.validQuad(test.quad))
-    return null;
-   return {...c,quad:test.quad,physicallyVerified:true,
+   if(test?.verified===true&&test.support?.sidesOk===4&&scan.validQuad(test.quad))
+    return {...c,quad:test.quad,physicallyVerified:true,
      confidence:Math.min(1,Math.max(c.confidence||0,test.confidence||0)),
      method:'two-cards / 4 physical edges'};
+   // Full-frame audit can miss a small card. Retry on a dedicated ROI at
+   // higher effective resolution, but ONLY with four independent edges.
+   // A colour match or an approximate location never counts as proof.
+   const restored=window.DocFixOnePass?.detect?.(original,c.quad,
+    {auditEnabled:true,format:'card'})||null;
+   if(!restored?.physicallyVerified||restored.support?.sidesOk!==4||
+      !scan.validQuad(restored.quad))return null;
+   const before=bbox(c.quad),after=bbox(restored.quad);
+   const ai=rectArea(before),bi=rectArea(after);
+   const overlap=Math.max(0,Math.min(before.x1,after.x1)-Math.max(before.x0,after.x0))*
+    Math.max(0,Math.min(before.y1,after.y1)-Math.max(before.y0,after.y0));
+   const center={x:(after.x0+after.x1)/2,y:(after.y0+after.y1)/2};
+   if(bi<ai*.13||bi>ai*1.5||overlap/Math.max(.00001,bi)<.80||
+      center.x<before.x0-.025||center.x>before.x1+.025||
+      center.y<before.y0-.025||center.y>before.y1+.025)return null;
+   return {...c,quad:restored.quad,physicallyVerified:true,
+    confidence:Math.min(1,Math.max(c.confidence||0,restored.confidence||0)),
+    method:'two-cards / ROI with 4 physical edges'};
   });
   if(result.some(x=>!x))return {verified:false,reason:'almeno una tessera senza quattro bordi confermati'};
   const final=geometry(original,result);
