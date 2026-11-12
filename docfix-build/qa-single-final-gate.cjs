@@ -36,9 +36,9 @@ function run(auditedQuad,edgesOk=4){
   DocFixOnePass:{detect:()=>null},
   DocFixQuadAudit:{inspectCanvas:()=>({verified:true,quad:auditedQuad,confidence:.94,support:{sidesOk:edgesOk}})}
  };
- const api=new Function('window','cropMode','quadCardRatio','expandQuadSafe','trimCardBackground',
+ const api=new Function('window','console','cropMode','quadCardRatio','expandQuadSafe','trimCardBackground',
   code+';return {photoNormalize,singleCropGate};')(
-  win,()=> 'smart',ratio,q=>q,processed=>processed);
+  win,console,()=> 'smart',ratio,q=>q,processed=>processed);
  const output=api.photoNormalize(original);
  return {output,calls,gate:api.singleCropGate(original,{status:'found',quad:auditedQuad,confidence:.95,cardLikely:true},'generic')};
 }
