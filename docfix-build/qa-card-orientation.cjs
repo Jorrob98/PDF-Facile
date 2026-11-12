@@ -64,6 +64,9 @@ const closeCards=engine.analyzeRGBA(closeOriginal,400,600);
 assert.equal(closeCards.cards.length,2,
  'two IDs separated by a 5px gap must remain separate');
 assert.deepEqual(closeOriginal,closeCopy,'near-card processing must preserve source pixels');
+const tighter=geometricFixture([[100,170,180,115,0],[100,289,180,115,0]],380,570);
+assert.equal(engine.analyzeRGBA(tighter,380,570).cards.length,2,
+ 'four-pixel separation must not be erased by morphological closing');
 const lowWidth=400,lowHeight=600,lowCard=new Uint8ClampedArray(lowWidth*lowHeight*4);
 for(let y=0;y<lowHeight;y++)for(let x=0;x<lowWidth;x++){
  const bg=45+8*x/lowWidth+8*y/lowHeight;
