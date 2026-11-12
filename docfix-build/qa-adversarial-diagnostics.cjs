@@ -71,11 +71,15 @@ for(const [label,boxes,opt={}] of cases){
     c.quad.some(q=>!Number.isFinite(q.x)||!Number.isFinite(q.y)||q.x<0||q.x>1||q.y<0||q.y>1)))invalid++;
  assert.deepEqual(p,before,'source pixels modified for '+label);
 }
-function pagePixels(bg,rects=[],lines=false){
+function pagePixels(bg,rects=[],lines=false,cardText=false){
  const w=400,h=560,d=new Uint8ClampedArray(w*h*4);
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-  let v=[bg,bg,bg];
-  for(const [bx,by,bw,bh,rgb] of rects)if(x>=bx&&x<bx+bw&&y>=by&&y<by+bh)v=rgb;
+  let v=[bg,bg,bg],card=null;
+  for(const [bx,by,bw,bh,rgb] of rects){
+   if(x>=bx&&x<bx+bw&&y>=by&&y<by+bh){v=rgb;card={bx,bw};}
+  }
+  if(cardText&&card&&y%24<3&&x>card.bx+card.bw*.16&&x<card.bx+card.bw*.78)
+   v=[43,49,55];
   if(lines&&y>=70&&y<=490&&(y%28)<2&&x>45&&x<345)v=[35,35,35];
   let k=(y*w+x)*4;d[k]=v[0];d[k+1]=v[1];d[k+2]=v[2];d[k+3]=255;
  }return d;
@@ -91,12 +95,16 @@ const a4Cases=[
  ['dark-card-on-white',252,[[90,180,195,126,[100,130,169]]],false,false],
  ['small-pair-on-white',252,[[100,100,140,80,[180,210,211]],[100,270,140,80,[115,150,210]]],false,false],
  ['empty-white-surface',255,[],false,false],
- ['empty-gray-surface',170,[],false,false]
+ ['empty-gray-surface',170,[],false,false],
+ ['two-printed-cards-stacked',252,
+  [[95,60,195,125,[220,230,238]],[95,330,195,125,[220,230,238]]],false,false,true],
+ ['two-printed-cards-sideways',252,
+  [[10,210,170,105,[220,230,238]],[220,210,170,105,[220,230,238]]],false,false,true]
 ];
 let pageCorrect=0;
 const pageFailures=[];
-for(const [label,bg,rects,lines,expected] of a4Cases){
- const outcome=pages.analyzeRGBA(pagePixels(bg,rects,lines),400,560).page;
+for(const [label,bg,rects,lines,expected,cardText] of a4Cases){
+ const outcome=pages.analyzeRGBA(pagePixels(bg,rects,lines,cardText),400,560).page;
  if(outcome===expected)pageCorrect++;
  else pageFailures.push({case:label,expected,detected:outcome});
 }
