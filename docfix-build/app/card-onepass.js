@@ -148,7 +148,10 @@
   const center={x:quad.reduce((sum,p)=>sum+p.x,0)/4,y:quad.reduce((sum,p)=>sum+p.y,0)/4};
   const bounds={x0:Math.min(...rough.map(p=>p.x)),y0:Math.min(...rough.map(p=>p.y)),x1:Math.max(...rough.map(p=>p.x)),y1:Math.max(...rough.map(p=>p.y))};
   if(center.x<bounds.x0-.025||center.x>bounds.x1+.025||center.y<bounds.y0-.025||center.y>bounds.y1+.025)return null;
-  return {quad,verified:true,confidence:best.confidence,method:best.method,support:best.support,score:best.score};
+  // Report the independent four-edge proof to the caller. Previously this
+  // property was discarded and the safe single-card fallback never ran.
+  return {quad,verified:true,physicallyVerified:best.physicallyVerified===true,
+   confidence:best.confidence,method:best.method,support:best.support,score:best.score};
  }
  window.DocFixOnePass=Object.freeze({detect,detectColorRect:colorCandidate,mapFromLeftTurn,version:'source-first-1.9.29'});
 })();
