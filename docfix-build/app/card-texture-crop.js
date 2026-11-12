@@ -89,6 +89,34 @@ function morph(binary,w,h,rx,ry,isDilate){
   }
  }return out;
 }
+
+// Mends only a narrow, near-full-width highlight in the temporary mask.
+// A reflected stripe must not connect a card to both photo margins.
+// Restore support from adjacent rows; never alter the source RGBA image.
+function mendHorizontalGlare(mask,w,h){
+ const occupancy=new Uint32Array(h);
+ for(let y=0;y<h;y++){
+  let count=0,base=y*w;
+  for(let x=0;x<w;x++)count+=mask[base+x];
+  occupancy[y]=count;
+ }
+ const minWidth=Math.round(w*.80),maxLength=Math.max(3,Math.round(h*.042));
+ for(let y=2;y<h-2;){
+  if(occupancy[y]<minWidth){y++;continue}
+  const start=y;
+  while(y<h-2&&occupancy[y]>=minWidth)y++;
+  const end=y-1,len=end-start+1;
+  if(len>maxLength||occupancy[start-1]>w*.62||occupancy[end+1]>w*.62)continue;
+  for(let k=0;k<len;k++){
+   const dst=(start+k)*w,above=(start-1)*w,below=(end+1)*w;
+   for(let x=0;x<w;x++){
+    const before=mask[above+x],after=mask[below+x];
+    mask[dst+x]=before&&after?1:before?(k<len/2?1:0):after?(k>=len/2?1:0):0;
+   }
+  }
+ }
+ return mask;
+}
 function connectedCards(mask,w,h){
  const seen=new Uint8Array(w*h),queue=new Int32Array(w*h),cards=[];
  for(let p=0;p<mask.length;p++){
@@ -170,7 +198,7 @@ function analyzeRGBA(pixels,w,h){
  // Include low-contrast cards without adding an expensive extra scan:
  // four thresholds remain, with two calibrated to muted scanner photos.
  for(const threshold of [30,26,20,16]){
-  let bits=maskFromColor(lab,w,h,bg,threshold);
+  let bits=mendHorizontalGlare(maskFromColor(lab,w,h,bg,threshold),w,h);
   let k=Math.max(2,Math.round(Math.min(w,h)*.007));
   bits=morph(morph(bits,w,h,k,k,false),w,h,k,k,true);
   // The old 1.9% closing radius merged adjacent cards separated by
