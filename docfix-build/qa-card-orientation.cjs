@@ -57,6 +57,22 @@ for(let y=0;y<ovalHeight;y++)for(let x=0;x<ovalWidth;x++){
 }
 assert.equal(engine.analyzeRGBA(ovals,ovalWidth,ovalHeight).cards.length,0,
  'oval shapes are not complete four-sided plastic documents');
+
+const closeOriginal=geometricFixture([[105,170,190,120,0],[105,295,190,120,0]]);
+const closeCopy=closeOriginal.slice();
+const closeCards=engine.analyzeRGBA(closeOriginal,400,600);
+assert.equal(closeCards.cards.length,2,
+ 'two IDs separated by a 5px gap must remain separate');
+assert.deepEqual(closeOriginal,closeCopy,'near-card processing must preserve source pixels');
+const lowWidth=400,lowHeight=600,lowCard=new Uint8ClampedArray(lowWidth*lowHeight*4);
+for(let y=0;y<lowHeight;y++)for(let x=0;x<lowWidth;x++){
+ const bg=45+8*x/lowWidth+8*y/lowHeight;
+ const rgb=x>=105&&x<295&&y>=170&&y<290?[74,77,83]:[bg,bg+1,bg+2];
+ const k=(y*lowWidth+x)*4;
+ lowCard[k]=rgb[0];lowCard[k+1]=rgb[1];lowCard[k+2]=rgb[2];lowCard[k+3]=255;
+}
+assert.equal(engine.analyzeRGBA(lowCard,lowWidth,lowHeight).cards.length,1,
+ 'low-contrast card should be recovered without selecting a false second card');
 const originalPage=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 assert.ok(originalPage.includes("if(mode==='cards'||portrait>.67)"),'landscape and portrait photos both reach the existing physical detector');
 assert.ok(originalPage.includes("cardKind:'generic'"),'unknown card type must not be inferred from the upload order');
