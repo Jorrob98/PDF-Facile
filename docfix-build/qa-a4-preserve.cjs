@@ -9,11 +9,14 @@ function draw(kind){
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
   let color=[250,250,248];
   if(kind==='photo-page'&&(x<40||x>w-40||y<35||y>h-35))color=[43,46,44];
+  if(kind==='dark-copy')color=[165,165,165];
+  if(kind==='yellow-copy')color=[237,220,161];
+  if(kind==='light-card-on-white'&&x>155&&x<460&&y>310&&y<535)color=[224,226,230];
   if(kind==='two-cards'){
    color=[51,52,49];
    if((y>90&&y<330||y>450&&y<705)&&x>70&&x<530)color=[228,229,223];
   }
-  if((kind==='declaration'||kind==='photo-page')&&y>105&&y<650&&y%34<3&&x>75&&x<475)
+  if((kind==='declaration'||kind==='photo-page'||kind==='dark-copy'||kind==='yellow-copy')&&y>105&&y<650&&y%34<3&&x>75&&x<475)
    color=[49,52,50];
   const k=(y*w+x)*4;
   p[k]=color[0];p[k+1]=color[1];p[k+2]=color[2];p[k+3]=255;
@@ -23,6 +26,10 @@ function draw(kind){
 assert.equal(detector(draw('declaration'),w,h).page,true,'scanned A4 declaration remains one page');
 assert.equal(detector(draw('photo-page'),w,h).page,true,'photographed A4 declaration remains one page');
 assert.equal(detector(draw('two-cards'),w,h).page,false,'two ID cards on a dark desk are not declared A4');
+assert.equal(detector(draw('dark-copy'),w,h).page,true,'dark photocopy with ink bands is a complete page');
+assert.equal(detector(draw('yellow-copy'),w,h).page,true,'warm-coloured printed A4 stays intact');
+assert.equal(detector(draw('light-card-on-white'),w,h).page,false,'light ID on white must not be mistaken for A4');
+assert.equal(detector(draw('blank'),w,h).page,false,'a featureless white surface is ambiguous in automatic mode');
 assert.equal(detector(new Uint8ClampedArray(150*150*4),150,150).page,false,'tiny scans fail safely');
 const index=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 const start=index.indexOf('function twoByTwoCandidateMeta('),end=index.indexOf('function threeByTwoState(){',start);
