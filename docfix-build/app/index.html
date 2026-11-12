@@ -1616,7 +1616,7 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
   // retains its historical three-side behaviour.
   const fullOutline=found?.verified&&scan.validQuad(found.quad)
    &&(cropMode()!=='smart'||(found.physicallyVerified===true&&found.support?.sidesOk===4))
-   &&(!threeUp||(candidateArea>=sourceArea*.68&&candidateArea<=sourceArea*1.55));
+   &&(!threeUp||(found.support?.sidesOk===4&&candidateArea>=sourceArea*.68&&candidateArea<=sourceArea*1.55));
   if(fullOutline){
    try{
     quad=found.quad;
