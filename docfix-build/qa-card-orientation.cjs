@@ -46,6 +46,17 @@ assert.equal(sideways.cards.length,2,'two side-by-side cards at image margins ar
 const tilted=engine.analyzeRGBA(geometricFixture([[100,170,200,126,30]]),400,600);
 assert.equal(tilted.cards.length,1,'30-degree card is detected without forcing extra documents');
 assert.ok(Math.abs(tilted.cards[0].angle-30)<=2,'large-angle deskew must estimate the true angle');
+// Rounded/oval graphical shapes can have the same external proportions as IDs.
+// They must not be accepted as two physically rectangular cards.
+const ovalWidth=320,ovalHeight=480,ovals=new Uint8ClampedArray(ovalWidth*ovalHeight*4);
+for(let y=0;y<ovalHeight;y++)for(let x=0;x<ovalWidth;x++){
+ const oval=((x-160)/102)**2+((y-175)/62)**2<1||
+            ((x-160)/102)**2+((y-330)/62)**2<1;
+ const rgb=oval?[208,218,212]:[45+x/ovalWidth*6,48+y/ovalHeight*9,46+x/ovalWidth*6];
+ const i=(y*ovalWidth+x)*4;ovals[i]=rgb[0];ovals[i+1]=rgb[1];ovals[i+2]=rgb[2];ovals[i+3]=255;
+}
+assert.equal(engine.analyzeRGBA(ovals,ovalWidth,ovalHeight).cards.length,0,
+ 'oval shapes are not complete four-sided plastic documents');
 const originalPage=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 assert.ok(originalPage.includes("if(mode==='cards'||portrait>.67)"),'landscape and portrait photos both reach the existing physical detector');
 assert.ok(originalPage.includes("cardKind:'generic'"),'unknown card type must not be inferred from the upload order');
