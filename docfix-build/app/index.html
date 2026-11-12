@@ -1085,10 +1085,20 @@ function photoNormalize(original){
    const shape=quadCardRatio(found.quad,original.width,original.height);
    const check=window.DocFixQuadAudit?.inspectCanvas?.(sampled,found.quad,
     {format:shape>=1.25&&shape<=2.1?'card':'document'});
-   if(check?.verified){
-    found={...found,quad:check.quad,confidence:Math.max(found.confidence||0,check.confidence),
+   if(check?.verified&&check.support?.sidesOk===4&&scan.validQuad(check.quad)){
+    const audited={...found,quad:check.quad,
+     confidence:Math.max(found.confidence||0,check.confidence||0),
      physicallyVerified:true,method:'quad-audit / '+String(found.method||kind),
      reason:'Quattro bordi fisici esterni verificati prima del ritaglio'};
+    // The independent edge auditor may move or shrink the original quad.
+    // Validate the FINAL quad again, not only the preliminary colour box.
+    // Otherwise a face portrait/inner frame can pass the initial area test.
+    const finalGate=singleCropGate(original,audited,kind);
+    if(finalGate.ok){found=audited;selected=finalGate;}
+    else{
+     errors.push('Contorno finale non sicuro: '+finalGate.reason);
+     found=null;selected=null;
+    }
    }else{
     errors.push('Il contorno ipotizzato non presenta quattro bordi fisici continui');
     found=null;selected=null;
