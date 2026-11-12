@@ -838,7 +838,9 @@ function syncActions(){
  // Missing cards are a WARNING, not a permanent lock on the user's PDF.
  // Never export while pages are still being added via the main workflow.
  dl.disabled=busy||exporting||emergencyExporting||pending.length>0||available.length===0||available.length!==entries.length||entries.some(e=>e.manualPending===true);
- dl.textContent=incomplete?'↓ Scarica PDF ('+available.length+' pagine · set incompleto)':'↓ Scarica PDF pronto';
+ const pendingManual=entries.filter(e=>e.manualPending===true).length;
+ dl.textContent=pendingManual?'✎ Conferma i bordi di '+pendingManual+' '+(pendingManual===1?'tessera':'tessere'):
+  (incomplete?'↓ Scarica PDF ('+available.length+' pagine · set incompleto)':'↓ Scarica PDF pronto');
  const save=$('download-ready');
  save.hidden=!available.length||(!incomplete&&!busy&&!pending.length);
  save.disabled=emergencyExporting||exporting||available.length===0||entries.some(e=>e.manualPending===true);
@@ -2306,6 +2308,10 @@ async function exportRasterOffline(pages=entries){
 }
 async function exportPdf(){
  if(busy||exporting||emergencyExporting||pending.length||!entries.length)return;
+ if(entries.some(e=>e.manualPending===true)){
+  status('Prima conferma i quattro bordi delle tessere segnalate, oppure conserva la pagina completa.');
+  return;
+ }
  const incomplete=partialSet();
  if(incomplete)note('Set incompleto: il PDF conterrà solo le '+entries.length+' pagine disponibili. Non verrà indicato come completo.');
  // Never export a stale source order if the last recognition finished between UI events.
@@ -2374,6 +2380,10 @@ async function exportPdf(){
 // can update the live entries. It does NOT claim that missing pages exist.
 async function saveAvailablePages(){
  if(exporting||emergencyExporting)return;
+ if(entries.some(e=>e.manualPending===true)){
+  status('PDF non ancora sicuro: conferma i bordi delle tessere indicate oppure scegli pagina completa.');
+  return;
+ }
  const pages=availablePages().map(e=>({...e,processed:e.processed}));
  if(!pages.length){status('Nessuna pagina pronta da salvare.');return;}
  emergencyExporting=true;syncActions();
