@@ -20,7 +20,7 @@ const factory=new Function('window','cropMode','rotate','expandQuadSafe','fineDe
 const normalize=factory(mock,()=> 'smart',c=>c,q=>q,()=>({applied:false,verified:true}),
  ()=>({review:false,issues:[],metrics:{}}),()=>({vertical:false}),
  async()=>({trustworthy:false,angle:0}),console);
-(async()=>{
+module.exports=(async()=>{
  const original={width:1200,height:1600};
  const unverified=await normalize(original,quad,'prova',.89,{multiSafe:true,cardKind:'generic',sourceVerified:false});
  assert.equal(unverified.cropVerified,false,'unverified synthetic crop is not physically proven');
@@ -48,4 +48,4 @@ const normalize=factory(mock,()=> 'smart',c=>c,q=>q,()=>({applied:false,verified
  assert.equal(statusMessages.length,2,'both PDF export routes must fail closed on unconfirmed crop');
  assert.ok(statusMessages.every(m=>m.includes('bordi')),'user gets actionable correction instruction');
  console.log('DocFix export safety PASS: provisional pairs blocked, verified pairs free, both export routes fail closed');
-})().catch(err=>{console.error(err);process.exitCode=1});
+})();
