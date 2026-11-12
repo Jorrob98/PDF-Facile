@@ -142,6 +142,22 @@ function rectifyBox(component,w,h){
   scanAngles(-32,-9.5,1.5);scanAngles(9.5,32,1.5);
  }
  if(!best)return null;
+ // Require extensive straight-line support on all four sides. An oval
+ // can have a plausible bounding rectangle but is not a physical ID card.
+ const bins=[new Uint8Array(12),new Uint8Array(12),new Uint8Array(12),new Uint8Array(12)];
+ const tol=Math.max(2,Math.min(best.ww,best.hh)*.035);
+ for(const point of points){
+  const dx=point[0]-component.cx,dy=point[1]-component.cy;
+  const u=dx*best.cs+dy*best.sn,v=dy*best.cs-dx*best.sn;
+  const xx=clamp(Math.floor((u-best.x0)/best.ww*12),0,11);
+  const yy=clamp(Math.floor((v-best.y0)/best.hh*12),0,11);
+  if(Math.abs(u-best.x0)<=tol)bins[0][yy]=1;
+  if(Math.abs(u-best.x1)<=tol)bins[1][yy]=1;
+  if(Math.abs(v-best.y0)<=tol)bins[2][xx]=1;
+  if(Math.abs(v-best.y1)<=tol)bins[3][xx]=1;
+ }
+ const sideBins=bins.map(b=>b.reduce((n,v)=>n+v,0));
+ if(sideBins.some(n=>n<6))return null;
  const p=Math.max(1,Math.min(w,h)*.0025),{cs,sn}=best;
  const box=[[best.x0-p,best.y0-p],[best.x1+p,best.y0-p],[best.x1+p,best.y1+p],[best.x0-p,best.y1+p]];
  const quad=box.map(([x,y])=>({x:clamp((component.cx+x*cs-y*sn)/w,0,1),y:clamp((component.cy+x*sn+y*cs)/h,0,1)}));
