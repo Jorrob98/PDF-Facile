@@ -15,7 +15,9 @@ function analyzeRGBA(data,w,h){
   for(let x=Math.floor(w*.08);x<w*.92;x+=3){
    const k=(y*w+x)*4,r=data[k],g=data[k+1],b=data[k+2];
    const hi=Math.max(r,g,b),lo=Math.min(r,g,b);
-   const paper=lo>=184&&hi-lo<=31;
+   const neutral=lo>=142&&hi-lo<=34;
+   const warm=lo>=145&&r>=g&&g>=b&&r-b<=100&&g-b>=25;
+   const paper=neutral||warm;
    const tx=Math.min(nx-1,Math.floor((x/w-.08)/.84*nx));
    const ty=Math.min(ny-1,Math.floor((y/h-.08)/.84*ny));
    const c=ty*nx+tx;
@@ -37,8 +39,12 @@ function analyzeRGBA(data,w,h){
   if(active&&!inside){bands++;inside=true;}
   if(!active)inside=false;
  }
- const strong=fraction>=.84&&cells>=22;
- const page=(strong&&density<.28)||(fraction>=.72&&cells>=18&&bands>=6&&density<.25);
+ // Paper-like colours and A4 proportions alone are ambiguous:
+ // a light ID card on a white surface can produce the same histogram.
+ // In auto mode require text/ink bands before protecting a page.
+ // Explicit A4 mode in the UI still preserves blank and unusual sheets.
+ const page=fraction>=.68&&central>=.60&&cells>=17&&bands>=4&&
+   density>=.006&&density<.28;
  return {page,reason:page?'A4 / declaration visual layout':'inconclusive text bands',
   fraction,cells,bands,density};
 }
