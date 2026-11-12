@@ -167,11 +167,16 @@ function analyzeRGBA(pixels,w,h){
  if(!pixels||w<200||h<250)return {cards:[],reason:'immagine piccola'};
  const lab=toLab(pixels,w,h),bg=predictBackground(lab,w,h);
  let best=null;
- for(const threshold of [30,26,34,38]){
+ // Include low-contrast cards without adding an expensive extra scan:
+ // four thresholds remain, with two calibrated to muted scanner photos.
+ for(const threshold of [30,26,20,16]){
   let bits=maskFromColor(lab,w,h,bg,threshold);
   let k=Math.max(2,Math.round(Math.min(w,h)*.007));
   bits=morph(morph(bits,w,h,k,k,false),w,h,k,k,true);
-  k=Math.max(6,Math.round(Math.min(w,h)*.019));
+  // The old 1.9% closing radius merged adjacent cards separated by
+  // only 5px at thumbnail scale, so independent perimeters disappeared.
+  // Keep the closing radius below half that gap.
+  k=2;
   bits=morph(morph(bits,w,h,k,k,true),w,h,k,k,false);
   const comps=connectedCards(bits,w,h),cards=[];
   for(const c of comps){
