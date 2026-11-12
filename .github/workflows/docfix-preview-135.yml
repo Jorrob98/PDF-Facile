@@ -63,7 +63,7 @@ jobs:
           node <<'NODE'
           const fs=require('node:fs'),path=require('node:path');
           const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
-          if(pkg.version!=='1.9.35')throw Error('Unexpected source version');
+          if(pkg.version!=='1.9.34')throw Error('Unexpected source version');
           pkg.version='1.9.35';
           fs.writeFileSync('package.json',JSON.stringify(pkg,null,2)+'\n');
           const files=['main.js','preload.js'];
@@ -78,8 +78,8 @@ jobs:
           visit('app');
           for(const file of files){
             const original=fs.readFileSync(file,'utf8');
-            if(original.includes('1.9.35'))
-              fs.writeFileSync(file,original.replaceAll('1.9.35','1.9.35'));
+            if(original.includes('1.9.34'))
+              fs.writeFileSync(file,original.replaceAll('1.9.34','1.9.35'));
           }
           const entry=fs.readFileSync('main.js','utf8');
           if(!entry.includes("out.updaterVersion")||!entry.includes("1.9.35"))
@@ -228,7 +228,8 @@ jobs:
               FileOpen $2 "$INSTDIR\resources\docfix-update-status.txt" w
               FileWrite $2 "OK 1.9.35"
               FileClose $2
-              Delete "$INSTDIR\resources\app.asar.bak"
+              DetailPrint "Backup versione precedente conservato per ripristino"
+
 
               Sleep 700
               ExecShell "open" "$INSTDIR\DocFix.exe"
