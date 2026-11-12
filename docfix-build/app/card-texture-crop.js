@@ -174,9 +174,9 @@ function analyzeRGBA(pixels,w,h){
   let k=Math.max(2,Math.round(Math.min(w,h)*.007));
   bits=morph(morph(bits,w,h,k,k,false),w,h,k,k,true);
   // The old 1.9% closing radius merged adjacent cards separated by
-  // only 5px at thumbnail scale, so independent perimeters disappeared.
-  // Keep the closing radius below half that gap.
-  k=2;
+  // only 4-5px at thumbnail scale, so independent perimeters disappeared.
+  // A one-pixel closing radius preserves four-pixel gaps while cleaning noise.
+  k=1;
   bits=morph(morph(bits,w,h,k,k,true),w,h,k,k,false);
   const comps=connectedCards(bits,w,h),cards=[];
   for(const c of comps){
