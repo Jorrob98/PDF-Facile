@@ -283,6 +283,91 @@ jobs:
           echo "UPDATER_SHA=$sha"
           file "$updater" | grep -Ei 'PE32|MS Windows'
 
+      - name: Build one-click recovery to previously installed stable build
+        shell: bash
+        working-directory: docfix-build
+        run: |
+          set -euo pipefail
+          cat > rollback.nsi <<'NSI'
+          Unicode true
+          Name "Ripristina DocFix 1.9.34"
+          OutFile "DocFix_Ripristina_1.9.34.exe"
+          RequestExecutionLevel user
+          ShowInstDetails nevershow
+          AutoCloseWindow true
+          InstallDir "$LOCALAPPDATA\Programs\docfix-desktop"
+          Page instfiles
+
+          Section "Ripristino"
+            IfFileExists "$INSTDIR\DocFix.exe" found tryalternate
+            tryalternate:
+              StrCpy $INSTDIR "$LOCALAPPDATA\Programs\DocFix"
+              IfFileExists "$INSTDIR\DocFix.exe" found scanprograms
+            scanprograms:
+              StrCpy $1 "$LOCALAPPDATA\Programs"
+              FindFirst $2 $3 "$1\*"
+            scanloop:
+              StrCmp $3 "" scanlocal
+              StrCmp $3 "." scannext
+              StrCmp $3 ".." scannext
+              IfFileExists "$1\$3\DocFix.exe" 0 scannext
+              StrCpy $INSTDIR "$1\$3"
+              FindClose $2
+              Goto found
+            scannext:
+              FindNext $2 $3
+              Goto scanloop
+            scanlocal:
+              FindClose $2
+              StrCpy $INSTDIR "$LOCALAPPDATA\DocFix"
+              IfFileExists "$INSTDIR\DocFix.exe" found notfound
+
+            found:
+              IfFileExists "$INSTDIR\resources\app.asar.bak" restore nobackup
+            restore:
+              nsExec::ExecToStack 'taskkill /IM "DocFix.exe" /F'
+              Pop $0
+              Pop $1
+              Sleep 1400
+              Delete "$INSTDIR\resources\app.asar.prova"
+              ClearErrors
+              Rename "$INSTDIR\resources\app.asar" "$INSTDIR\resources\app.asar.prova"
+              IfErrors restorefail
+              ClearErrors
+              Rename "$INSTDIR\resources\app.asar.bak" "$INSTDIR\resources\app.asar"
+              IfErrors rollbackrestore
+              Delete "$INSTDIR\resources\app.asar.prova"
+              FileOpen $2 "$INSTDIR\resources\docfix-version.txt" w
+              FileWrite $2 "1.9.34"
+              FileClose $2
+              FileOpen $2 "$INSTDIR\resources\docfix-update-status.txt" w
+              FileWrite $2 "RIPRISTINATO 1.9.34"
+              FileClose $2
+              ExecShell "open" "$INSTDIR\DocFix.exe"
+              MessageBox MB_ICONINFORMATION|MB_OK "Ripristino completato: DocFix 1.9.34."
+              SetErrorLevel 0
+              Goto done
+            rollbackrestore:
+              Rename "$INSTDIR\resources\app.asar.prova" "$INSTDIR\resources\app.asar"
+            restorefail:
+              MessageBox MB_ICONSTOP|MB_OK "Ripristino non riuscito. I file esistenti sono stati conservati."
+              SetErrorLevel 3
+              Goto done
+            nobackup:
+              MessageBox MB_ICONEXCLAMATION|MB_OK "Nessun backup trovato. DocFix non e stato modificato."
+              SetErrorLevel 2
+              Goto done
+            notfound:
+              MessageBox MB_ICONSTOP|MB_OK "DocFix non risulta installato su questo PC."
+              SetErrorLevel 4
+            done:
+          SectionEnd
+          NSI
+          makensis -V2 rollback.nsi
+          test -f DocFix_Ripristina_1.9.34.exe
+          file DocFix_Ripristina_1.9.34.exe | grep -Ei 'PE32|MS Windows'
+          sha256sum DocFix_Ripristina_1.9.34.exe > DocFix_Ripristina_1.9.34.sha256
+
       - name: Publish opt-in PRE-RELEASE only (never latest)
         shell: bash
         working-directory: docfix-build
@@ -298,15 +383,16 @@ jobs:
           notes='VERSIONE SPERIMENTALE, SOLO PER COLLAUDO MANUALE. Correzione foto con due tessere piccole: secondo esame dei bordi sulla foto originale; nei casi incerti due anteprime distinte che richiedono conferma manuale prima del PDF. Riconoscimento sintetico 44/50 (88%) e non verificato su documenti reali. Non pubblicata come latest: aggiornamento stabile 1.9.34 invariato. Per tornare indietro usa il ripristino o il precedente installer. Nessuna garanzia di ritaglio automatico in tutte le foto.'
 
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" "$updater" "$shafile" --clobber
+            gh release upload "$tag" "$updater" "$shafile" DocFix_Ripristina_1.9.34.exe DocFix_Ripristina_1.9.34.sha256 --clobber
             gh release edit "$tag" --title "$title" --notes "$notes" --prerelease
           else
-            gh release create "$tag" "$updater" "$shafile" --target docfix-qa-2026-11-12 --title "$title" --notes "$notes" --prerelease
+            gh release create "$tag" "$updater" "$shafile" DocFix_Ripristina_1.9.34.exe DocFix_Ripristina_1.9.34.sha256 --target docfix-qa-2026-11-12 --title "$title" --notes "$notes" --prerelease
           fi
 
           gh release view "$tag" --json isPrerelease --jq .isPrerelease | grep -Fx true
           gh release view "$tag" --json assets --jq '.assets[].name' | grep -Fx "$updater"
           gh release view "$tag" --json assets --jq '.assets[].name' | grep -Fx "$shafile"
+          gh release view "$tag" --json assets --jq '.assets[].name' | grep -Fx DocFix_Ripristina_1.9.34.exe
 
       - name: Upload updater artifact
         uses: actions/upload-artifact@v4
@@ -315,5 +401,7 @@ jobs:
           path: |
             docfix-build/${{ env.UPDATER_FILE }}
             docfix-build/${{ env.UPDATER_SHA_FILE }}
+            docfix-build/DocFix_Ripristina_1.9.34.exe
+            docfix-build/DocFix_Ripristina_1.9.34.sha256
           if-no-files-found: error
           retention-days: 7
