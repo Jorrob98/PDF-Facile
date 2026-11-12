@@ -45,7 +45,7 @@ assert.equal(api.verify(original,cards).verified,false,'detector error keeps saf
 assert.equal(original.width,1200,'failure never damages original');
 const index=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 assert.ok(index.includes('card-pair-proof.js'),'pair verifier loaded');
-assert.ok(index.includes("if(multi?.length===2&&cropMode()==='smart')"),'legacy engine remains unchanged');
+assert.ok(index.includes("if(multi?.length===2&&cropMode()==='smart'&&!projection)"),'legacy engine remains unchanged');
 assert.ok(index.includes('const proof=window.DocFixPairProof?.verify?.(original,multi)'),'original source is verified');
 assert.ok(index.includes('sourceVerified:cropMode()===\'smart\'?multi[i].physicallyVerified===true'),'two-up label alone is never physical proof');
 assert.ok(index.includes('const fixed=uncertainPair?{'),'uncertain pair keeps whole source');
