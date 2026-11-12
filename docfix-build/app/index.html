@@ -1608,12 +1608,15 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
   // Material colour classifies a document; it does NOT verify physical edges.
   // This matters for WhatsApp photos of three mixed Italian cards.
   let found=null;
-  try{found=forceLandscapeLeft?null:(window.DocFixOnePass?.detect?.(original,sourceQuad,{rotatedLeft:threeUp&&orientationKnown,auditEnabled:threeUp&&cropMode()==='smart',format:'card'})||null);}
+  try{found=forceLandscapeLeft?null:(window.DocFixOnePass?.detect?.(original,sourceQuad,{rotatedLeft:threeUp&&orientationKnown,auditEnabled:cropMode()==='smart',format:'card'})||null);}
   catch(error){console.warn('DocFix: rilevatore bordi opzionale non riuscito',error);}
   const sourceArea=scan.area(sourceQuad),candidateArea=found?.quad?scan.area(found.quad):0;
+  // In precision mode, candidate geometry is not enough: the source ROI
+  // must have four independently audited physical edges. Compatibility mode
+  // retains its historical three-side behaviour.
   const fullOutline=found?.verified&&scan.validQuad(found.quad)
-   &&(!threeUp||(found.support?.sidesOk===4
-    &&candidateArea>=sourceArea*.68&&candidateArea<=sourceArea*1.55));
+   &&(cropMode()!=='smart'||(found.physicallyVerified===true&&found.support?.sidesOk===4))
+   &&(!threeUp||(candidateArea>=sourceArea*.68&&candidateArea<=sourceArea*1.55));
   if(fullOutline){
    try{
     quad=found.quad;
