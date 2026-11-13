@@ -69,7 +69,10 @@ assert.ok(index.includes("mode==='cards'?null:preserveFullA4Page(original,mode==
 assert.ok(index.includes('documentMode:documentMode()'),'the selected mode is captured for each incoming batch');
 assert.ok(index.includes('id="document-mode"'),'full-page override is available before adding files');
 assert.ok(index.includes('if(oldIndex<0||!old?.original||old.pageProtected===true)return false;'),'no recovery split on declaration');
-assert.ok(index.includes('const proof=window.DocFixPairProof?.verify?.(old.original,candidates);'),'previous gap-only split must require both external perimeters');
-assert.ok(index.includes('if(proof?.verified!==true||proof.cards?.length!==2)return false;'),'unverified split is forbidden');
+assert.ok(index.includes('const decision=decideTwoUpProof(old.original,pair);')&&
+ index.includes('if(!decision.cards)continue;'),'gap-based rectangles must pass geometric and physical decision');
+assert.ok(index.includes('fixed.manualPending=true;fixed.cropVerified=false;fixed.cropped=false;')&&
+ index.includes('if(entries.some(e=>e.manualPending===true))'),
+ 'unverified gaps are editable previews only, never an unchecked PDF crop');
 assert.ok(index.includes('document-page-guard.js'),'page guard must load before scanner processes images');
-console.log('DocFix A4 regression PASS: declaration intact, two cards distinguishable, batch split prevented, both physical borders required');
+console.log('DocFix A4 regression PASS: declaration intact, two cards distinguishable, A4 split prevented, unverified candidate export blocked');
