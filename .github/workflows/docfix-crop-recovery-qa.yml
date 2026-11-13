@@ -1,0 +1,54 @@
+name: DocFix Crop Recovery QA - no publishing
+
+on:
+  push:
+    branches: [docfix-crop-recovery-2026-11-13]
+
+concurrency:
+  group: docfix-crop-recovery-qa
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-crop-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out corrected source
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install DocFix dependencies
+        working-directory: docfix-build
+        run: npm install --no-audit --no-fund
+      - name: Prepare bundled offline engines
+        working-directory: docfix-build
+        run: npm run prepare-vendor
+      - name: Rebuild local application icon
+        working-directory: docfix-build
+        run: base64 -d build/icon.b64 > build/icon.png
+      - name: Full existing safety regression
+        working-directory: docfix-build
+        run: |
+          set -euo pipefail
+          node --check main.js
+          node --check app/card-texture-crop.js
+          node --check app/card-onepass.js
+          node --check app/card-pair-proof.js
+          node --check app/document-page-guard.js
+          node --check qa-missing-fourth-card.cjs
+          node qa-stability-guard.cjs
+          npm run test:docfix:qa
+      - name: Real Electron, PDF output and updater smoke test
+        working-directory: docfix-build
+        env:
+          ELECTRON_DISABLE_SECURITY_WARNINGS: 'true'
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb
+          timeout 180s xvfb-run -a ./node_modules/.bin/electron --no-sandbox . --self-test
