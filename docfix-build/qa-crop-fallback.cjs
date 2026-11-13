@@ -109,7 +109,8 @@ assert.ok(index.includes("try{sourceCards=window.DocFixRealCrop?.detect?.(origin
  '2-up detector must be isolated from import failures');
 assert.ok(index.includes("try{tripleRaw=window.DocFixThreeUp?.detect?.(original)"),
  '3-up detector must be isolated from import failures');
-assert.ok(index.includes("try{multi=multiCardCandidates(original)"),
+assert.ok(index.includes("const fallback=multiCardCandidates(original)||[]")&&
+ index.includes("catch(error){multi=[];detectorProblems.push('riconoscimento multiplo')"),
  'multi-card fallback errors must not delete the uploaded source');
 // Strict mode: an attractive colour box alone is NOT four physical corners.
 reset();mode='smart';state.blue=scannedCard;
