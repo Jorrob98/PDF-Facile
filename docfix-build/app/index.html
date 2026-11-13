@@ -1810,8 +1810,15 @@ async function makeImageEntries(file,index,total=1,meta={}){
  }
  let multi=verified?sourceCards:null;
  if(!verified){
-  try{multi=multiCardCandidates(original)||[];}
-  catch(error){multi=[];detectorProblems.push('riconoscimento multiplo');console.warn('DocFix: riconoscimento multiplo saltato',error);}
+  try{
+   const fallback=multiCardCandidates(original)||[];
+   // Keep two geometrically separate candidates for editable previews, even
+   // when confidence is too low for a fully automatic four-edge crop.
+   const located=Array.isArray(sourceCards)&&sourceCards.length===2&&
+    window.DocFixPairProof?.geometry?.(original,sourceCards)?.ok===true
+    ?sourceCards:null;
+   multi=fallback.length===2?fallback:(located||fallback);
+  }catch(error){multi=[];detectorProblems.push('riconoscimento multiplo');console.warn('DocFix: riconoscimento multiplo saltato',error);}
  }
  // A dark WhatsApp photo sometimes contains TWO vertical cards side-by-side,
  // not two horizontal cards stacked. Never let a failed 2-up hypothesis send
@@ -1821,8 +1828,10 @@ async function makeImageEntries(file,index,total=1,meta={}){
   try{sideways=window.DocFixSidewaysPair?.detect?.(original)||null;}
   catch(error){detectorProblems.push('due tessere laterali');console.warn('DocFix: due tessere ruotate non confermate',error);}
   if(sideways?.verifiedSplit&&sideways.cards?.length===2){
-   if(sideways.physicallyVerified===true)multi=sideways.cards;
-   else detectorProblems.push('possibili due tessere: bordi non confermati · usa Aggiungi tessera dalla foto');
+   if(sideways.physicallyVerified===true||
+      window.DocFixPairProof?.geometry?.(original,sideways.cards)?.ok===true)
+    multi=sideways.cards; // no automatic PDF until four edges are verified
+   else detectorProblems.push('possibili due tessere: contorni non separabili');
  }
  }
  // Only after established multi-card paths fail, compare TWO independent
@@ -1834,7 +1843,8 @@ async function makeImageEntries(file,index,total=1,meta={}){
   try{projection=window.DocFixIndependentProjection?.detect?.(original)||null;}
   catch(error){console.warn('DocFix: proiezioni separate non applicate',error);}
   if(projection?.verifiedSplit&&[2,3].includes(projection.cards?.length)){
-   multi=projection.cards;
+   if(!Array.isArray(multi)||multi.length!==2)multi=projection.cards;
+   else projection=null; // don't replace two located cards with weaker masks
   }else projection=null;
  }
  if(projection?.cards?.length===3){
@@ -2231,21 +2241,46 @@ function twoByTwoState(){
 async function rebuildSourceAsTwoUp(sourceId,sourcePos){
  const oldIndex=entries.findIndex(e=>e.sourceIndex===sourceId),old=entries[oldIndex];
  if(oldIndex<0||!old?.original||old.pageProtected===true)return false;
- const texture=window.DocFixRealCrop?.detect?.(old.original)?.cards;
- const verified=texture?.length===2&&texture.every(c=>c.confidence>=.80&&window.DocFixScanner.validQuad(c.quad));
- let candidates=verified?texture:stackedCardCandidatesByGap(old.original);
- if(candidates.length!==2)candidates=stackedCardCandidatesRecovery(old.original);
- if(candidates.length!==2)return false;
- // Gap-based candidates are not proof of two separate plastic documents.
- // Require the physical edges of BOTH cards before replacing the page.
- const proof=window.DocFixPairProof?.verify?.(old.original,candidates);
- if(proof?.verified!==true||proof.cards?.length!==2)return false;
- candidates=proof.cards;
+ // A three-page set often means one photo contained two candidates but
+ // the strict border audit discarded both. Keep two separate, review-only
+ // previews instead of throwing away the missing fourth document.
+ const texture=window.DocFixRealCrop?.detect?.(old.original)?.cards||[];
+ const possibilities=[];
+ if(texture.length===2)possibilities.push(texture);
+ const stacked=stackedCardCandidatesByGap(old.original);
+ if(stacked.length===2)possibilities.push(stacked);
+ const recovery=stackedCardCandidatesRecovery(old.original);
+ if(recovery.length===2)possibilities.push(recovery);
+ let selected=null,needsReview=true;
+ for(const pair of possibilities){
+  const decision=decideTwoUpProof(old.original,pair);
+  if(!decision.cards)continue;
+  if(!selected||!decision.needsReview){
+   selected=decision.cards;needsReview=decision.needsReview;
+  }
+  if(!needsReview)break;
+ }
+ if(!selected)return false; // Unknown geometry: retain the full original.
  const made=[];
  for(let i=0;i<2;i++){
-  const fixed=await normalizeKnownCard(old.original,candidates[i].quad,'Recupero 2x2 · tessera '+(i+1),candidates[i].confidence,{multiSafe:true,sourceVerified:true,cardKind:i===0?'cf':'ci'});
-  if(!multiCropHealthy(fixed.processed)){fixed.review=true;fixed.geometryReview=true;fixed.how+=' · Ritaglio prudente: controlla i bordi'}
-  made.push({kind:'raster',original:old.original,...fixed,source:old.source,title:old.source+' · tessera '+(i+1),sourceIndex:sourceId,loadBatch:old.loadBatch??null,batchPos:old.batchPos??sourcePos,batchSize:2,splitSlot:i,splitCount:2,twoUp:true,recoveredTwoUp:true});
+  const candidate=selected[i];
+  const fixed=await normalizeKnownCard(old.original,candidate.quad,
+   'Recupero 2x2 · tessera '+(i+1),candidate.confidence,
+   {multiSafe:true,sourceVerified:!needsReview&&candidate.physicallyVerified===true,
+    cardKind:'generic',conservativeSegment:needsReview});
+  if(needsReview){
+   fixed.manualPending=true;fixed.cropVerified=false;fixed.cropped=false;
+   fixed.geometryReview=true;fixed.review=true;
+   fixed.how+=' · ANTEPRIMA: conferma i bordi prima del PDF';
+  }
+  if(!multiCropHealthy(fixed.processed)){
+   fixed.review=true;fixed.geometryReview=true;
+   fixed.how+=' · Ritaglio prudente: controlla i bordi';
+  }
+  made.push({kind:'raster',original:old.original,...fixed,source:old.source,
+   title:old.source+' · tessera '+(i+1),sourceIndex:sourceId,
+   loadBatch:old.loadBatch??null,batchPos:old.batchPos??sourcePos,batchSize:2,
+   splitSlot:i,splitCount:2,twoUp:true,recoveredTwoUp:true});
  }
  entries.splice(oldIndex,1,...made);
  document.dispatchEvent(new CustomEvent('docfix:entries-added',{detail:{entries:made.slice()}}));
@@ -2262,7 +2297,9 @@ async function recoverIncompleteTwoByTwo(){
  }
  if(!changed)return false;
  const paired=regroupLatestTwoUpSources()||regroupTwoFileFourCards(entries.find(e=>e.loadBatch!=null)?.loadBatch);
- if(paired)status('Recupero automatico riuscito: set completo 4/4.');
+ if(paired)status(entries.some(e=>e.manualPending===true)
+  ?'Quattro tessere localizzate: conferma i bordi delle anteprime evidenziate prima del PDF.'
+  :'Recupero automatico riuscito: set completo 4/4.');
  return paired;
 }
 async function drainPending(){
