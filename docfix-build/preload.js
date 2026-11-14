@@ -3,8 +3,8 @@ const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('DocFixUpdater',Object.freeze({
   currentVersion:()=>ipcRenderer.invoke('docfix:update:version'),
   lastResult:()=>ipcRenderer.invoke('docfix:update:last-result'),
-  check:()=>ipcRenderer.invoke('docfix:update:check'),
-  install:()=>ipcRenderer.invoke('docfix:update:install'),
+  check:(channel='stable')=>ipcRenderer.invoke('docfix:update:check',channel),
+  install:(channel='stable')=>ipcRenderer.invoke('docfix:update:install',channel),
   onProgress:(callback)=>{
     if(typeof callback!=='function')return ()=>{};
     const handler=(_event,data)=>{try{callback(data)}catch{}};
