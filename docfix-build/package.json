@@ -9,7 +9,7 @@
     "prepare-vendor": "node prepare-vendor.js",
     "dist": "electron-builder --win nsis --x64 --publish never",
     "test:stability": "node qa-stability-guard.cjs",
-    "test:docfix:qa": "node qa-card-orientation.cjs && node qa-a4-preserve.cjs && node qa-pair-proof.cjs && node qa-pair-uncertain-preview.cjs && node qa-pair-roi-retry.cjs && node qa-missing-fourth-card.cjs && node qa-photo-pair-crop.cjs && node qa-photo-pair-import.cjs && node qa-single-final-gate.cjs && node qa-export-safety.cjs && node qa-onepass-physical.cjs && node qa-glare-mask.cjs && node qa-low-contrast-pair.cjs && node qa-single-updater.cjs && node qa-adversarial-diagnostics.cjs",
+    "test:docfix:qa": "node qa-card-orientation.cjs && node qa-a4-preserve.cjs && node qa-pair-proof.cjs && node qa-pair-uncertain-preview.cjs && node qa-pair-roi-retry.cjs && node qa-missing-fourth-card.cjs && node qa-photo-pair-crop.cjs && node qa-photo-pair-import.cjs && node qa-single-final-gate.cjs && node qa-export-safety.cjs && node qa-onepass-physical.cjs && node qa-glare-mask.cjs && node qa-low-contrast-pair.cjs && node qa-single-updater.cjs && node qa-touching-bottom.cjs && node qa-adversarial-diagnostics.cjs",
     "test:docfix:release": "npm run test:docfix:qa && node qa-adversarial-diagnostics.cjs --strict"
   },
   "devDependencies": {
