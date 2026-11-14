@@ -2103,10 +2103,13 @@ function turnEntry(index,angle){
 function openCorrection(index){
  if(busy)return;
  editIndex=index;const e=entries[index];editRotation=e.rotation||0;editSource=rotate(e.original,editRotation);
- // Always open on the PROPOSED card corners, including review-only crops.
- // The previous !geometryReview guard reset all uncertain crops to the
- // whole-photo default and made manual correction start from scratch.
- if(e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))editQuad=rotatedQuad(e.sourceQuad,editRotation);
+ // Preserve the original safety rule for an A4 page or a single ID:
+ // uncertain source corners must not be silently preselected.
+ // Only independently located TWO-CARD previews may prefill disputed corners.
+ if(!e.geometryReview&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))
+  editQuad=rotatedQuad(e.sourceQuad,editRotation);
+ else if(e.twoUp===true&&e.splitCount===2&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))
+  editQuad=rotatedQuad(e.sourceQuad,editRotation);
  else{
   editQuad=window.DocFixScanner.defaultQuad();const found=window.DocFixScanner.detectDocument(editSource);
   if(!e.geometryReview&&found.status==='found'&&found.confidence>=.79&&window.DocFixScanner.area(found.quad)>.20)
