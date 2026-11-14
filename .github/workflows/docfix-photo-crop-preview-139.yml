@@ -104,7 +104,7 @@ jobs:
           grep -F 'manualPending===true' verify/app/index.html
           grep -F 'card-photo-pair.js' verify/app/index.html
           grep -F 'DocFixPhotoPair?.detect?.(original)' verify/app/index.html
-          grep -F 'if(e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))' verify/app/index.html
+          grep -F 'else if(e.twoUp===true&&e.splitCount===2&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))' verify/app/index.html
           grep -F 'decideTwoUpProof' verify/app/index.html
           grep -F 'physicallyVerified:best.physicallyVerified===true' verify/app/card-onepass.js
           test -f verify/app/vendor/pdfjs/pdf.min.mjs
