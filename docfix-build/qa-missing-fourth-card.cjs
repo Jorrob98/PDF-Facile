@@ -20,7 +20,7 @@ const win={DocFixScanner:scanner,DocFixPairProof:pairs,
  DocFixRealCrop:{detect:()=>({cards:pair})},DocFixThreeUp:{detect:()=>null},
  DocFixSidewaysPair:{detect:()=>null},DocFixIndependentProjection:{detect:()=>null}};
 const sourcePieces=html.slice(a,b);
-const factory=new Function('window','imageCanvas','chooseMultiCardMode','multiCardCandidates',
+const factory=new Function('window','padTwoCardQuad','imageCanvas','chooseMultiCardMode','multiCardCandidates',
  'normalizeKnownCard','normalizeRaster','multiCropHealthy','cropMode',
  'preserveFullA4Page','documentMode','console',sourcePieces+';return makeImageEntries;');
 let called=[];
@@ -32,7 +32,7 @@ const render=(o,q,label,confidence,options)=>{
 };
 const normalized=async()=>({processed:original,how:'original',review:false});
 let forcedPage=false;
-const imported=factory(win,async()=>original,()=>({mode:'fallback',conflict:false}),
+const imported=factory(win,q=>q,async()=>original,()=>({mode:'fallback',conflict:false}),
  ()=>[],render,normalized,()=>true,()=> 'smart',
  (o,force)=>force?{processed:o,pageProtected:true,how:'pagina intera'}:null,
  ()=> 'auto',console);
