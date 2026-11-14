@@ -30,6 +30,6 @@ assert.ok(originalPage.includes("if(mode==='cards'||portrait>.67)"),'landscape a
 assert.ok(originalPage.includes("cardKind:'generic'"),'unknown card type must not be inferred from the upload order');
 assert.ok(!originalPage.includes("meta.batchSize===2?(i===0?'cf':'ci')"),'batch count must never identify a document');
 assert.ok(originalPage.includes('Libretti / dichiarazioni / A4 · pagina intera'),'libretti can preserve the full sheet');
-assert.ok(originalPage.includes("if(multi?.length===2&&cropMode()==='smart')"),
+assert.ok(originalPage.includes("if(multi?.length===2&&cropMode()==='smart'&&!projection)"),
  'two candidates must still pass independent four-corner verification');
 console.log('DocFix card orientation PASS: rotated two-card, no false split of one, original intact, pair-proof and libretti protection');
