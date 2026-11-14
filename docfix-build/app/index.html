@@ -809,7 +809,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -981,8 +981,8 @@ function trimCardBackground(c,backLike=false){
  if(top===null||bottom===null||top>h*.084||bottom<h*.90)return c;
  const left=search(col,.32,0,Math.floor(w*.10)),right=search(col,.30,Math.floor(w*.90),w,true);
  const isBack=backLike||(left!==null&&left>w*.028);
- let t=Math.min(h*.075,top+(isBack?Math.round(h*.009):2));
- let b=Math.min(h,bottom+2);
+ let t=Math.max(0,Math.min(h*.075,top-Math.max(2,Math.round(h*.011))));
+ let b=Math.min(h,bottom+Math.max(4,Math.round(h*.032)));
  if(isBack){let last=0;for(let yy=Math.round(h*.78);yy<h;yy++)if(dark[yy]/(w*.79)>.035)last=yy;
   if(last>h*.84)b=Math.min(h,Math.max(b,last+Math.round(h*.025)));else b=Math.min(h,bottom+Math.round(h*.030));}
  let l=left!==null?left+2:Math.round(w*.018);
@@ -1400,6 +1400,54 @@ function verticalTrimQuad(q,t0,t1){const lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y
 function expandQuadSafe(q,pad=.025){
  const cx=q.reduce((s,p)=>s+p.x,0)/4,cy=q.reduce((s,p)=>s+p.y,0)/4;
  return q.map(p=>({x:Math.max(0,Math.min(1,cx+(p.x-cx)*(1+pad*2))),y:Math.max(0,Math.min(1,cy+(p.y-cy)*(1+pad*2)))}));
+}
+// Preserve the bottom MRZ/card number by extending the original source quad.
+// If two cards touch, never expand across the neighbour's shared edge.
+function padTwoCardQuad(q,other,original){
+ const scan=window.DocFixScanner;
+ if(!scan.validQuad(q))return q;
+ const bounds=t=>({x0:Math.min(...t.map(p=>p.x)),x1:Math.max(...t.map(p=>p.x)),
+  y0:Math.min(...t.map(p=>p.y)),y1:Math.max(...t.map(p=>p.y))});
+ const me=bounds(q),them=other&&scan.validQuad(other)?bounds(other):null;
+ let top=.014,bottom=.047,side=.013;
+ const h=Math.max(.0001,me.y1-me.y0),w=Math.max(.0001,me.x1-me.x0);
+ if(them){
+  const overlapX=Math.max(0,Math.min(me.x1,them.x1)-Math.max(me.x0,them.x0))/w;
+  if(overlapX>.35&&them.y0>=me.y1-.005)
+   bottom=Math.min(bottom,Math.max(0,(them.y0-me.y1)/h*.42));
+  if(overlapX>.35&&them.y1<=me.y0+.005)
+   top=Math.min(top,Math.max(0,(me.y0-them.y1)/h*.42));
+ }
+ const ext=(p,sibling,opposite,ps,pt)=>({
+  x:p.x+(p.x-sibling.x)*ps+(p.x-opposite.x)*pt,
+  y:p.y+(p.y-sibling.y)*ps+(p.y-opposite.y)*pt
+ });
+ const p=[
+  ext(q[0],q[1],q[3],side,top),
+  ext(q[1],q[0],q[2],side,top),
+  ext(q[2],q[3],q[1],side,bottom),
+  ext(q[3],q[2],q[0],side,bottom)
+ ];
+ for(const point of p){
+  point.x=Math.max(.001,Math.min(.999,point.x));
+  point.y=Math.max(.001,Math.min(.999,point.y));
+ }
+ if(them){
+  const overlapY=Math.max(0,Math.min(me.y1,them.y1)-Math.max(me.y0,them.y0))/h;
+  if(overlapY>.35){
+   if(them.x0>=me.x1-.008){
+    const limit=(me.x1+them.x0)/2;
+    for(const point of p)point.x=Math.min(point.x,limit);
+   }else if(them.x1<=me.x0+.008){
+    const limit=(them.x1+me.x0)/2;
+    for(const point of p)point.x=Math.max(point.x,limit);
+   }
+  }
+ }
+ if(!scan.validQuad(p))return q;
+ const area0=scan.area(q),area1=scan.area(p);
+ if(area1<area0*.99||area1>area0*1.27)return q;
+ return p;
 }
 function safeRefineMultiQuad(original,sourceQuad){
  const scan=window.DocFixScanner,expanded=expandQuadSafe(sourceQuad,.018),fine=window.DocFixGroup1?.refineQuad?.(original,expanded);
@@ -1844,6 +1892,20 @@ async function makeImageEntries(file,index,total=1,meta={}){
    }
   }catch(error){console.warn('DocFix: contorni doppia tessera non disponibili',error);}
  }
+ // Two physically touching PORTRAIT cards on a dark landscape photo:
+ // compare source material against the desk, not the gap between plastic edges.
+ let touchingPair=false;
+ if(cropMode()==='smart'&&original.width>original.height*1.12){
+  try{
+   const detected=window.DocFixTouchingCards?.detect?.(original)||null;
+   if(detected?.cards?.length===2&&
+      window.DocFixPairProof?.geometry?.(original,detected.cards)?.ok===true){
+    multi=detected.cards;
+    touchingPair=true;
+    detectorProblems.push('due tessere a contatto: sfondo escluso, verifica gli angoli');
+   }
+  }catch(error){console.warn('DocFix: due tessere a contatto',error);}
+ }
  // A dark WhatsApp photo sometimes contains TWO vertical cards side-by-side,
  // not two horizontal cards stacked. Never let a failed 2-up hypothesis send
  // the whole double-card photo to the single-document PDF path.
@@ -1907,8 +1969,9 @@ async function makeImageEntries(file,index,total=1,meta={}){
  if(multi?.length===2){
   const out=[];
   for(let i=0;i<multi.length;i++){
-   const isSideways=!!sideways&&!projection;
-   const fixed=await normalizeKnownCard(original,multi[i].quad,
+   const isSideways=(!!sideways||touchingPair)&&!projection;
+   const safeQuad=padTwoCardQuad(multi[i].quad,multi[1-i]?.quad,original);
+   const fixed=await normalizeKnownCard(original,safeQuad,
     (projection?'2 tessere da proiezioni indipendenti':isSideways?'2 tessere verticali separate':'2 tessere rilevate')+' · tessera '+(i+1),
     multi[i].confidence,{multiSafe:true,
      sourceVerified:cropMode()==='smart'?multi[i].physicallyVerified===true:(verified||(isSideways&&multi[i].physicallyVerified===true)),
