@@ -100,7 +100,39 @@ function detect(original){
     if(continuity>=.55&&mean>=25&&(!best||mean>best.mean))
       best={x,mean};
    }
-   if(!best)return null;
+   if(!best){
+    // Both cards can form one bright connected component. Never guess
+    // an internal seam from a single colour blob; at least remove the
+    // dark desk around the JOINT outline, leaving manual separation.
+    const top=Math.max(2,joined.y0-h*.014),bottom=Math.min(h-2,joined.y1+h*.014);
+    const x0=Math.max(2,joined.x0-w*.012),x1=Math.min(w-2,joined.x1+w*.012);
+    const half=Math.round((joined.x0+joined.x1)/2);
+    const sums=[0,0,0],leftSum=[0,0,0],rightSum=[0,0,0];
+    let count=0,matchingRows=0,rowCount=0;
+    for(let y=Math.round(joined.y0+joined.bh*.19);
+        y<Math.round(joined.y1-joined.bh*.19);y+=3){
+     let ls=[0,0,0],rs=[0,0,0],n=0;
+     for(let x=Math.round(joined.x0+joined.bw*.10);
+         x<Math.round(joined.x0+joined.bw*.40);x+=3){
+      const a=(y*w+x)*4,b=(y*w+x+Math.round(joined.bw*.50))*4;
+      for(let c=0;c<3;c++){ls[c]+=data[a+c];rs[c]+=data[b+c]}
+      n++;
+     }
+     if(!n)continue;
+     const delta=Math.hypot(...ls.map((v,i)=>(v-rs[i])/n));
+     if(delta>12)matchingRows++;
+     rowCount++;sums[0]+=delta;count++;
+    }
+    const difference=sums[0]/Math.max(1,count);
+    // A blank A4 or a one-colour object is not evidence for a card pair.
+    if(difference<13||matchingRows/Math.max(1,rowCount)<.55)return null;
+    const q=[{x:x0/w,y:top/h},{x:x1/w,y:top/h},
+      {x:x1/w,y:bottom/h},{x:x0/w,y:bottom/h}];
+    return {group:{quad:q,confidence:.58,physicallyVerified:false,
+      method:'joined-two-card-outer-material',contactGroup:true},
+      cards:null,verified:false,provisional:true,
+      reason:'tessere a contatto: soltanto il contorno esterno è individuato'};
+   }
    const left={x0:joined.x0,x1:best.x,y0:joined.y0,y1:joined.y1,
     bw:best.x-joined.x0,bh:joined.bh,area:joined.area/2};
    const right={x0:best.x,x1:joined.x1,y0:joined.y0,y1:joined.y1,
