@@ -22,11 +22,11 @@ const host={
  DocFixPairProof:{geometry:()=>({ok:true}),verify:()=>({verified:false,reason:'four corners need inspection'})}
 };
 const calls=[];
-const make=new Function('window','imageCanvas','chooseMultiCardMode',
+const make=new Function('window','padTwoCardQuad','imageCanvas','chooseMultiCardMode',
  'multiCardCandidates','normalizeKnownCard','normalizeRaster','multiCropHealthy',
  'cropMode','preserveFullA4Page','documentMode','console',
  source.slice(a,b)+';return makeImageEntries;')(
- host,async()=>original,()=>({mode:'fallback',conflict:false}),
+ host,q=>q,async()=>original,()=>({mode:'fallback',conflict:false}),
  ()=>[],
  async(src,q,label,confidence,options)=>{
   calls.push({src,q,options});
