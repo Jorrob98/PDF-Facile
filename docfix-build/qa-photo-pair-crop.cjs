@@ -59,8 +59,10 @@ for(const kind of ['single','a4','blank','two-stripes']){
 assert.ok(html.includes('<script src="./card-photo-pair.js"></script>'));
 assert.ok(html.includes('const edgePair=window.DocFixPhotoPair?.detect?.(original)'));
 assert.ok(html.includes('const photoPair=window.DocFixPhotoPair?.detect?.(old.original)'));
-assert.ok(html.includes('if(e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))'),
- 'correction must start at proposed card corners, even when review is required');
+assert.ok(html.includes('else if(e.twoUp===true&&e.splitCount===2&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))'),
+ 'two-card correction must start at its independently located corners');
+assert.ok(html.includes('if(!e.geometryReview&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))'),
+ 'A4 and single-ID editor must not preselect unverified geometry');
 assert.ok(html.includes('fixed.manualPending=true;fixed.cropVerified=false;fixed.cropped=false;'));
 assert.ok(html.includes('if(entries.some(e=>e.manualPending===true))'));
 console.log('DocFix two cropped previews PASS: separated/touching pairs; A4/single/blank safe; original kept; editor and PDF gate');
