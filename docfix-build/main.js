@@ -484,10 +484,10 @@ async function getLatestUpdate(channel='stable'){
    // Versioni di prova; stable PCs never use this feed by default.
    const candidates=Array.isArray(data)?data.filter(r=>
     r&&r.prerelease===true&&r.draft!==true&&
-    /^v\\d+\\.\\d+\\.\\d+-prova$/.test(String(r.tag_name||''))):[];
+    /^v\d+\.\d+\.\d+-prova$/.test(String(r.tag_name||''))):[];
    candidates.sort((a,b)=>{
-    const av=String(a.tag_name).match(/^v(\\d+\\.\\d+\\.\\d+)-prova$/)[1];
-    const bv=String(b.tag_name).match(/^v(\\d+\\.\\d+\\.\\d+)-prova$/)[1];
+    const av=String(a.tag_name).match(/^v(\d+\.\d+\.\d+)-prova$/)[1];
+    const bv=String(b.tag_name).match(/^v(\d+\.\d+\.\d+)-prova$/)[1];
     return isNewerVersion(av,bv)?-1:isNewerVersion(bv,av)?1:0;
    });
    for(const item of candidates){
@@ -501,7 +501,7 @@ async function getLatestUpdate(channel='stable'){
   }else{
    release=data;
    version=String(release.tag_name||'').replace(/^docfix-v/i,'').replace(/^v/i,'');
-   if(!/^\\d+\\.\\d+\\.\\d+$/.test(version))throw new Error('Versione aggiornamento stabile non valida');
+   if(!/^\d+\.\d+\.\d+$/.test(version))throw new Error('Versione aggiornamento stabile non valida');
   }
   short=version.split('.').slice(0,2).join('.');
   const exeName=beta?'DocFix_Prova_'+version+'.exe':'DocFix_Aggiornamento_'+short+'.exe';
