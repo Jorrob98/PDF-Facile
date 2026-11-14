@@ -419,8 +419,6 @@ async function runSelfTest(){
 }
 
 const UPDATE_API='https://api.github.com/repos/Jorrob98/PDF-Facile/releases/latest';
-const UPDATE_TEST_API='https://api.github.com/repos/Jorrob98/PDF-Facile/releases?per_page=50';
-const updateChannel=c=>c==='beta'?'beta':'stable';
 function updateReceiptPath(){return path.join(app.getPath('userData'),'updates','install-receipt.json');}
 function writeUpdateReceipt(version){
  const file=updateReceiptPath();fs.mkdirSync(path.dirname(file),{recursive:true});
@@ -474,58 +472,35 @@ function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
     req.on('error',reject);
   });
 }
-async function getLatestUpdate(channel='stable'){
-  const beta=updateChannel(channel)==='beta';
-  const raw=await httpsBuffer(beta?UPDATE_TEST_API:UPDATE_API);
-  const data=JSON.parse(raw.toString('utf8'));
-  let release=null,version='',short='';
-  if(beta){
-   // A prerelease is installed ONLY after the operator explicitly selects
-   // Versioni di prova; stable PCs never use this feed by default.
-   const candidates=Array.isArray(data)?data.filter(r=>
-    r&&r.prerelease===true&&r.draft!==true&&
-    /^v\d+\.\d+\.\d+-prova$/.test(String(r.tag_name||''))):[];
-   candidates.sort((a,b)=>{
-    const av=String(a.tag_name).match(/^v(\d+\.\d+\.\d+)-prova$/)[1];
-    const bv=String(b.tag_name).match(/^v(\d+\.\d+\.\d+)-prova$/)[1];
-    return isNewerVersion(av,bv)?-1:isNewerVersion(bv,av)?1:0;
-   });
-   for(const item of candidates){
-    const v=item.tag_name.slice(1,-6);
-    if((item.assets||[]).some(a=>a.name==='DocFix_Prova_'+v+'.exe')&&
-       (item.assets||[]).some(a=>a.name==='DocFix_Prova_'+v+'.sha256')){
-      release=item;version=v;break;
-    }
-   }
-   if(!release)return null;
-  }else{
-   release=data;
-   version=String(release.tag_name||'').replace(/^docfix-v/i,'').replace(/^v/i,'');
-   if(!/^\d+\.\d+\.\d+$/.test(version))throw new Error('Versione aggiornamento stabile non valida');
-  }
-  short=version.split('.').slice(0,2).join('.');
-  const exeName=beta?'DocFix_Prova_'+version+'.exe':'DocFix_Aggiornamento_'+short+'.exe';
-  const shaName=beta?'DocFix_Prova_'+version+'.sha256':'DocFix_Aggiornamento_'+short+'.sha256';
+// One update channel only. Existing DocFix 1.9.37 checks this same
+// /releases/latest URL, so every PC sees the next verified release.
+async function getLatestUpdate(){
+  const raw=await httpsBuffer(UPDATE_API);
+  const release=JSON.parse(raw.toString('utf8'));
+  const version=String(release.tag_name||'').replace(/^docfix-v/i,'').replace(/^v/i,'');
+  if(!/^\d+\.\d+\.\d+$/.test(version))
+    throw new Error('Versione aggiornamento non valida');
+  const short=version.split('.').slice(0,2).join('.');
+  const exeName='DocFix_Aggiornamento_'+short+'.exe';
+  const shaName='DocFix_Aggiornamento_'+short+'.sha256';
   const exe=(release.assets||[]).find(a=>a.name===exeName);
   const sha=(release.assets||[]).find(a=>a.name===shaName);
   if(!exe||!sha)throw new Error('Pacchetto aggiornamento incompleto');
-  return {version,short,channel:beta?'beta':'stable',exeName,shaName,
-   exeUrl:exe.browser_download_url,shaUrl:sha.browser_download_url,
-   size:Number(exe.size)||0,notes:String(release.body||'')};
+  return {version,short,exeName,shaName,
+    exeUrl:exe.browser_download_url,shaUrl:sha.browser_download_url,
+    size:Number(exe.size)||0,notes:String(release.body||'')};
 }
-async function checkForUpdates(channel='stable'){
-  const current=app.getVersion();
-  const latest=await getLatestUpdate(channel);
-  if(!latest)return {current,latest:current,available:false,notes:'Nessuna versione di prova disponibile',channel:updateChannel(channel)};
-  return {current,latest:latest.version,available:isNewerVersion(latest.version,current),
-   notes:latest.notes,channel:updateChannel(channel)};
+async function checkForUpdates(){
+  const current=app.getVersion(),latest=await getLatestUpdate();
+  return {current,latest:latest.version,
+    available:isNewerVersion(latest.version,current),notes:latest.notes};
 }
 function sendUpdateProgress(sender,data){
   try{if(sender&&!sender.isDestroyed())sender.send('docfix:update:progress',data)}catch{}
 }
-async function downloadVerifiedUpdate(sender,channel='stable'){
+async function downloadVerifiedUpdate(sender){
   sendUpdateProgress(sender,{phase:'preparing',percent:2,message:'Preparo aggiornamento…'});
-  const latest=await getLatestUpdate(channel);
+  const latest=await getLatestUpdate();
   const current=app.getVersion();
   if(!latest)return {available:false,current,latest:current};
   if(!isNewerVersion(latest.version,current))return {available:false,current,latest:latest.version};
@@ -576,10 +551,10 @@ function launchVerifiedUpdater(updater){
 
 ipcMain.handle('docfix:update:version',()=>app.getVersion());
 ipcMain.handle('docfix:update:last-result',()=>updateReceiptStatus);
-ipcMain.handle('docfix:update:check',async(_event,channel)=>{try{return {ok:true,...await checkForUpdates(channel)}}catch(e){log('UPDATE_CHECK_FAIL',e);return {ok:false,error:e.message||String(e)}}});
-ipcMain.handle('docfix:update:install',async(event,channel)=>{
+ipcMain.handle('docfix:update:check',async()=>{try{return {ok:true,...await checkForUpdates()}}catch(e){log('UPDATE_CHECK_FAIL',e);return {ok:false,error:e.message||String(e)}}});
+ipcMain.handle('docfix:update:install',async(event)=>{
   try{
-    const r=await downloadVerifiedUpdate(event.sender,channel);
+    const r=await downloadVerifiedUpdate(event.sender);
     if(!r.available)return {ok:true,...r};
     sendUpdateProgress(event.sender,{phase:'install',percent:98,message:'Applico aggiornamento…',etaSeconds:4});
     writeUpdateReceipt(r.latest);
