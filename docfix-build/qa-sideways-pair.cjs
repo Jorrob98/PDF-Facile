@@ -59,10 +59,10 @@ console.log('DocFix sideways pair PASS: split, touching cards, safety warnings, 
   DocFixPairProof:{verify:(source,cards)=>cards.every(c=>c.physicallyVerified===true)
    ?{verified:true,cards}:{verified:false,reason:'synthetic incomplete external contour'}}
  };
- const factory=new Function('window','imageCanvas','chooseMultiCardMode','multiCardCandidates',
+ const factory=new Function('window','padTwoCardQuad','imageCanvas','chooseMultiCardMode','multiCardCandidates',
   'normalizeKnownCard','normalizeRaster','multiCropHealthy','cropMode','preserveFullA4Page','documentMode','console',
   code+';return makeImageEntries;');
- const load=factory(host,async()=>document,()=>({mode:'fallback',conflict:false}),
+ const load=factory(host,q=>q,async()=>document,()=>({mode:'fallback',conflict:false}),
   ()=>[],async(src,q,label,confidence,options)=>{
    calls.push(options);return {processed:{width:800,height:510},how:'',review:true,
     cropVerified:false,geometryReview:true,confidence};
