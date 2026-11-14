@@ -1894,7 +1894,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
  }
  // Two physically touching PORTRAIT cards on a dark landscape photo:
  // compare source material against the desk, not the gap between plastic edges.
- let touchingPair=false;
+ let touchingPair=false,touchingGroup=null;
  if(cropMode()==='smart'&&original.width>original.height*1.12){
   try{
    const detected=window.DocFixTouchingCards?.detect?.(original)||null;
@@ -1903,6 +1903,12 @@ async function makeImageEntries(file,index,total=1,meta={}){
     multi=detected.cards;
     touchingPair=true;
     detectorProblems.push('due tessere a contatto: sfondo escluso, verifica gli angoli');
+   }else if(detected?.group?.quad&&window.DocFixScanner.validQuad(detected.group.quad)){
+    touchingGroup=detected.group;
+    // Do not silently accept two arbitrary PHOTO HALVES when the group
+    // clearly has one connected outer outline but no confirmed internal seam.
+    if(!Array.isArray(multi)||!multi.every(c=>c?.physicallyVerified===true))multi=null;
+    detectorProblems.push('tessere attaccate: contorno esterno ritagliato, separazione manuale');
    }
   }catch(error){console.warn('DocFix: due tessere a contatto',error);}
  }
@@ -1910,7 +1916,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
  // not two horizontal cards stacked. Never let a failed 2-up hypothesis send
  // the whole double-card photo to the single-document PDF path.
  let sideways=null;
- if((!Array.isArray(multi)||multi.length!==2)&&cropMode()==='smart'){
+ if((!Array.isArray(multi)||multi.length!==2)&&cropMode()==='smart'&&!touchingGroup){
   try{sideways=window.DocFixSidewaysPair?.detect?.(original)||null;}
   catch(error){detectorProblems.push('due tessere laterali');console.warn('DocFix: due tessere ruotate non confermate',error);}
   if(sideways?.verifiedSplit&&sideways.cards?.length===2){
@@ -1925,7 +1931,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
  // It can recover two or three cards without forcing an unsafe four-corner
  // "verified" flag. The prior engines still take precedence.
  let projection=null;
- if(cropMode()==='smart'&&!verified){
+ if(cropMode()==='smart'&&!verified&&!touchingGroup){
   try{projection=window.DocFixIndependentProjection?.detect?.(original)||null;}
   catch(error){console.warn('DocFix: proiezioni separate non applicate',error);}
   if(projection?.verifiedSplit&&[2,3].includes(projection.cards?.length)){
@@ -2005,6 +2011,24 @@ async function makeImageEntries(file,index,total=1,meta={}){
    out.push({kind:'raster',original,...fixed,source:file.name,title:file.name+' · tessera '+(i+1),sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:i,splitCount:2,twoUp:true});
   }
   return out;
+ }
+ // Two glued cards with no trustworthy internal seam: remove the entire
+ // dark background anyway. Preserve BOTH cards in one source-backed
+ // provisional group preview; operator may then split them manually.
+ if(touchingGroup?.quad&&cropMode()==='smart'){
+  const q=touchingGroup.quad;
+  const processed=window.DocFixScanner.process(original,
+   {crop:true,quad:q,rotation:0,filter:'original',strength:0},4200);
+  const fixed={processed,rotation:0,review:true,manualPending:true,
+   cropVerified:false,geometryReview:true,orientationReview:true,
+   qualityReview:false,qualityIssues:[],qualityMetrics:null,cropped:false,
+   sourceQuad:q,how:'Due tessere a contatto: sfondo esterno ritagliato. '+
+    'Il confine interno non è confermato: usa + Tessera dalla stessa foto '+
+    'per separarle e controlla i quattro bordi prima del PDF'};
+  return [{kind:'raster',original,...fixed,source:file.name,title:file.name,
+   sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,
+   batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,
+   twoUp:false,contactGroup:true}];
  }
  // Do not let single-card normalization crop away a second card after an
  // uncertain two-card hypothesis. Keep the entire source for manual recovery.
@@ -2174,7 +2198,7 @@ function openCorrection(index){
  // Only independently located TWO-CARD previews may prefill disputed corners.
  if(!e.geometryReview&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))
   editQuad=rotatedQuad(e.sourceQuad,editRotation);
- else if(e.twoUp===true&&e.splitCount===2&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))
+ else if((e.twoUp===true&&e.splitCount===2||e.contactGroup===true)&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))
   editQuad=rotatedQuad(e.sourceQuad,editRotation);
  else{
   editQuad=window.DocFixScanner.defaultQuad();const found=window.DocFixScanner.detectDocument(editSource);
