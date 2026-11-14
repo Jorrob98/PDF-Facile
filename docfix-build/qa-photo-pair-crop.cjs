@@ -59,7 +59,7 @@ for(const kind of ['single','a4','blank','two-stripes']){
 assert.ok(html.includes('<script src="./card-photo-pair.js"></script>'));
 assert.ok(html.includes('const edgePair=window.DocFixPhotoPair?.detect?.(original)'));
 assert.ok(html.includes('const photoPair=window.DocFixPhotoPair?.detect?.(old.original)'));
-assert.ok(html.includes('else if(e.twoUp===true&&e.splitCount===2&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))'),
+assert.ok(html.includes('else if((e.twoUp===true&&e.splitCount===2||e.contactGroup===true)&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))'),
  'two-card correction must start at its independently located corners');
 assert.ok(html.includes('if(!e.geometryReview&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))'),
  'A4 and single-ID editor must not preselect unverified geometry');
