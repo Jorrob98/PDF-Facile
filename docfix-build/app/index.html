@@ -809,7 +809,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -1820,6 +1820,27 @@ async function makeImageEntries(file,index,total=1,meta={}){
    multi=fallback.length===2?fallback:(located||fallback);
   }catch(error){multi=[];detectorProblems.push('riconoscimento multiplo');console.warn('DocFix: riconoscimento multiplo saltato',error);}
  }
+ // The old fallback returned two large PHOTO HALVES (or one full photo),
+ // not the physical rectangles. On portrait photos, a dedicated edge pass
+ // now finds two independent card-sized regions even against dark desks.
+ // It can never claim an automatic approved crop: all proposed quads are
+ // confirmed again by pair proof and remain editable until verified.
+ if(!verified&&cropMode()==='smart'&&
+    (!Array.isArray(multi)||multi.length!==2||
+     window.DocFixPairProof?.geometry?.(original,multi)?.ok!==true||
+     multi.some(c=>{
+       const b=quadBounds(c.quad);
+       return b.width>.88||b.height>.46;
+     }))){
+  try{
+   const edgePair=window.DocFixPhotoPair?.detect?.(original)||null;
+   if(edgePair?.cards?.length===2&&
+      window.DocFixPairProof?.geometry?.(original,edgePair.cards)?.ok===true){
+    multi=edgePair.cards;
+    detectorProblems.push('bordi esterni delle due tessere: anteprime separate da confermare');
+   }
+  }catch(error){console.warn('DocFix: contorni doppia tessera non disponibili',error);}
+ }
  // A dark WhatsApp photo sometimes contains TWO vertical cards side-by-side,
  // not two horizontal cards stacked. Never let a failed 2-up hypothesis send
  // the whole double-card photo to the single-document PDF path.
@@ -2082,7 +2103,10 @@ function turnEntry(index,angle){
 function openCorrection(index){
  if(busy)return;
  editIndex=index;const e=entries[index];editRotation=e.rotation||0;editSource=rotate(e.original,editRotation);
- if(!e.geometryReview&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))editQuad=rotatedQuad(e.sourceQuad,editRotation);
+ // Always open on the PROPOSED card corners, including review-only crops.
+ // The previous !geometryReview guard reset all uncertain crops to the
+ // whole-photo default and made manual correction start from scratch.
+ if(e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))editQuad=rotatedQuad(e.sourceQuad,editRotation);
  else{
   editQuad=window.DocFixScanner.defaultQuad();const found=window.DocFixScanner.detectDocument(editSource);
   if(!e.geometryReview&&found.status==='found'&&found.confidence>=.79&&window.DocFixScanner.area(found.quad)>.20)
@@ -2246,6 +2270,8 @@ async function rebuildSourceAsTwoUp(sourceId,sourcePos){
  // previews instead of throwing away the missing fourth document.
  const texture=window.DocFixRealCrop?.detect?.(old.original)?.cards||[];
  const possibilities=[];
+ const photoPair=window.DocFixPhotoPair?.detect?.(old.original)||null;
+ if(photoPair?.cards?.length===2)possibilities.push(photoPair.cards);
  if(texture.length===2)possibilities.push(texture);
  const stacked=stackedCardCandidatesByGap(old.original);
  if(stacked.length===2)possibilities.push(stacked);
