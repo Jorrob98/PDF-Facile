@@ -1825,7 +1825,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
  // now finds two independent card-sized regions even against dark desks.
  // It can never claim an automatic approved crop: all proposed quads are
  // confirmed again by pair proof and remain editable until verified.
- if(!verified&&cropMode()==='smart'&&
+ if(cropMode()==='smart'&&
     (!Array.isArray(multi)||multi.length!==2||
      window.DocFixPairProof?.geometry?.(original,multi)?.ok!==true||
      multi.some(c=>{
