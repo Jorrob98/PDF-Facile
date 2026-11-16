@@ -59,7 +59,7 @@ function hasSmallCardPrint(data,w,h,box){
  const bands=(axis)=>{
   const major=axis==='x'?bw:bh,minor=axis==='x'?bh:bw;
   const n=Math.round(major*.76),first=Math.round(major*.12);
-  let runs=0,on=false,last=-100,ink=0,samples=0;
+  let runs=0,on=false,ink=0;
   for(let k=first;k<first+n;k+=2){
    let dark=0,total=0;
    for(let m=Math.round(minor*.12);m<Math.round(minor*.88);m+=2){
@@ -69,9 +69,9 @@ function hasSmallCardPrint(data,w,h,box){
     total++;
    }
    const active=dark>=5&&dark/Math.max(1,total)>.09&&dark/Math.max(1,total)<.62;
-   if(active){ink+=dark;samples+=total;}
-   if(active&&!on&&k-last>=4){runs++;on=true;}
-   if(!active){on=false;last=k;}
+   if(active)ink+=dark;
+   if(active&&!on){runs++;on=true;}
+   if(!active)on=false;
   }
   return runs>=2&&ink>14;
  };
