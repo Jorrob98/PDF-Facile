@@ -1783,7 +1783,10 @@ function chooseMultiCardMode(sourceCards,triple){
   overlapFraction(quadBounds(c.quad),quadBounds(t.quad))<.10));
  const stableThree=matched&&separate&&aligned&&matchedSizes&&independent&&
   thirds.every(c=>c.confidence>=.83);
- if(stableThree)
+ // Compatibility: a hypothetical third candidate must not supersede a
+ // previously accepted 2-up unless this is the specifically proven
+ // portrait-photo / three landscape ID-1 cards in a column arrangement.
+ if(stableThree&&(kinds||triple.arrangement==='stacked-landscape'))
   return {mode:'three',conflict:!kinds,
    reason:kinds?'terza tessera riconosciuta':
     'tre contorni indipendenti; tipo e verso da verificare prima del PDF'};
