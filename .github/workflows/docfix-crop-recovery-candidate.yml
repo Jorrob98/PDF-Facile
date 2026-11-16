@@ -27,6 +27,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check main.js
+          node qa-electron-inline-syntax.cjs
           node --check app/card-over-paper.js
           node --check app/card-touching-pair.js
           node --check qa-small-card-a4.cjs
