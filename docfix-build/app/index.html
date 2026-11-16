@@ -1271,7 +1271,7 @@ function crossOverlap(a,b,axis){if(axis==='x'){const n=Math.max(0,Math.min(a.x+a
 function stackedCardCandidatesByGap(original){
  const scan=window.DocFixScanner,portrait=original.height/Math.max(1,original.width);
  if(portrait<1.16||portrait>2.45)return [];
- return withResizedCanvas(original,360,s=>{const w=s.width,h=s.height;
+ const texture=withResizedCanvas(original,360,s=>{const w=s.width,h=s.height;
  if(h<220||w<180)return [];
  const d=s.getContext('2d',{willReadFrequently:true}).getImageData(0,0,w,h).data;
  const scores=new Float32Array(h),x0=Math.round(w*.06),x1=Math.round(w*.94);
@@ -1350,7 +1350,7 @@ function stackedCardCandidatesByGap(original){
  const topX=xBounds(0,topEnd),bottomX=xBounds(bottomStart,h);
  const rect=(x0,y0,x1,y1)=>({quad:[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}],confidence:.86,status:'found',method:'stacked-gap-color',box:{x:x0,y:y0,width:x1-x0,height:y1-y0}});
  return [rect(topX.x0,0,topX.x1,topEnd/h),rect(bottomX.x0,bottomStart/h,bottomX.x1,1)];
- });
+ } return texture.length===2?texture:stackedCardCandidatesRecovery(original);
 }
 function stackedCardCandidatesRecovery(original){
  const scan=window.DocFixScanner,portrait=original.height/Math.max(1,original.width);
