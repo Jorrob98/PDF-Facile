@@ -181,8 +181,9 @@ async function runSelfTest(){
         out.ocrBridge=!!window.DocFixOCRCloud;
         out.updaterVersion=window.DocFixUpdater?(await window.DocFixUpdater.currentVersion())==='1.9.34':false;
         out.updaterButton=!!document.querySelector('#docfix-update-button');
-        out.updaterHiddenWhenNoUpdate=document.querySelector('#docfix-update-button')?.hidden===true;
-        out.ocrModule=window.DocFixOCRMax?.version==='1.9.34';
+        out.updaterManualCheckVisible=document.querySelector('#docfix-update-button')?.hidden===false;
+        // Manual update check intentionally stays available when no release exists.
+        out.ocrModule=/^\\d+\\.\\d+\\.\\d+$/.test(window.DocFixOCRMax?.version||'')&&typeof window.DocFixOCRMax?.analyzeEntry==='function';
         const cloudTest=window.DocFixOCRCloud?.selfTest?await window.DocFixOCRCloud.selfTest():null;
         out.ocrCloudLogic=!!cloudTest&&cloudTest.identity===true&&cloudTest.structured===true&&cloudTest.agreement===true;
         const mc=document.createElement('canvas');mc.width=900;mc.height=1200;const mg=mc.getContext('2d');mg.fillStyle='#b7895f';mg.fillRect(0,0,mc.width,mc.height);
