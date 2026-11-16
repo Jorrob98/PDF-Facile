@@ -31,6 +31,8 @@ jobs:
           node --check app/card-touching-pair.js
           node --check qa-small-card-a4.cjs
           node qa-small-card-a4.cjs
+          node --check qa-facsimile-card-stack.cjs
+          node qa-facsimile-card-stack.cjs
       - name: Full existing regression tests
         working-directory: docfix-build
         run: |
