@@ -1310,12 +1310,29 @@ function stackedCardCandidatesByGap(original){
  const topActivity=medianRange(Math.round(h*.06),Math.max(Math.round(h*.18),gap.start-Math.round(h*.06)));
  const bottomActivity=medianRange(Math.min(h-1,gap.end+Math.round(h*.06)),Math.round(h*.94));
  const gapActivity=gap.avg;
- if(topActivity<Math.max(22,gapActivity*1.45)||bottomActivity<Math.max(22,gapActivity*1.45))return [];
+ const lowTexture=topActivity<Math.max(22,gapActivity*1.45)||bottomActivity<Math.max(22,gapActivity*1.45);
  const gapSamples=[[],[],[]];
  for(let y=gap.start;y<=gap.end;y+=2)for(let x=0;x<w;x+=2){const k=(y*w+x)*4;gapSamples[0].push(d[k]);gapSamples[1].push(d[k+1]);gapSamples[2].push(d[k+2]);}
  const med=v=>{v.sort((a,b)=>a-b);return v[v.length>>1]||0},ref=gapSamples.map(med),noise=[];
  for(let y=gap.start;y<=gap.end;y+=3)for(let x=0;x<w;x+=3){const k=(y*w+x)*4;noise.push(Math.hypot(d[k]-ref[0],d[k+1]-ref[1],d[k+2]-ref[2]));}
  noise.sort((a,b)=>a-b);const colorThreshold=Math.max(44,(noise[Math.floor(noise.length*.85)]||20)*1.7);
+ // Uniform plastic has little row-wise text variation. Confirm its broad
+ // material colour against the *observed* desk gap before giving up.
+ // This only emits unverified candidate previews; the four-edge audit stays separate.
+ if(lowTexture){
+  const materialFraction=(start,end)=>{
+   let active=0,total=0;
+   const a=Math.max(1,Math.round(start)),b=Math.min(h-2,Math.round(end));
+   for(let y=a;y<b;y+=3)for(let x=Math.round(w*.13);x<Math.round(w*.87);x+=4){
+    const k=(y*w+x)*4;
+    active+=Number(Math.hypot(d[k]-ref[0],d[k+1]-ref[1],d[k+2]-ref[2])>Math.max(31,colorThreshold*.72));
+    total++;
+   }
+   return active/Math.max(1,total);
+  };
+  const upper=materialFraction(h*.09,gap.start-h*.045),lower=materialFraction(gap.end+h*.045,h*.91);
+  if(upper<.54||lower<.54)return [];
+ }
  const xBounds=(ay0,ay1)=>{
   const frac=new Float32Array(w),step=2,total=Math.max(1,Math.ceil((ay1-ay0)/step));
   for(let x=0;x<w;x++){let active=0;for(let y=ay0;y<ay1;y+=step){const k=(y*w+x)*4;if(Math.hypot(d[k]-ref[0],d[k+1]-ref[1],d[k+2]-ref[2])>colorThreshold)active++;}frac[x]=active/total;}
@@ -1352,7 +1369,46 @@ function stackedCardCandidatesRecovery(original){
  const med=(a,b)=>{const v=Array.from(sm.slice(Math.max(0,a),Math.min(h,b))).sort((x,y)=>x-y);return v[v.length>>1]||0};
  const top=med(Math.round(h*.05),Math.max(Math.round(h*.20),best.start-Math.round(h*.05)));
  const bottom=med(Math.min(h-1,best.end+Math.round(h*.05)),Math.round(h*.95));
- if(top<18||bottom<18||best.avg>Math.min(top,bottom)*.72)return [];
+ if(top<18||bottom<18||best.avg>Math.min(top,bottom)*.72){
+  // Material-based recovery for cards with sparse printed text:
+  // find two long ID-1 material bands separated by an actual desk-colour band.
+  // Printed boxes on one A4 sheet do not qualify: their wide pixel
+  // coverage remains paper-like, so no automatic three-way split occurs.
+  const sideColors=[[],[],[]];
+  for(let y=2;y<h-2;y+=Math.max(3,Math.round(h*.045)))
+   for(const x of [1,w-2]){const k=(y*w+x)*4;for(let c=0;c<3;c++)sideColors[c].push(d[k+c]);}
+  const ref=sideColors.map(v=>{v.sort((a,b)=>a-b);return v[v.length>>1]||0});
+  const activity=new Float32Array(h),left=Math.round(w*.11),right=Math.round(w*.89);
+  for(let y=0;y<h;y++){
+   let count=0,total=0;
+   for(let x=left;x<right;x+=3){
+    const k=(y*w+x)*4;
+    count+=Number(Math.hypot(d[k]-ref[0],d[k+1]-ref[1],d[k+2]-ref[2])>34);
+    total++;
+   }
+   activity[y]=count/Math.max(1,total);
+  }
+  const bands=[];let start=-1;
+  for(let y=0;y<=h;y++){
+   const on=y<h&&activity[y]>.60;
+   if(on&&start<0)start=y;
+   if(start>=0&&(!on||y===h)){
+    if(y-start>=h*.20)bands.push({start,end:y});
+    start=-1;
+   }
+  }
+  if(bands.length!==2)return [];
+  const [first,second]=bands.sort((a,b)=>a.start-b.start);
+  const gap=second.start-first.end;
+  if(gap<h*.045||gap>h*.38||first.end-first.start<h*.24||second.end-second.start<h*.24)return [];
+  const ratioTop=w/Math.max(1,first.end-first.start),ratioBottom=w/Math.max(1,second.end-second.start);
+  if(ratioTop<1.22||ratioTop>2.32||ratioBottom<1.22||ratioBottom>2.32)return [];
+  const pad=Math.max(2,Math.round(h*.012));
+  const rect=(y0,y1)=>({quad:[{x:0,y:y0},{x:1,y:y0},{x:1,y:y1},{x:0,y:y1}],confidence:.72,
+   status:'found',method:'stacked-material-recovery-provisional',box:{x:0,y:y0,width:1,height:y1-y0}});
+  return [rect(Math.max(0,first.start-pad)/h,Math.min(h,first.end+pad)/h),
+   rect(Math.max(0,second.start-pad)/h,Math.min(h,second.end+pad)/h)];
+ }
  const pad=Math.max(2,Math.round(h*.01)),topEnd=Math.min(h-1,best.start+pad),bottomStart=Math.max(0,best.end-pad);
  const ht=topEnd/h,hb=(h-bottomStart)/h,rt=w/Math.max(1,topEnd),rb=w/Math.max(1,h-bottomStart);
  if(ht<.24||ht>.59||hb<.24||hb>.59||rt<1.18||rt>2.18||rb<1.18||rb>2.18)return [];
