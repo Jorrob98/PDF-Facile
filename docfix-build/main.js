@@ -339,8 +339,8 @@ async function runSelfTest(){
         bg.fillStyle='#fff';for(let y=280;y<540;y+=52)bg.fillRect(195,y,610,18);
         bg.fillStyle='#111';for(let x=210;x<790;x+=16)bg.fillRect(x,500,6,50);
         const tightened=window.DocFixDesktopDiagnostics?.tightenSeparatedCardCanvas?.(border);
-        const tr=tightened?.canvas?Math.max(tightened.canvas.width,tightened.canvas.height)/Math.max(1,Math.min(tightened.canvas.width,tightened.canvas.height)):0;
-        out.tightSeparatedCard=!!tightened?.tightened&&tightened.canvas.width<930&&tightened.canvas.height<650&&tr>1.40&&tr<1.84;
+        const tightRatio=tightened?.canvas?Math.max(tightened.canvas.width,tightened.canvas.height)/Math.max(1,Math.min(tightened.canvas.width,tightened.canvas.height)):0;
+        out.tightSeparatedCard=!!tightened?.tightened&&tightened.canvas.width<930&&tightened.canvas.height<650&&tightRatio>1.40&&tightRatio<1.84;
         const cf=document.createElement('canvas');cf.width=1050;cf.height=720;const cg=cf.getContext('2d');
         cg.fillStyle='#8d8b8c';cg.fillRect(0,0,1050,720);
         cg.fillStyle='#cce8f2';cg.fillRect(150,155,750,472);
@@ -396,7 +396,7 @@ async function runSelfTest(){
         const fine=window.DocFixGroup1?.refineQuad?.(fc,approx);
         const err=q=>q.reduce((sum,p,i)=>sum+Math.hypot((p.x-actual[i].x)*1000,(p.y-actual[i].y)*700),0)/4;
         out.fineCrop=!!fine?.refined&&err(fine.quad)<err(approx)*.72;
-        const low=document.createElement('canvas');low.width=220;low.height=130;const lg=low.getContext('2d');lg.fillStyle='#fff';lg.fillRect(0,0,220,130);lg.fillStyle='#111';lg.font='18px Arial';lg.fillText('DOCFIX QUALITA',18,65);
+        const low=document.createElement('canvas');low.width=220;low.height=130;const lowCtx=low.getContext('2d');lowCtx.fillStyle='#fff';lowCtx.fillRect(0,0,220,130);lowCtx.fillStyle='#111';lowCtx.font='18px Arial';lowCtx.fillText('DOCFIX QUALITA',18,65);
         const qa=window.DocFixDesktopDiagnostics?.qualityAudit?.(low);
         out.qualityAudit=!!qa?.review&&qa.issues.includes('Risoluzione bassa');
         out.smartFilename=window.DocFixGroup5.filename([{source:'pratica-cliente.pdf'},{source:'pratica-cliente.pdf'}])==='pratica-cliente-docfix.pdf';
