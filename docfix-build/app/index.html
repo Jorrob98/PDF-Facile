@@ -1350,7 +1350,8 @@ function stackedCardCandidatesByGap(original){
  const topX=xBounds(0,topEnd),bottomX=xBounds(bottomStart,h);
  const rect=(x0,y0,x1,y1)=>({quad:[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}],confidence:.86,status:'found',method:'stacked-gap-color',box:{x:x0,y:y0,width:x1-x0,height:y1-y0}});
  return [rect(topX.x0,0,topX.x1,topEnd/h),rect(bottomX.x0,bottomStart/h,bottomX.x1,1)];
- } return texture.length===2?texture:stackedCardCandidatesRecovery(original);
+ });
+ return texture.length===2?texture:stackedCardCandidatesRecovery(original);
 }
 function stackedCardCandidatesRecovery(original){
  const scan=window.DocFixScanner,portrait=original.height/Math.max(1,original.width);
