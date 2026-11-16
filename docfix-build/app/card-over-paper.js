@@ -35,6 +35,48 @@ function components(mask,w,h){
  }
  return results.sort((a,b)=>b.pixels-a.pixels).slice(0,12);
 }
+// Small cyan areas can be a portrait printed INSIDE an ID card.
+// If the blue material covers less than 12% of the photographed page,
+// do not promote a flat coloured island into a document. Require multiple
+// separated text-like ink bands WITHIN the proposed original-source box.
+// The independent four-physical-edge auditor still decides final cropping.
+function hasSmallCardPrint(data,w,h,box){
+ const L=Math.max(1,Math.floor(box.L)),R=Math.min(w-2,Math.ceil(box.R));
+ const T=Math.max(1,Math.floor(box.T)),B=Math.min(h-2,Math.ceil(box.B));
+ const bw=R-L,bh=B-T;
+ if(bw<65||bh<60)return false;
+ const pixels=[],sample=3;
+ for(let y=T+Math.round(bh*.10);y<B-Math.round(bh*.10);y+=sample)
+  for(let x=L+Math.round(bw*.10);x<R-Math.round(bw*.10);x+=sample){
+   const k=(y*w+x)*4;
+   pixels.push(.2126*data[k]+.7152*data[k+1]+.0722*data[k+2]);
+  }
+ if(pixels.length<100)return false;
+ pixels.sort((a,b)=>a-b);
+ const base=pixels[Math.floor(pixels.length*.70)];
+ const darkThreshold=Math.min(140,base-37);
+ if(darkThreshold<47)return false;
+ const bands=(axis)=>{
+  const major=axis==='x'?bw:bh,minor=axis==='x'?bh:bw;
+  const n=Math.round(major*.76),first=Math.round(major*.12);
+  let runs=0,on=false,last=-100,ink=0,samples=0;
+  for(let k=first;k<first+n;k+=2){
+   let dark=0,total=0;
+   for(let m=Math.round(minor*.12);m<Math.round(minor*.88);m+=2){
+    const x=axis==='x'?L+k:L+m,y=axis==='x'?T+m:T+k;
+    const p=(y*w+x)*4,lum=.2126*data[p]+.7152*data[p+1]+.0722*data[p+2];
+    if(lum<darkThreshold)dark++;
+    total++;
+   }
+   const active=dark>=5&&dark/Math.max(1,total)>.09&&dark/Math.max(1,total)<.62;
+   if(active){ink+=dark;samples+=total;}
+   if(active&&!on&&k-last>=4){runs++;on=true;}
+   if(!active){on=false;last=k;}
+  }
+  return runs>=2&&ink>14;
+ };
+ return bands('x')||bands('y');
+}
 function analyzeRGBA(data,w,h){
  if(!data||w<180||h<160)return null;
  const rgb=[],ex=Math.max(12,Math.round(w*.11)),ey=Math.max(12,Math.round(h*.11));
@@ -84,6 +126,8 @@ function analyzeRGBA(data,w,h){
   if(!best||score>best.score)best={L,R,T,B,score,evidence,expansion,combined:c.combined};
  }
  if(!best)return null;
+ const fraction=(best.R-best.L)*(best.B-best.T)/(w*h);
+ if(fraction<.12&&!hasSmallCardPrint(data,w,h,best))return null;
  const verified=best.evidence>=.33&&best.expansion<.19;
  const quad=[{x:best.L/w,y:best.T/h},{x:best.R/w,y:best.T/h},{x:best.R/w,y:best.B/h},{x:best.L/w,y:best.B/h}];
  return {quad,status:'found',cardLikely:true,confidence:verified?.89:.80,
