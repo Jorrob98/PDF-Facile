@@ -60,7 +60,9 @@
   };
   let best=null;
   for(const t of sides.top)for(const b of sides.bottom){
-   if(b.p-t.p<h*.67)continue;
+   // Rectified ID-1 card may occupy 62–67% of a camera frame's height.
+   // Full side support, aspect ratio and physical area are still required.
+   if(b.p-t.p<h*.62)continue;
    for(const l of sides.left)for(const r of sides.right){
     if(r.p-l.p<w*.70)continue;
     const used=[t,b,l,r],missing=used.filter(s=>s.missing).length;
