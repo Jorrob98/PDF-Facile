@@ -1,0 +1,10 @@
+DocFix 1.9.42 — autorizzazione al rilascio del ramo di collaudo
+Data: 2026-11-16
+Base: versione 1.9.41, sorgente candidato docfix-crop-recovery-candidate-20261116
+QA superata: https://github.com/Jorrob98/PDF-Facile/actions/runs/43913205017
+Electron self-test: 59 / 59 veri, nessun fallimento; suite geometrica e regressioni superate.
+Rilascio condizionato a una SECONDA esecuzione completa di QA, Electron,
+assemblaggio Windows, verifica SHA-256, aggiornamento chiusura/riavvio e rollback
+nell'apposito workflow GitHub. Nessuna fotografia reale con dati personali caricata
+o validata durante questo collaudo: test sintetici e facsimili senza dati personali.
+I quattro bordi fisici non verificati richiedono conferma prima di generare il PDF.
