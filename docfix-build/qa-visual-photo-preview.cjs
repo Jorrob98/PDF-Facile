@@ -48,7 +48,7 @@ const photoNormalize=new Function('window','cropMode','singleCropGate','quadCard
 const fixed=photoNormalize(source);
 assert.notEqual(fixed.processed,source,'visual candidate makes useful preview instead of full photo');
 assert.equal(fixed.previewOnly,true);
-assert.equal(fixed.sourceQuad,undefined===vis.quad?null:fixed.sourceQuad);
+assert.ok(Array.isArray(fixed.sourceQuad)&&fixed.sourceQuad.length===4);
 assert.deepEqual(win.__quad.map(p=>[p.x,p.y]),vis.quad.map(p=>[p.x,p.y]));
 assert.deepEqual(source.data,sourcePixels,'untouched original pixels');
 assert.ok(fixed.how.includes('conferma i 4 angoli'));
