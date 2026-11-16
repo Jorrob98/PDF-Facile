@@ -320,6 +320,7 @@ async function runSelfTest(){
         eg.fillStyle='#29343a';for(let x=95;x<850;x+=63)eg.fillRect(x,755,16,500);
         const stacked=window.DocFixDesktopDiagnostics?.stackedCardCandidatesByGap?.(edge)||[];
         out.stackedEdgeCards=stacked.length===2&&stacked[0].box.y<.05&&stacked[1].box.y>.45;
+        if(!out.stackedEdgeCards)console.warn('STACKED_EDGE_DIAG '+JSON.stringify(stacked.map(x=>({box:x.box,method:x.method}))));
         const pairTest=window.DocFixDesktopDiagnostics?.pairedFourCards?.([
           {id:'f1-top',sourceIndex:101,splitSlot:0,splitCount:2,batchSize:1,twoUp:true},
           {id:'f1-bottom',sourceIndex:101,splitSlot:1,splitCount:2,batchSize:1,twoUp:true},
