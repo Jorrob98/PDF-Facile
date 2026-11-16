@@ -1771,8 +1771,22 @@ function chooseMultiCardMode(sourceCards,triple){
  const kinds=triple.materialVerified===true
   &&new Set(thirds.map(c=>c.kind)).size===3
   &&['cf','licence','identity'].every(k=>thirds.some(c=>c.kind===k));
- if(matched&&separate&&kinds&&thirds.every(c=>c.confidence>=.83))
-  return {mode:'three',conflict:false,reason:'terza tessera verificata'};
+ // A real three-card stack can have faded colours: a valid CIE/patente/TS
+ // perimeter must not disappear merely because its red/blue label is weak.
+ // Candidate count is still provisional; the individual four-edge gate and
+ // manualPending flag decide whether an extracted card is export-ready.
+ const boxes=thirds.map(c=>quadBounds(c.quad));
+ const areas=boxes.map(b=>b.width*b.height),centers=boxes.map(b=>b.x+b.width*.5);
+ const aligned=Math.max(...centers)-Math.min(...centers)<.135;
+ const matchedSizes=Math.max(...areas)/Math.max(.001,Math.min(...areas))<1.85;
+ const independent=thirds.every((c,i)=>thirds.slice(i+1).every(t=>
+  overlapFraction(quadBounds(c.quad),quadBounds(t.quad))<.10));
+ const stableThree=matched&&separate&&aligned&&matchedSizes&&independent&&
+  thirds.every(c=>c.confidence>=.83);
+ if(stableThree)
+  return {mode:'three',conflict:!kinds,
+   reason:kinds?'terza tessera riconosciuta':
+    'tre contorni indipendenti; tipo e verso da verificare prima del PDF'};
  return {mode:'two',conflict:true,reason:'possibile terza tessera: controlla che non manchi una pagina'};
 }
 function decideTwoUpProof(original,candidates){
