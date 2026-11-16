@@ -70,7 +70,7 @@ function analyzeRGBA(data,w,h){
   const bw=c.maxX-c.minX+1,bh=c.maxY-c.minY+1,wide=bw>=bh,major=Math.max(bw,bh),minor=Math.min(bw,bh);
   const expected=major/1.586,expansion=Math.max(0,(expected-minor)/Math.max(1,minor));
   const boxFrac=bw*bh/(w*h),evidence=c.pixels/Math.max(1,bw*bh);
-  if(boxFrac<.12||boxFrac>.71||major<Math.min(w,h)*.35||evidence<.19||expansion>.50)continue;
+  if(boxFrac<.055||boxFrac>.71||major<Math.min(w,h)*.35||evidence<.19||expansion>.50)continue;
   let L=c.minX,R=c.maxX,T=c.minY,B=c.maxY;
   // Extend in the expected direction to preserve neutral MRZ and security print.
   if(wide&&bh<expected)B+=expected-bh;
@@ -79,7 +79,7 @@ function analyzeRGBA(data,w,h){
   L-=margin;R+=margin;T-=margin;B+=margin;
   if(L<2||T<2||R>w-3||B>h-3)continue;
   const ratio=Math.max(R-L,B-T)/Math.max(1,Math.min(R-L,B-T)),coverage=(R-L)*(B-T)/(w*h);
-  if(ratio<1.43||ratio>1.79||coverage<.075||coverage>.78)continue;
+  if(ratio<1.43||ratio>1.79||coverage<.055||coverage>.78)continue;
   const score=c.pixels/(w*h)+Math.min(.15,evidence*.12)-expansion*.065+(c.combined===2?.028:0);
   if(!best||score>best.score)best={L,R,T,B,score,evidence,expansion,combined:c.combined};
  }
