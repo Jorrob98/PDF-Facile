@@ -279,10 +279,10 @@ async function runSelfTest(){
         const mctx=mini.getContext('2d');mctx.fillStyle='#9a9a9a';mctx.fillRect(0,0,310,190);
         mctx.fillStyle='#1a66a6';mctx.fillRect(20,16,270,158);
         mctx.fillStyle='#ffffff';mctx.fillRect(35,48,230,12);mctx.fillRect(35,86,230,12);
-        const beforePixel=Array.from(mctx.getImageData(44,53,1,1).data);
+        const beforeMiniPixel=Array.from(mctx.getImageData(44,53,1,1).data);
         window.DocFixDesktopDiagnostics?.estimateFineDeskew?.(mini);
         const preservedDeskew=mini.width===310&&mini.height===190
-          &&beforePixel.every((v,k)=>mctx.getImageData(44,53,1,1).data[k]===v);
+          &&beforeMiniPixel.every((v,k)=>mctx.getImageData(44,53,1,1).data[k]===v);
         window.DocFixDesktopDiagnostics?.multiCropHealthy?.(mini);
         const preservedQuality=mini.width===310&&mini.height===190;
         window.DocFixPhysicalEdges?.detect?.(mini);
