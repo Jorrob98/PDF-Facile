@@ -24,7 +24,7 @@ function log(...parts){
   console.log(line.trim());
 }
 function requiredStartupFiles(){
-  return ['index.html','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
+  return ['index.html','docfix-visual-card.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
 }
 function requiredEngineFiles(){
   return [
@@ -149,7 +149,7 @@ async function runSelfTest(){
       (async()=>{
         const out={};
         out.ui=!!document.querySelector('#dropzone')&&!!document.querySelector('#download')&&!!document.querySelector('#picker');
-        out.modules=!!window.DocFixGroup1&&!!window.DocFixGroup2&&!!window.DocFixGroup3&&!!window.DocFixGroup5&&!!window.DocFixStability&&!!window.DocFixPhysicalEdges&&!!window.DocFixOnePass&&!!window.DocFixRealCrop&&!!window.DocFixThreeUp&&!!window.DocFixThreeUpPolish&&!!window.DocFixLicenceGuard;
+        out.modules=!!window.DocFixGroup1&&!!window.DocFixGroup2&&!!window.DocFixGroup3&&!!window.DocFixGroup5&&!!window.DocFixStability&&!!window.DocFixPhysicalEdges&&!!window.DocFixOnePass&&!!window.DocFixRealCrop&&!!window.DocFixThreeUp&&!!window.DocFixThreeUpPolish&&!!window.DocFixLicenceGuard&&!!window.DocFixVisualCard;
         const c=document.createElement('canvas');c.width=800;c.height=500;
         const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.fillStyle='#111';g.font='40px Arial';g.fillText('DOCFIX SELF TEST 123',70,180);g.strokeRect(40,40,720,420);
         const jpg=await window.DocFixGroup3.encodeJPEG(c,'high');
@@ -176,6 +176,26 @@ async function runSelfTest(){
         const worker=await window.Tesseract.createWorker(['ita','eng'],1,{legacyCore:true,legacyLang:true,workerPath:abs('./vendor/tesseract/worker.min.js'),corePath:abs('./vendor/tesseract-core/'),langPath:abs('./vendor/tessdata'),gzip:true});
         const ocr=await worker.recognize(c);await worker.terminate();
         out.ocr=typeof ocr?.data?.text==='string'&&ocr.data.text.length>0;
+        // A real-world-shaped synthetic office image: one full ID-1 card
+        // must yield a provisional visual outline without pretending that
+        // its physical edges were certified.
+        const visual=document.createElement('canvas');visual.width=420;visual.height=314;
+        const vg=visual.getContext('2d',{willReadFrequently:true});
+        vg.fillStyle='#cac6c0';vg.fillRect(0,0,420,314);
+        vg.fillStyle='#424246';vg.fillRect(0,60,420,10);
+        vg.fillStyle='#aeb5bb';vg.fillRect(50,84,315,197);
+        vg.fillStyle='#b1d5e7';vg.fillRect(50,84,315,197);
+        for(let yy=112;yy<260;yy+=14)for(let xx=86;xx<349;xx+=13){
+         vg.fillStyle='#434c59';vg.fillRect(xx,yy,7,10);
+        }
+        for(let yy=115;yy<236;yy+=5)for(let xx=68;xx<132;xx+=6){
+         vg.fillStyle=((xx+yy)%3===0)?'#668597':'#829ba8';
+         vg.fillRect(xx,yy,5,4);
+        }
+        const visualCandidate=window.DocFixVisualCard?.detect?.(visual);
+        out.visualCardCandidate=!!visualCandidate?.quad&&visualCandidate.needsReview===true
+         &&visualCandidate.physicallyVerified===false
+         &&visualCandidate.quad[0].x<.22&&visualCandidate.quad[2].x>.77;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
