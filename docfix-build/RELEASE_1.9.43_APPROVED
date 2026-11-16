@@ -1,0 +1,12 @@
+DocFix 1.9.43 — release gated
+Data: 2026-11-16
+Bug: photographed CIE front/back on office worktop retained full photo after 1.9.42.
+Fix: provisional ID-1 card preview using material texture in original source,
+visible cropped preview and editable four-corner suggestion on original.
+Safety: never pretend verified, manualPending=true, PDF blocked until confirmation.
+Original photos unchanged; compatibility crop engine untouched.
+Regression suite: https://github.com/Jorrob98/PDF-Facile/actions/runs/43918616120
+Electron: 60/60 checks; synthetic CIE front/back and false-portrait cases passed.
+Private WhatsApp originals not copied to repository. Screenshot thumbnail analysis
+indicates plausible result; on-device real-source acceptance test still necessary.
+Publication only after independent rebuild, Windows installer SHA-256 and rollback QA.
