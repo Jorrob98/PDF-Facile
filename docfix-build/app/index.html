@@ -1370,7 +1370,7 @@ function stackedCardCandidatesRecovery(original){
  const med=(a,b)=>{const v=Array.from(sm.slice(Math.max(0,a),Math.min(h,b))).sort((x,y)=>x-y);return v[v.length>>1]||0};
  const top=med(Math.round(h*.05),Math.max(Math.round(h*.20),best.start-Math.round(h*.05)));
  const bottom=med(Math.min(h-1,best.end+Math.round(h*.05)),Math.round(h*.95));
- if(top<18||bottom<18||best.avg>Math.min(top,bottom)*.72){
+ const material=(()=>{
   // Material-based recovery for cards with sparse printed text:
   // find two long ID-1 material bands separated by an actual desk-colour band.
   // Printed boxes on one A4 sheet do not qualify: their wide pixel
@@ -1409,7 +1409,9 @@ function stackedCardCandidatesRecovery(original){
    status:'found',method:'stacked-material-recovery-provisional',box:{x:0,y:y0,width:1,height:y1-y0}});
   return [rect(Math.max(0,first.start-pad)/h,Math.min(h,first.end+pad)/h),
    rect(Math.max(0,second.start-pad)/h,Math.min(h,second.end+pad)/h)];
- }
+ })();
+ if(material.length===2)return material;
+ if(top<18||bottom<18||best.avg>Math.min(top,bottom)*.72)return [];
  const pad=Math.max(2,Math.round(h*.01)),topEnd=Math.min(h-1,best.start+pad),bottomStart=Math.max(0,best.end-pad);
  const ht=topEnd/h,hb=(h-bottomStart)/h,rt=w/Math.max(1,topEnd),rb=w/Math.max(1,h-bottomStart);
  if(ht<.24||ht>.59||hb<.24||hb>.59||rt<1.18||rt>2.18||rb<1.18||rb>2.18)return [];
