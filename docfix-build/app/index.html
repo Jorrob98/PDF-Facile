@@ -2309,7 +2309,9 @@ function openCorrection(index){
  // Preserve the original safety rule for an A4 page or a single ID:
  // uncertain source corners must not be silently preselected.
  // Only independently located TWO-CARD previews may prefill disputed corners.
- if((!e.geometryReview||e.visualProvisional===true)&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))
+ if(!e.geometryReview&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))
+  editQuad=rotatedQuad(e.sourceQuad,editRotation);
+ else if(e.visualProvisional===true&&e.manualPending===true&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))
   editQuad=rotatedQuad(e.sourceQuad,editRotation);
  else if((e.twoUp===true&&e.splitCount===2||e.contactGroup===true)&&e.sourceQuad&&window.DocFixScanner.validQuad(e.sourceQuad))
   editQuad=rotatedQuad(e.sourceQuad,editRotation);
