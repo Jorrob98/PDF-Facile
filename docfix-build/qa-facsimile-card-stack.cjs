@@ -66,7 +66,7 @@ const overlap=(a,b)=>{
 const choose=new Function('window','quadBounds','overlapFraction',html.slice(begin,end)+';return chooseMultiCardMode;')(win,bounds,overlap);
 const cards=[cardBox(37,30,322,209),cardBox(37,215,322,394),cardBox(37,400,322,579)]
   .map((quad,i)=>({quad,confidence:.93,kind:['identity','licence','cf'][i]}));
-let decision=choose(cards.slice(0,2),{cards,verified:true,materialVerified:false});
+let decision=choose(cards.slice(0,2),{cards,verified:true,materialVerified:false,arrangement:'stacked-landscape'});
 assert.equal(decision.mode,'three','three independent physical candidate outlines survive uncertain colors');
 assert.equal(decision.conflict,true,'uncertain facsimile identification must remain flagged');
 decision=choose(cards.slice(0,2),{cards,verified:true,materialVerified:true});
