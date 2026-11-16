@@ -155,7 +155,10 @@ function analyzeRGBA(pixels,w,h){
   let bits=maskFromColor(lab,w,h,bg,threshold);
   let k=Math.max(2,Math.round(Math.min(w,h)*.007));
   bits=morph(morph(bits,w,h,k,k,false),w,h,k,k,true);
-  k=Math.max(6,Math.round(Math.min(w,h)*.019));
+  // 3 cards stacked almost touching: a large closing radius would join
+  // their plastic outlines into a single component (old 1.9% radius).
+  // Keep the narrow genuine desk gaps visible on the analysis mask.
+  k=1;
   bits=morph(morph(bits,w,h,k,k,true),w,h,k,k,false);
   const comps=connectedCards(bits,w,h),cards=[];
   for(const c of comps){
@@ -214,27 +217,40 @@ function detect(original){
  const scan=window.DocFixScanner;
  if(!scan||!original)return {cards:[],reason:'scanner non disponibile'};
  const portrait=original.height>original.width*1.20;
- let oriented=original;
- // Rotate ONLY a temporary analysis canvas; never rotate or overwrite originals.
- if(portrait){
-  oriented=document.createElement('canvas');oriented.width=original.height;oriented.height=original.width;
-  const g=oriented.getContext('2d',{willReadFrequently:true});
-  g.translate(0,original.width);g.rotate(-Math.PI/2);g.drawImage(original,0,0);
+ function inspect(input){
+  const sample=scan.resize(input,600);
+  try{
+   const ctx=sample.getContext('2d',{willReadFrequently:true});
+   return analyzeRGBA(ctx.getImageData(0,0,sample.width,sample.height).data,sample.width,sample.height);
+  }finally{if(sample!==original&&sample!==input)sample.width=sample.height=1;}
  }
- const sample=scan.resize(oriented,600),ctx=sample.getContext('2d',{willReadFrequently:true});
- let result;
- try{result=analyzeRGBA(ctx.getImageData(0,0,sample.width,sample.height).data,sample.width,sample.height)}
- finally{
-  if(sample!==original&&sample!==oriented)sample.width=sample.height=1;
-  if(oriented!==original)oriented.width=oriented.height=1;
- }
+ let result=null,turned=false,oriented=null;
+ // Preserve the historical left-turn candidate for portrait photos whose
+ // cards are vertical; if that hypothesis fails, try the UNROTATED photo,
+ // because three landscape CIE/patente/TS cards can be stacked top-to-bottom.
+ // Both paths analyze scratch pixels only and keep the source untouched.
+ try{
+  if(portrait){
+   oriented=document.createElement('canvas');
+   oriented.width=original.height;oriented.height=original.width;
+   const g=oriented.getContext('2d',{willReadFrequently:true});
+   g.translate(0,original.width);g.rotate(-Math.PI/2);g.drawImage(original,0,0);
+   result=inspect(oriented);
+   if(result.cards.length===3)turned=true;
+  }
+  if(!result||result.cards.length!==3)result=inspect(original);
+ }catch(error){
+  console.warn('DocFix: orientamento delle tre tessere non verificabile',error);
+  return {cards:[],reason:'contorni delle tre tessere non disponibili'};
+ }finally{if(oriented&&oriented!==original)oriented.width=oriented.height=1;}
  if(result.cards.length!==3)return {cards:[],reason:'tre tessere non confermate',candidates:result.cards.length};
  const cards=result.cards.map(card=>({...card,
-  quad:portrait?card.quad.map(p=>({x:1-p.y,y:p.x})):card.quad,
-  outerQuad:card.outerQuad?(portrait?card.outerQuad.map(p=>({x:1-p.y,y:p.x})):card.outerQuad):null,
-  orientation:portrait?'left':'none'}));
+  quad:turned?card.quad.map(p=>({x:1-p.y,y:p.x})):card.quad,
+  outerQuad:card.outerQuad?(turned?card.outerQuad.map(p=>({x:1-p.y,y:p.x})):card.outerQuad):null,
+  orientation:turned?'left':'none'}));
  if(cards.some(c=>!scan.validQuad(c.quad)))return {cards:[],reason:'angoli non validi'};
- return {cards,orientation:portrait?'left':'none',verified:true};
+ return {cards,orientation:turned?'left':'none',verified:true,
+  arrangement:portrait&&!turned?'stacked-landscape':'legacy-orientation'};
 }
 window.DocFixThreeUp=Object.freeze({detect,analyzeRGBA,version:'1.9.30'});
 })();
