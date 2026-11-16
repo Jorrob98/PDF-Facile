@@ -35,7 +35,15 @@ assert.ok(vis.quad[0].y<.36&&vis.quad[2].y>.80,'top and bottom material included
 assert.equal(vis.physicallyVerified,false);
 assert.ok(win.DocFixVisualCard.analyzeRGBA(scene({card:true,retro:true}).data,W,H),'CIE MRZ reverse must be detected');
 assert.equal(win.DocFixVisualCard.analyzeRGBA(scene({card:false}).data,W,H),null,'desk stripes alone are not an ID');
-assert.equal(win.DocFixVisualCard.analyzeRGBA(scene({card:true,face:false}).data,W,H),null,'risk of cropping face panel: refuse partial');
+assert.ok(win.DocFixVisualCard.analyzeRGBA(scene({card:true,face:false}).data,W,H),'complete ID without portrait must still be found');
+const faceOnly=scene({card:false});
+for(let y=90;y<220;y++)for(let x=130;x<227;x++){
+ const k=(y*W+x)*4;
+ faceOnly.data[k]=85+(x*11+y*7)%72;
+ faceOnly.data[k+1]=105+(x*7+y*13)%65;
+ faceOnly.data[k+2]=125+(x*17+y*3)%50;
+}
+assert.equal(win.DocFixVisualCard.analyzeRGBA(faceOnly.data,W,H),null,'portrait-only interior must never be proposed as complete ID-1 card');
 const open=html.indexOf('function photoNormalize(original){'),close=html.indexOf('// The same normalization path is used by photos and scanned PDF pages.',open);
 assert.ok(open>=0&&close>open);
 let smart=true;
