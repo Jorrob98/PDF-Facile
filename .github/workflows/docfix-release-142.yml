@@ -6,7 +6,7 @@ on:
       - docfix-build/RELEASE_1.9.42_APPROVED
 
 concurrency:
-  group: docfix-touching-cards-141
+  group: docfix-release-142
   cancel-in-progress: true
 
 permissions:
@@ -405,7 +405,7 @@ jobs:
           updater="DocFix_Aggiornamento_${short}.exe"
           shafile="DocFix_Aggiornamento_${short}.sha256"
           tag="v${version}"
-          title="DocFix ${version} - Tessere a contatto e margini sicuri"
+          title="DocFix ${version} - Bordi CIE, patente e CF, tessere multiple"
           notes='DocFix 1.9.42: recupero delle tre tessere ID-1 orizzontali impilate in foto verticale, con orientamento originale e correzione delle soglie di ricerca per CIE, patente e tessera sanitaria. Gestione delle tessere piccole su A4, bordi della plastica e falsi contorni interni. Originali preservati. Anteprime con bordi non verificati richiedono conferma prima del PDF. Semplice pulsante di aggiornamento, chiusura e riavvio automatici su Windows, verifica SHA-256 e rollback. Collaudo con facsimili sintetici e regressioni, NON verifica sulle foto WhatsApp originali.'
 
           if gh release view "$tag" >/dev/null 2>&1; then
