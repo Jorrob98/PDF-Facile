@@ -222,7 +222,7 @@ function detect(original){
   try{
    const ctx=sample.getContext('2d',{willReadFrequently:true});
    return analyzeRGBA(ctx.getImageData(0,0,sample.width,sample.height).data,sample.width,sample.height);
-  }finally{if(sample!==original&&sample!==input)sample.width=sample.height=1;}
+  }finally{if(sample!==original&&sample!==oriented)sample.width=sample.height=1;}
  }
  let result=null,turned=false,oriented=null;
  // Preserve the historical left-turn candidate for portrait photos whose
