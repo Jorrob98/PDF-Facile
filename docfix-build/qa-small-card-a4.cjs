@@ -9,7 +9,11 @@ function imageCard(card=true){
   const k=(y*W+x)*4;
   const colored=card&&x>=224&&x<510&&y>=278&&y<458;
   const logo=!card&&x>=220&&x<250&&y>=280&&y<302;
-  const rgb=colored||logo?[120,165,215]:[242,243,242];
+  let rgb=colored||logo?[120,165,215]:[242,243,242];
+  // A real ID card contains multiple printed text lines, unlike a
+  // plain cyan portrait panel inside an otherwise unrelated document.
+  if(colored&&((y>=317&&y<=320)||(y>=352&&y<=355)||(y>=387&&y<=390))&&
+      x>=245&&x<333)rgb=[49,57,65];
   data[k]=rgb[0];data[k+1]=rgb[1];data[k+2]=rgb[2];data[k+3]=255;
  }
  return {width:W,height:H,data,getContext:()=>({getImageData:()=>({data})})};
