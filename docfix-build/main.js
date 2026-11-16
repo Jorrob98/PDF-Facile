@@ -165,7 +165,15 @@ async function runSelfTest(){
         if(!window.PDFLib){await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='./vendor/pdf-lib/pdf-lib.min.js';s.onload=resolve;s.onerror=reject;document.head.appendChild(s);});}
         out.pdflib=!!window.PDFLib?.PDFDocument;
         const abs=p=>new URL(p,location.href).toString();
-        const worker=await Tesseract.createWorker(['ita','eng'],1,{legacyCore:true,legacyLang:true,workerPath:abs('./vendor/tesseract/worker.min.js'),corePath:abs('./vendor/tesseract-core/'),langPath:abs('./vendor/tessdata'),gzip:true});
+        // The UI loads Tesseract lazily: a fresh Electron self-test must
+        // explicitly initialize the local offline vendor before using it.
+        if(!window.Tesseract){await new Promise((resolve,reject)=>{
+          const script=document.createElement('script');
+          script.src='./vendor/tesseract/tesseract.min.js';
+          script.onload=resolve;script.onerror=()=>reject(new Error('Tesseract locale assente'));
+          document.head.appendChild(script);
+        });}
+        const worker=await window.Tesseract.createWorker(['ita','eng'],1,{legacyCore:true,legacyLang:true,workerPath:abs('./vendor/tesseract/worker.min.js'),corePath:abs('./vendor/tesseract-core/'),langPath:abs('./vendor/tessdata'),gzip:true});
         const ocr=await worker.recognize(c);await worker.terminate();
         out.ocr=typeof ocr?.data?.text==='string'&&ocr.data.text.length>0;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
