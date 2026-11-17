@@ -1,0 +1,32 @@
+DocFix 1.9.49 — approvazione tecnica alla compilazione Windows
+Data: 2026-11-17
+Base: 1.9.48; ramo docfix-149-guided-two-card-split-20261117
+
+Modifica reale: quando una foto verticale non viene divisa da DocFix,
+il comando esplicito «Separa in 2» sostituisce UNA pagina originale con
+DUE anteprime modificabili, propone quattro angoli distinti sulla
+fotografia originale e richiede la conferma manuale di entrambe.
+La geometria suggerita può essere imprecisa: le due anteprime sono
+SEMPRE provvisorie. L'esportazione PDF resta bloccata fino alle conferme.
+
+Sicurezza: annullamento della separazione con ripristino esatto della
+pagina originale, anche quando una delle due proposte è stata cancellata;
+errore nella generazione della seconda anteprima non modifica la pratica.
+Il comando appare solo per foto verticali irrisolte, non per A4 protetti
+o tessere gia confermate. Testo di conteggio corretto: pagine, non
+numero di documenti ipotizzati. Il vecchio rilevamento automatico,
+OCR e PDF non vengono cambiati.
+
+Confronto visivo locale della suddivisione sulla MINIATURA della
+fotografia IMG-20261117-WA0007 presente nello screenshot: le due
+sezioni conservano la tessera superiore e quella inferiore, con
+sovrapposizione provvisoria che l'operatore elimina regolando gli
+angoli. Questo non dimostra il ritaglio automatico sull'originale JPG.
+
+QA definitiva: https://github.com/Jorrob98/PDF-Facile/actions/runs/44141323012
+66/66 controlli funzionali Electron; regressioni complete, verifica del
+modulo nel browser, test di rollback della divisione, limiti di pagine,
+atomicità in caso di errore e blocco del PDF: PASS.
+
+Il rilascio deve rieseguire i controlli, costruire il pacchetto Windows,
+controllare SHA-256 e ripristino prima di pubblicare la 1.9.49.
