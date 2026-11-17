@@ -73,7 +73,7 @@
    // to that same card, but cannot count as a third independent card.
    let headerTop=null;
    const scanFrom=Math.max(0,Math.round(run.start-targetH*.27));
-   for(let y=scanFrom;y<run.start-2;y++){
+   for(let y=scanFrom;idx===0&&y<run.start-2;y++){
     if(row[y]>.27){
      let last=y;while(last+1<run.start-1&&row[last+1]>.19)last++;
      if(last-y+1>=Math.max(2,h*.010)&&run.start-last<=targetH*.27){
@@ -83,14 +83,15 @@
     }
    }
    let top=headerTop!==null?headerTop:run.start-Math.max(2,targetH*.058);
-   let bottom=Math.max(run.end+targetH*.042,top+targetH);
+   let bottom=Math.max(run.end+targetH*.062,top+targetH*1.055);
    // Bound the two outer edges by the observed neutral physical seam.
    const seamMid=(first.end+second.start)/2;
    if(idx===0)bottom=Math.min(bottom,seamMid-targetH*.013);
    else top=Math.max(top,seamMid+targetH*.013);
    const padX=Math.max(3,cardW*.065),padY=Math.max(2,targetH*.024);
    const left=clamp(xs.x0-padX,1,w-2),right=clamp(xs.x1+padX,2,w-1);
-   const y0=clamp(top-padY,1,h-2),y1=clamp(bottom+padY,2,h-1);
+   const y0=clamp(idx===1?Math.max(top-padY,seamMid+1):top-padY,1,h-2);
+   const y1=clamp(idx===0?Math.min(bottom+padY,seamMid-1):bottom+padY,2,h-1);
    const width=right-left,height=y1-y0,ratio=width/Math.max(1,height),area=width*height/(w*h);
    if(ratio<1.32||ratio>2.05||area<.034||area>.55)return null;
    return {status:'found',confidence:.71,physicallyVerified:false,
