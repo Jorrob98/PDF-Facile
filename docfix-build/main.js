@@ -24,7 +24,7 @@ function log(...parts){
   console.log(line.trim());
 }
 function requiredStartupFiles(){
-  return ['index.html','docfix-visual-card.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
+  return ['index.html','docfix-visual-card.js','docfix-card-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
 }
 function requiredEngineFiles(){
   return [
@@ -196,6 +196,21 @@ async function runSelfTest(){
         out.visualCardCandidate=!!visualCandidate?.quad&&visualCandidate.needsReview===true
          &&visualCandidate.physicallyVerified===false
          &&visualCandidate.quad[0].x<.22&&visualCandidate.quad[2].x>.77;
+        out.cardDeskewBridge=typeof window.DocFixCardDeskew?.refine==='function';
+        const deskewFixture=document.createElement('canvas');
+        deskewFixture.width=680;deskewFixture.height=480;
+        const dg=deskewFixture.getContext('2d',{willReadFrequently:true});
+        dg.fillStyle='#daccbe';dg.fillRect(0,0,680,480);
+        dg.translate(340,240);dg.rotate(3*Math.PI/180);
+        dg.fillStyle='#add6df';dg.fillRect(-210,-132.5,420,265);
+        dg.fillStyle='#4f6877';dg.fillRect(-100,-56,160,13);
+        const deskewApprox=[
+         {x:124/680,y:91/480},{x:556/680,y:91/480},
+         {x:556/680,y:389/480},{x:124/680,y:389/480}
+        ];
+        const fittedDeskew=window.DocFixCardDeskew?.refine?.(deskewFixture,deskewApprox);
+        out.cardDeskewFitted=!!fittedDeskew?.quad&&fittedDeskew.needsReview===true
+         &&fittedDeskew.physicallyVerified===false&&Math.abs(fittedDeskew.angleDeg)>1.8;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
