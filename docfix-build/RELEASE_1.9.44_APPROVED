@@ -1,0 +1,17 @@
+DocFix 1.9.44 — rilascio CIE fronte (approvazione tecnica)
+Data: 2026-11-17
+Causa: nella 1.9.43 il bordo scuro dello scanner prevale sulla tessera
+azzurra e il fronte CIE viene lasciato come foto completa.
+Correzione: nuovo rilevatore cromatico dell'intera superficie azzurra
+in alternativa all'analisi testuale/contrasto, con rapporto ID-1, minimo
+materiale connesso, rifiuto di loghi e riquadri viso. Solo anteprima
+PROVVISORIA: manualPending=true, cropVerified=false, PDF bloccato
+finché l'operatore non conferma 4 angoli sulla foto ORIGINALE.
+Convalida specifica: miniature screenshot in ambiente locale, nessuna
+foto identificativa aggiunta al repository; test sintetico anonimizzato
+di CIE con scanner/desk; regressioni del codice e 60/60 controlli
+funzionali Electron, esito PASS:
+https://github.com/Jorrob98/PDF-Facile/actions/runs/44045450116
+Il collaudo NON sostituisce la prova dell'originale WhatsApp sul PC.
+Il workflow di rilascio deve superare nuovamente tutti i test, creare
+aggiornamento incrementale Windows, verificare SHA-256 e ripristino.
