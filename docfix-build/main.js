@@ -24,7 +24,7 @@ function log(...parts){
   console.log(line.trim());
 }
 function requiredStartupFiles(){
-  return ['index.html','docfix-visual-card.js','docfix-card-deskew.js','docfix-fine-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
+  return ['index.html','docfix-visual-card.js','docfix-texture-card.js','docfix-card-deskew.js','docfix-fine-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
 }
 function requiredEngineFiles(){
   return [
@@ -198,6 +198,7 @@ async function runSelfTest(){
          &&visualCandidate.quad[0].x<.22&&visualCandidate.quad[2].x>.77;
         out.cardDeskewBridge=typeof window.DocFixCardDeskew?.refine==='function';
         out.fineDeskewBridge=typeof window.DocFixFineDeskew?.refine==='function';
+        out.textureCardBridge=typeof window.DocFixTextureCard?.detect==='function'&&typeof window.DocFixTextureCard?.analyzeRGBA==='function';
         const deskewFixture=document.createElement('canvas');
         deskewFixture.width=680;deskewFixture.height=480;
         const dg=deskewFixture.getContext('2d',{willReadFrequently:true});
