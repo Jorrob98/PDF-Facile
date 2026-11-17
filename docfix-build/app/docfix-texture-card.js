@@ -96,7 +96,7 @@ function analyzeRGBA(data,w,h){
  if(!run)return null;
  // Protective margins are intentional: the printed texture can stop short
  // of the outer rounded plastic. Never crop the MRZ or portrait to fit text.
- const padY=Math.max(9,Math.round(run.span*.073));
+ const padY=Math.max(12,Math.round(run.span*.082));
  const desiredWidth=1.586*(run.span+2*padY);
  const padX=Math.max(10,Math.round((desiredWidth-width)/2)+2);
  const left=clamp(L-padX,2,w-3),right=clamp(R+padX,2,w-3);
