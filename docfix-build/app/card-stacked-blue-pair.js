@@ -91,7 +91,11 @@
    const padX=Math.max(3,cardW*.065),padY=Math.max(2,targetH*.024);
    const left=clamp(xs.x0-padX,1,w-2),right=clamp(xs.x1+padX,2,w-1);
    const y0=clamp(idx===1?Math.max(top-padY,seamMid+1):top-padY,1,h-2);
-   const y1=clamp(idx===0?Math.min(bottom+padY,seamMid-1):bottom+padY,2,h-1);
+   // MRZ can extend well below the blue plastic print. A deliberately
+   // generous bottom guard on the SECOND card avoids deleting line three.
+   // The operator may fine-trim this provisional preview after inspection.
+   const bottomGuard=idx===1?Math.max(padY,targetH*.18):padY;
+   const y1=clamp(idx===0?Math.min(bottom+padY,seamMid-1):bottom+bottomGuard,2,h-1);
    const width=right-left,height=y1-y0,ratio=width/Math.max(1,height),area=width*height/(w*h);
    if(ratio<1.32||ratio>2.05||area<.034||area>.55)return null;
    return {status:'found',confidence:.71,physicallyVerified:false,
