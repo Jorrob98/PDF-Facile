@@ -1,0 +1,22 @@
+DOCFIX 1.9.48 — AUTORIZZAZIONE RILASCIO
+Data: 2026-11-17
+Base: 1.9.47, ramo docfix-148-stacked-blue-pair-20261117
+Errore riprodotto: quinta pagina dell'anteprima in chat contiene due
+carte TS/CF e CIE retro su sfondo tessile scuro, non separate.
+L'algoritmo usa due fasce di colore azzurro ed una zona neutra di
+separazione, con verifica geometrica indipendente formato ID-1.
+Il ritaglio e SEMPRE PROVVISORIO e i quattro angoli di entrambe le
+pagine richiedono verifica manuale. Il PDF resta bloccato quando la
+separazione non e verificata. Foto originale mantenuta in memoria.
+Le prime quattro anteprime e le precedenti modalita non devono cambiare.
+Sul ritaglio della MINIATURA dello screenshot l'anteprima riprodotta
+in locale conserva entrambe le plastiche, la zona barcode e la terza
+riga MRZ. Il file fotografico IMG-20261117-WA0007.jpg non e stato
+fornito autonomamente: non dichiarare il risultato garantito
+sull'immagine originale.
+65 / 65 controlli Electron superati, test sintetico due tessere,
+singolo e A4, regressioni su OCR, PDF e altre forme:
+https://github.com/Jorrob98/PDF-Facile/actions/runs/44113971327
+Rilascio solo dopo un secondo collaudo automatizzato, creazione
+aggiornamento incrementale Windows, controllo SHA-256, ripristino,
+riapertura automatica e verifica release GitHub effettiva.
