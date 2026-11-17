@@ -32,9 +32,9 @@ const win={DocFixScanner:{
  Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>.001&&p.x<.999&&p.y>.001&&p.y<.999)
 }};
 vm.runInNewContext(src,{window:win,Math,console,Uint8Array,Uint8ClampedArray,Uint32Array,Int32Array,Float32Array});
-const module=win.DocFixVisualCard;
-assert.equal(typeof module.cyanSilhouetteRGBA,'function','new cyan material fallback is exported');
-const found=module.cyanSilhouetteRGBA(source.data,W,H);
+const cardModule=win.DocFixVisualCard;
+assert.equal(typeof cardModule.cyanSilhouetteRGBA,'function','new cyan material fallback is exported');
+const found=cardModule.cyanSilhouetteRGBA(source.data,W,H);
 assert.ok(found?.quad,'blue plastic needs a proposed outline even with scanner shadows');
 assert.equal(found.physicallyVerified,false,'photographic colour cannot certify four physical borders');
 assert.equal(found.needsReview,true,'operator must confirm four corners');
@@ -44,13 +44,13 @@ assert.ok(x0<=42&&x0>=20&&x1>=340&&x1<=358,'both external card edges and portrai
 assert.ok(y0<=100&&y0>=78&&y1>=285&&y1<=304,'desk edge above must not be card upper border');
 assert.ok((x1-x0)/(y1-y0)>1.43&& (x1-x0)/(y1-y0)<1.82);
 assert.deepEqual(source.data,backup,'source never modified');
-const endToEnd=module.detect(source);
+const endToEnd=cardModule.detect(source);
 assert.ok(endToEnd?.quad,'visual detector must actually present a card preview');
 assert.ok(endToEnd.quad[0].y>.20,'must exclude horizontal scanner edge at 58px');
 assert.ok(endToEnd.quad[0].x<.18,'must not crop off portrait');
 assert.equal(endToEnd.physicallyVerified,false);
-assert.equal(module.cyanSilhouetteRGBA(image({card:false,logo:true}).data,W,H),null,
+assert.equal(cardModule.cyanSilhouetteRGBA(image({card:false,logo:true}).data,W,H),null,
  'desk edge and blue logo are not a card');
-assert.equal(module.cyanSilhouetteRGBA(image({card:false,portraitOnly:true}).data,W,H),null,
+assert.equal(cardModule.cyanSilhouetteRGBA(image({card:false,portraitOnly:true}).data,W,H),null,
  'a face-sized interior photograph is not a whole card');
 console.log('PASS: CIE front on warm desk with dark scanner line, 4 plastic sides included, portrait preserved, false panel/logo rejected, review-only');
