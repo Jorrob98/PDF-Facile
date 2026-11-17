@@ -1,0 +1,18 @@
+DOCFIX 1.9.46 — APPROVAZIONE RILASCIO
+Data: 2026-11-17
+Base: DocFix 1.9.45
+Modifiche: post-crop fine deskew CIE usando i lati fisici superiore e inferiore,
+sulle fotografie originali già caricate nel contesto dell'operatore.
+Il controllo dei quattro lati precedente resta prioritario; fallback
+solo con evidenza cromatica/geometrica sufficiente e limiti di movimento.
+Originali non alterati, doppia prospettiva evitata, angoli e margini
+protetti, export PDF sospeso fino a conferma manuale.
+Scopo: modifiche di ritaglio/deskew soltanto; OCR/PDF invariati.
+Test su file CIE originali LOCALI: fronte e retro elaborati, bordo e
+MRZ mantenuti; i file non vengono inseriti in GitHub.
+Suite automatica completa: PASS, 63/63 verifiche Electron,
+incluso caricamento del nuovo modulo e regressioni:
+https://github.com/Jorrob98/PDF-Facile/actions/runs/44096090139
+Il successo del test non implica precisione garantita su fotografie nuove.
+Secondo collaudo nel workflow di release, hash SHA-256, installer e
+ripristino richiesti prima della pubblicazione.
