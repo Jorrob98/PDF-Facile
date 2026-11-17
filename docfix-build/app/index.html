@@ -816,7 +816,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -2010,6 +2010,24 @@ async function makeImageEntries(file,index,total=1,meta={}){
    multi=fallback.length===2?fallback:(located||fallback);
   }catch(error){multi=[];detectorProblems.push('riconoscimento multiplo');console.warn('DocFix: riconoscimento multiplo saltato',error);}
  }
+ // The original two-up classifier misses two blue cards on a grey fabric
+ // background when their barcodes break edge continuity. Independently
+ // recover their material bands before the generic photo/half fallbacks.
+ // These are never certified: both source corners must be confirmed.
+ if(cropMode()==='smart'&&portrait>1.13&&!verified){
+  try{
+   const bluePair=window.DocFixStackedBluePair?.detect?.(original)||null;
+   if(bluePair?.cards?.length===2&&
+      window.DocFixPairProof?.geometry?.(original,bluePair.cards)?.ok===true){
+    const existingGood=Array.isArray(multi)&&multi.length===2&&
+      multi.every(c=>c.physicallyVerified===true);
+    if(!existingGood){
+     multi=bluePair.cards;
+     detectorProblems.push('doppia tessera azzurra sullo stesso sfondo: 2 anteprime da confermare');
+    }
+   }
+  }catch(error){console.warn('DocFix: ripristino doppia tessera azzurra non disponibile',error);}
+ }
  // The old fallback returned two large PHOTO HALVES (or one full photo),
  // not the physical rectangles. On portrait photos, a dedicated edge pass
  // now finds two independent card-sized regions even against dark desks.
@@ -2175,7 +2193,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
  // Do not let single-card normalization crop away a second card after an
  // uncertain two-card hypothesis. Keep the entire source for manual recovery.
  const fixed=uncertainPair?{
-  processed:original,rotation:0,review:true,cropVerified:false,
+  processed:original,rotation:0,review:true,manualPending:true,cropVerified:false,
   geometryReview:true,orientationReview:true,qualityReview:false,
   qualityIssues:[],qualityMetrics:null,cropped:false,sourceQuad:null,
   how:'Possibili due tessere: conservata la fotografia originale · usa + Tessera dalla stessa foto per selezionare ciascun documento'
