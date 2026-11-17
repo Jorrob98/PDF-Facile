@@ -43,7 +43,11 @@ function inspectRGBA(data,w,h,rough){
      acc+=Math.max(0,hd-2.5)*2+Math.min(75,Math.abs(innerL-outerL))*.55;
     }
     const support=bright/n;
-    const score=acc/n-.12*Math.abs(offset)-.025*Math.abs(slope*ch)+support*2.5;
+    const balanced=Math.min(...third)/(n/3);
+    // For the bottom edge favour consistent evidence across the width.
+    // This avoids following MRZ lines or a shadow present on one segment.
+    const score=acc/n-.12*Math.abs(offset)-.025*Math.abs(slope*ch)
+     +support*2.5+(top?0:18*balanced);
     if(!best||score>best.score)
      best={score,slope,offset,support,third:third.map(x=>+(x/(n/3)).toFixed(2)),yNom,mid};
    }
@@ -56,13 +60,18 @@ function inspectRGBA(data,w,h,rough){
  if(!top||!bottom)return null;
  if(Math.abs(top.slope-bottom.slope)>.105)return null;
  const at=(fit,x)=>fit.yNom+fit.offset+fit.slope*(x-fit.mid);
- const padTop=clamp(ch*.010,3,10),padBottom=clamp(ch*.023,5,18);
- const newp=[{x:p[0].x,y:at(top,p[0].x)-padTop},{x:p[1].x,y:at(top,p[1].x)-padTop},
-   {x:p[2].x,y:at(bottom,p[2].x)+padBottom},{x:p[3].x,y:at(bottom,p[3].x)+padBottom}];
- if(newp.some((t,i)=>Math.abs(t.y-p[i].y)>ch*.095))return null;
- if(newp.some(t=>t.y<3||t.y>h-3))return null;
+ const padTop=clamp(ch*.018,4,13),padBottom=clamp(ch*.023,5,18);
+ const padX=clamp(cw*.018,3,20),flareLeft=clamp(cw*.016,2,12);
+ // Protective outside margins, and an extra small lower-left flare for
+ // perspective: never slice the curved lower-left plastic corner.
+ const newp=[{x:p[0].x-padX,y:at(top,p[0].x)-padTop},
+   {x:p[1].x+padX,y:at(top,p[1].x)-padTop},
+   {x:p[2].x+padX,y:at(bottom,p[2].x)+padBottom},
+   {x:p[3].x-padX-flareLeft,y:at(bottom,p[3].x)+padBottom}];
+ if(newp.some((t,i)=>Math.abs(t.y-p[i].y)>ch*.125))return null;
+ if(newp.some(t=>t.x<3||t.x>w-3||t.y<3||t.y>h-3))return null;
  const newH=((newp[3].y-newp[0].y)+(newp[2].y-newp[1].y))/2;
- const aspect=cw/Math.max(1,newH);
+ const aspect=(cw+2*padX)/Math.max(1,newH);
  if(aspect<1.35||aspect>1.87||newH/ch<.85||newH/ch>1.15)return null;
  const angle=(top.slope+bottom.slope)/2*180/Math.PI;
  const oldAngle=(p[1].y-p[0].y+p[2].y-p[3].y)/(2*cw)*180/Math.PI;
