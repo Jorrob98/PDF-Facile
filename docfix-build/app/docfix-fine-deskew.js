@@ -60,7 +60,7 @@ function inspectRGBA(data,w,h,rough){
  if(!top||!bottom)return null;
  if(Math.abs(top.slope-bottom.slope)>.105)return null;
  const at=(fit,x)=>fit.yNom+fit.offset+fit.slope*(x-fit.mid);
- const padTop=clamp(ch*.018,4,13),padBottom=clamp(ch*.023,5,18);
+ const padTop=clamp(ch*.018,4,13),padBottom=clamp(ch*.033,6,24);
  const padX=clamp(cw*.018,3,20),flareLeft=clamp(cw*.016,2,12);
  // Protective outside margins, and an extra small lower-left flare for
  // perspective: never slice the curved lower-left plastic corner.
