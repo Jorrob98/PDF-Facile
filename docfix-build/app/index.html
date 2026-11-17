@@ -2300,7 +2300,10 @@ function canGuidedSplit(e){
  if(!e||e.kind!=='raster'||!e.original||e.pageProtected===true||
     e.manualSplitPair===true||Number(e.splitCount||1)!==1)return false;
  const w=e.original.width,h=e.original.height;
- if(!(w>0&&h>0)||!(h>=w*1.12||w>=h*1.12))return false;
+ if(!(w>0&&h>=w*1.12))return false;
+ // Keep the interface clean: offer this rescue on unresolved portrait
+ // source photos, not on already approved single-card previews.
+ if(e.review!==true&&e.manualPending!==true&&e.cropVerified!==false)return false;
  return entries.filter(p=>p.sourceIndex===e.sourceIndex).length===1;
 }
 function guidedSplitSource(index){
@@ -2358,9 +2361,10 @@ function undoGuidedSplit(index){
  if(!candidate?.manualSplitPair||!candidate.manualSplitBackup)return false;
  const positions=entries.map((e,i)=>e.manualSplitPair&&
   e.sourceIndex===candidate.sourceIndex?i:-1).filter(i=>i>=0);
- if(positions.length!==2){
-  note('Impossibile ripristinare la foto: la coppia è stata modificata.');return false;
+ if(positions.length<1||positions.length>2){
+  note('Impossibile ripristinare: non ci sono più anteprime collegate.');return false;
  }
+ // Still allow undo after one of the proposed pages has been deleted.
  const original=candidate.manualSplitBackup,min=Math.min(...positions);
  for(const pos of positions.sort((a,b)=>b-a))entries.splice(pos,1);
  entries.splice(min,0,original);
