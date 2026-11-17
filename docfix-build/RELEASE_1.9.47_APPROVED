@@ -1,0 +1,25 @@
+DocFix 1.9.47 — autorizzazione al rilascio Windows
+Data: 2026-11-17
+Base: DocFix 1.9.46
+Bug riprodotto: foto singole di carta identita elettronica su piano bianco
+o beige. Retro talvolta conservato intero; fronte con margini imprecisi.
+Causa: vecchie soglie che dipendono dal colore assoluto, dalla
+percentuale di immagine occupata e dai quattro bordi ad alto contrasto.
+Soluzione: candidato geometrico PROVVISORIO basato su regioni con
+microtexture, continuita orizzontale, proporzioni ID-1 e margini
+protettivi. Le foto originali sono immutate, il PDF resta bloccato finche
+non sono confermati quattro angoli. Fogli A4 e falsi positivi protetti.
+La rilevazione precedente di CIE su piano scuro rimane separata.
+Due foto reali del caso 2026-11-09 validate LOCALMENTE con immagini
+di anteprima: fronte, retro, MRZ, angoli protetti. Le foto personali non
+sono state caricate nel repository o tra gli asset della release.
+Quattro foto originali confrontate in locale: sui due casi precedenti
+il nuovo candidato restituisce nessun risultato e mantiene il motore
+gia funzionante.
+QA automatizzata: https://github.com/Jorrob98/PDF-Facile/actions/runs/44105944322
+64/64 verifiche Electron, test sintetico su sfondo chiaro, A4,
+regressioni OCR, PDF e aggiornamenti: PASS.
+La verifica effettiva dentro DocFix sul PC dell'utente e ancora necessaria.
+Rilascio consentito solo dopo una seconda esecuzione di test e un
+pacchetto Windows firmato con checksum SHA-256, chiusura/riavvio,
+ripristino della versione precedente.
