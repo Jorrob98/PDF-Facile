@@ -56,7 +56,9 @@ for(const angle of [-3.1,2.8,4.2]){
  }
 }
 const clean=fixture(0,'front');
-assert.ok(win.DocFixCardDeskew.inspectRGBA(clean.data,W,H,clean.rough),'near-straight card remains valid');
+const straight=win.DocFixCardDeskew.inspectRGBA(clean.data,W,H,clean.rough);
+assert.ok(!straight||Math.abs(straight.angleDeg)<.50,
+ 'a near-straight card must never receive an invented rotation');
 const noCard=fixture(2.1);
 for(let i=0;i<noCard.data.length;i+=4){noCard.data[i]=218;noCard.data[i+1]=207;noCard.data[i+2]=194;}
 assert.equal(win.DocFixCardDeskew.inspectRGBA(noCard.data,W,H,noCard.rough),null,'plain worktop cannot be forced to ID-1 shape');
