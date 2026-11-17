@@ -623,10 +623,17 @@ function getCanvas(file,max=2250){return new Promise((resolve,reject)=>{const im
 function resize(c,limit){if(Math.max(c.width,c.height)<=limit)return c;let s=limit/Math.max(c.width,c.height),o=document.createElement('canvas');o.width=Math.max(1,Math.round(c.width*s));o.height=Math.max(1,Math.round(c.height*s));o.getContext('2d',{willReadFrequently:true}).drawImage(c,0,0,o.width,o.height);return o}
 function rotate(c,deg){let a=(deg%360+360)%360;if(!a)return c;const o=document.createElement('canvas'),swap=a%180!==0;o.width=swap?c.height:c.width;o.height=swap?c.width:c.height;const ctx=o.getContext('2d',{willReadFrequently:true});ctx.translate(o.width/2,o.height/2);ctx.rotate(a*Math.PI/180);ctx.drawImage(c,-c.width/2,-c.height/2);return o}
 function getMatrix(src,dst){const a=[];for(let i=0;i<4;i++){let {x:u,y:v}=src[i],{x,y}=dst[i];a.push([x,y,1,0,0,0,-u*x,-u*y,u]);a.push([0,0,0,x,y,1,-v*x,-v*y,v])}for(let col=0;col<8;col++){let best=col;for(let r=col+1;r<8;r++)if(Math.abs(a[r][col])>Math.abs(a[best][col]))best=r;if(Math.abs(a[best][col])<1e-9)throw Error('Bordi del foglio non validi');[a[col],a[best]]=[a[best],a[col]];const v=a[col][col];for(let k=col;k<=8;k++)a[col][k]/=v;for(let r=0;r<8;r++)if(r!==col){let factor=a[r][col];for(let k=col;k<=8;k++)a[r][k]-=factor*a[col][k]}}return [...a.map(row=>row[8]),1]}
-function perspective(source,quad,limit=4200){if(!validQuad(quad)||area(quad)<.025)throw Error('Quattro angoli non validi: controlla il ritaglio.');const src=quad.map(p=>({x:p.x*(source.width-1),y:p.y*(source.height-1)})),distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),wide=Math.max(distance(src[0],src[1]),distance(src[2],src[3])),high=Math.max(distance(src[1],src[2]),distance(src[3],src[0]));if(wide<35||high<35)throw Error('Ritaglio troppo piccolo');const s=Math.min(1,limit/Math.max(wide,high)),w=Math.max(1,Math.round(wide*s)),h=Math.max(1,Math.round(high*s));
+function perspective(source,quad,limit=4200,targetAspect=null){if(!validQuad(quad)||area(quad)<.025)throw Error('Quattro angoli non validi: controlla il ritaglio.');const src=quad.map(p=>({x:p.x*(source.width-1),y:p.y*(source.height-1)})),distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),wide=Math.max(distance(src[0],src[1]),distance(src[2],src[3])),high=Math.max(distance(src[1],src[2]),distance(src[3],src[0]));if(wide<35||high<35)throw Error('Ritaglio troppo piccolo');const s=Math.min(1,limit/Math.max(wide,high)),w=Math.max(1,Math.round(wide*s));
+ let h=Math.max(1,Math.round(high*s));
+ // Only the independently fitted four-side ID-1 provisional candidate may
+ // request a near-physical output ratio. Never stretch arbitrary paper/PDFs.
+ const rawRatio=w/Math.max(1,h);
+ if(Number.isFinite(targetAspect)&&targetAspect>=1.55&&targetAspect<=1.62&&
+   rawRatio>=1.47&&rawRatio<=1.70&&Math.abs(rawRatio-targetAspect)/targetAspect<.065)
+  h=Math.max(1,Math.round(w/targetAspect));
  // Do not blur a straight document: native-pixel rectangle instead of perspective resampling.
  const axis=Math.max(Math.abs(src[0].y-src[1].y),Math.abs(src[2].y-src[3].y),Math.abs(src[0].x-src[3].x),Math.abs(src[1].x-src[2].x));
- if(axis<.75 && s===1){
+ if(axis<.75 && s===1 && !targetAspect){
   const x=Math.max(0,Math.ceil(Math.min(src[0].x,src[3].x))),y=Math.max(0,Math.ceil(Math.min(src[0].y,src[1].y)));
   const right=Math.min(source.width,Math.floor(Math.max(src[1].x,src[2].x))+1),bottom=Math.min(source.height,Math.floor(Math.max(src[2].y,src[3].y))+1);
   if(right>x+35&&bottom>y+35){const out=document.createElement('canvas');out.width=right-x;out.height=bottom-y;const g=out.getContext('2d',{willReadFrequently:true});g.putImageData(source.getContext('2d',{willReadFrequently:true}).getImageData(x,y,out.width,out.height),0,0);return out}
@@ -731,7 +738,7 @@ function process(source,state,limit=1200){
  // within the preview's resolution and saves bandwidth/allocations.
  const src=state.crop&&limit<=1300&&Math.max(source.width,source.height)>limit*1.35
   ?resize(source,Math.round(limit*1.35)):source;
- let canvas=state.crop?perspective(src,state.quad,limit):resize(src,limit);
+ let canvas=state.crop?perspective(src,state.quad,limit,state.targetAspect??null):resize(src,limit);
  canvas=rotate(canvas,state.rotation||0);
  return filter(canvas,state.filter||'original',state.strength??65);
 }
@@ -809,7 +816,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -1170,14 +1177,22 @@ function photoNormalize(original){
   try{
    const candidate=window.DocFixVisualCard?.detect?.(original)||null;
    if(candidate?.status==='found'&&scan.validQuad(candidate.quad)){
-    const preview=scan.process(original,{crop:true,quad:candidate.quad,
+    // Straighten the ORIGINAL source with FOUR colour-supported plastic
+    // sides where available. Fallback to the already working 1.9.44 crop
+    // if edge fitting fails; never warp a provisional preview twice.
+    const fitted=window.DocFixCardDeskew?.refine?.(original,candidate.quad)||null;
+    const quad=fitted?.quad&&scan.validQuad(fitted.quad)?fitted.quad:candidate.quad;
+    const preview=scan.process(original,{crop:true,quad,
+     targetAspect:fitted?.targetAspect||null,
      rotation:0,filter:'original',strength:0},4200);
     if(!preview?.width||!preview?.height)throw Error('Anteprima senza pixel validi');
     processed=preview;
-    sourceQuad=candidate.quad.map(p=>({...p}));
-    confidence=candidate.confidence||.67;
+    sourceQuad=quad.map(p=>({...p}));
+    confidence=fitted?.confidence||candidate.confidence||.67;
     cardLikely=true;review=true;previewOnly=true;
-    how='Tessera individuata: sfondo esterno escluso · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF';
+    how=fitted?.quad
+      ?'Tessera raddrizzata sui 4 bordi esterni · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF'
+      :'Tessera individuata: sfondo esterno escluso · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF';
    }
   }catch(error){
    errors.push('anteprima tessera: '+String(error?.message||error));
