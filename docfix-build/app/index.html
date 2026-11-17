@@ -1188,8 +1188,9 @@ function photoNormalize(original){
     // The strict four-side detector stays first. On low-contrast CIE
     // photos, independently match the long TOP and BOTTOM plastic edges.
     // Both methods work on the ORIGINAL pixels before a single warp.
-    const fitted=window.DocFixCardDeskew?.refine?.(original,candidate.quad)
-     ||window.DocFixFineDeskew?.refine?.(original,candidate.quad)||null;
+    const fitted=candidate.method==='id1-light-background-provisional'
+     ?null:(window.DocFixCardDeskew?.refine?.(original,candidate.quad)
+       ||window.DocFixFineDeskew?.refine?.(original,candidate.quad)||null);
     const quad=fitted?.quad&&scan.validQuad(fitted.quad)?fitted.quad:candidate.quad;
     const preview=scan.process(original,{crop:true,quad,
      targetAspect:fitted?.targetAspect||null,
