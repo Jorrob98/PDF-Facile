@@ -119,7 +119,7 @@
   if(padded.some(pt=>!pt||pt.x<2||pt.y<2||pt.x>w-3||pt.y>h-3))return null;
   const quad=padded.map(pt=>({x:pt.x/w,y:pt.y/h}));
   const finalRatio=(length(padded[0],padded[1])+length(padded[3],padded[2]))/
-    Math.max(1,length(padded[0],padded[3])+length(padded[1],padded[2]))*2;
+    Math.max(1,length(padded[0],padded[3])+length(padded[1],padded[2]));
   if(finalRatio<1.42||finalRatio>1.82)return null;
   // Normalize output dimensions to ID-1 only for a geometrically plausible
   // near-ID-1 source; otherwise retain native detected proportions.
