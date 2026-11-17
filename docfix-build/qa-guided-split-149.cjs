@@ -63,7 +63,12 @@ assert.equal(ctx.guidedSplitSource(0),false,'partial preview failure leaves orig
 assert.equal(ctx.entries.length,1);assert.equal(ctx.entries[0],source);
 failAt=-1;
 assert.equal(ctx.guidedSplitSource(0),true);
+// Undo must also be possible when the operator already deleted one
+// proposed page; otherwise the remaining page would be stranded.
+ctx.entries.splice(1,1);
 assert.equal(ctx.undoGuidedSplit(0),true);
+assert.equal(ctx.entries.length,1);
+assert.equal(ctx.entries[0],source);
 source.pageProtected=true;
 assert.equal(ctx.canGuidedSplit(source),false,'paper page protected from guided ID split');
 assert.ok(html.includes("if(e.manualSplitPair===true){\n  alert("),'full original cannot be accepted as one of two cropped pages');
