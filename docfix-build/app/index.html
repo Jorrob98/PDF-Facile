@@ -2193,7 +2193,7 @@ async function makeImageEntries(file,index,total=1,meta={}){
  // Do not let single-card normalization crop away a second card after an
  // uncertain two-card hypothesis. Keep the entire source for manual recovery.
  const fixed=uncertainPair?{
-  processed:original,rotation:0,review:true,manualPending:true,cropVerified:false,
+  processed:original,rotation:0,review:true,cropVerified:false,manualPending:true,
   geometryReview:true,orientationReview:true,qualityReview:false,
   qualityIssues:[],qualityMetrics:null,cropped:false,sourceQuad:null,
   how:'Possibili due tessere: conservata la fotografia originale · usa + Tessera dalla stessa foto per selezionare ciascun documento'
