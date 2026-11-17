@@ -816,7 +816,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -846,7 +846,7 @@ function syncActions(){
  // Never export while pages are still being added via the main workflow.
  dl.disabled=busy||exporting||emergencyExporting||pending.length>0||available.length===0||available.length!==entries.length||entries.some(e=>e.manualPending===true);
  const pendingManual=entries.filter(e=>e.manualPending===true).length;
- dl.textContent=pendingManual?'✎ Conferma i bordi di '+pendingManual+' '+(pendingManual===1?'tessera':'tessere'):
+ dl.textContent=pendingManual?'✎ Conferma '+pendingManual+' '+(pendingManual===1?'pagina':'pagine')+' · bordi da verificare':
   (incomplete?'↓ Scarica PDF ('+available.length+' pagine · set incompleto)':'↓ Scarica PDF pronto');
  const save=$('download-ready');
  save.hidden=!available.length||(!incomplete&&!busy&&!pending.length);
@@ -2261,7 +2261,7 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
   const down=document.createElement('button');down.type='button';down.textContent='↓ Dopo';down.title='Sposta pagina '+(i+1)+' verso la fine';down.disabled=busy||i===entries.length-1;down.onclick=()=>moveEntry(i,i+1);
   const del=document.createElement('button');del.type='button';del.className='delete-page';del.textContent='✕ Elimina';del.setAttribute('aria-label','Elimina pagina '+(i+1));del.disabled=busy;del.onclick=()=>removeEntry(i);
   for(const b of [fix,turnL,turnR,flip])b.disabled=busy;
-  if(e.kind==='raster'&&e.original){
+  if(e.kind==='raster'&&e.original&&!e.manualSplitPair){
    const addCard=document.createElement('button');
    addCard.type='button';addCard.textContent='+ Tessera dalla stessa foto';
    addCard.setAttribute('aria-label','Aggiungi una seconda tessera dalla fotografia della pagina '+(i+1));
@@ -2269,6 +2269,21 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
    addCard.disabled=busy||entries.length>=MAX_PAGES;
    addCard.onclick=()=>duplicateSourcePage(i);
    controls.append(addCard);
+  }
+  if(canGuidedSplit(e)){
+   const guided=document.createElement('button');guided.type='button';
+   guided.textContent='✂ Separa in 2';
+   guided.setAttribute('aria-label','Dividi la foto della pagina '+(i+1)+' in due tessere da verificare');
+   guided.title='Sostituisce la foto intera con due anteprime da correggere; il PDF resta bloccato fino alla conferma';
+   guided.disabled=busy||entries.length>=MAX_PAGES;
+   guided.onclick=()=>guidedSplitSource(i);
+   controls.append(guided);
+  }else if(e.manualSplitPair===true){
+   const undo=document.createElement('button');undo.type='button';
+   undo.textContent='↶ Annulla separazione';
+   undo.title='Ripristina la fotografia originale al posto delle due anteprime';
+   undo.disabled=busy;undo.onclick=()=>undoGuidedSplit(i);
+   controls.append(undo);
   }
   order.append(up,down,del);info.append(name,desc,controls,order);item.append(pv,info);cards.append(item);
   // Desktop drag reorder. Buttons above stay usable on touch devices and with keyboards.
@@ -2278,6 +2293,81 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
   item.addEventListener('dragend',()=>{dragSource=-1;item.classList.remove('drag-sort')});
  });const completeFour=entries.length===4&&entries.every(e=>e.pairLabel),setState=twoByTwoState(),setThree=threeByTwoState(),sixOrder=setThree.complete?planSixCardOrder(entries.filter(e=>e.threeUp&&e.splitCount===3)):null;
  $('summary').textContent=setThree.complete?(manuallyOrdered?'6 tessere · ordine manuale confermato':sixOrder?.ok?'6 tessere · ordine corretto 6/6':'6 tessere · ordine da verificare'):setThree.incomplete?('Set incompleto '+setThree.count+'/6'):completeFour?'4 tessere · set completo 4/4':setState.incomplete?('Set incompleto '+setState.count+'/4'):entries.length+' '+(entries.length===1?'pagina':'pagine')+(pending.length?' · '+pending.length+' in attesa':'');const reviewN=entries.filter(e=>e.review).length,qualityN=entries.filter(e=>e.qualityReview).length;$('review-count').textContent=reviewN?(reviewN+' da verificare'+(qualityN?' · '+qualityN+' qualità':'')):'Tutto pronto';syncActions();document.dispatchEvent(new CustomEvent('docfix:repaint',{detail:{entries:entries.slice()}}));}
+// Manual rescue is an explicit user choice, never automatic classification.
+// It replaces ONE unsplit original with TWO separate, unverified previews;
+// neither result may be exported before its four corners are approved.
+function canGuidedSplit(e){
+ if(!e||e.kind!=='raster'||!e.original||e.pageProtected===true||
+    e.manualSplitPair===true||Number(e.splitCount||1)!==1)return false;
+ const w=e.original.width,h=e.original.height;
+ if(!(w>0&&h>0)||!(h>=w*1.12||w>=h*1.12))return false;
+ return entries.filter(p=>p.sourceIndex===e.sourceIndex).length===1;
+}
+function guidedSplitSource(index){
+ if(busy||processing||exporting||emergencyExporting||index<0||index>=entries.length)return false;
+ const old=entries[index];
+ if(!canGuidedSplit(old)){
+  note('Per separare due tessere serve una sola foto originale ancora non divisa.');return false;
+ }
+ if(entries.length>=MAX_PAGES){
+  note('Impossibile separare: limite di 40 pagine raggiunto.');return false;
+ }
+ let proposal=null;
+ try{
+  // Reuse independently located plastic outlines when possible, otherwise
+  // offer conservative overlapping half-photo selections for manual editing.
+  const observed=old.original.height>=old.original.width*1.12
+   ?window.DocFixStackedBluePair?.detect?.(old.original):null;
+  proposal=window.DocFixGuidedSplit?.propose?.(old.original,observed);
+ }catch(error){console.warn('DocFix: preparazione separazione manuale',error);}
+ if(!proposal?.quads||proposal.quads.length!==2){
+  note('Impossibile proporre due riquadri per questa fotografia.');return false;
+ }
+ const made=[];
+ try{
+  for(let i=0;i<2;i++){
+   const quad=proposal.quads[i].map(p=>({x:p.x,y:p.y}));
+   if(!window.DocFixScanner.validQuad(quad))throw Error('Angoli non validi');
+   const preview=window.DocFixScanner.process(old.original,
+    {crop:true,quad,rotation:0,filter:'original',strength:0},2200);
+   if(!preview?.width||!preview?.height)throw Error('Anteprima non valida');
+   made.push({...old,processed:preview,sourceQuad:quad,vectorCrop:null,
+    rotation:0,cropped:false,cropVerified:false,review:true,manualPending:true,
+    geometryReview:true,orientationReview:true,qualityReview:false,
+    qualityIssues:[],qualityMetrics:null,contactGroup:false,
+    visualProvisional:false,manualSplitPair:true,manualSplitBackup:old,
+    splitSlot:i,splitCount:2,twoUp:true,threeUp:false,pairGroup:null,pairLabel:null,
+    docType:null,materialVerified:false,photoSide:'indefinito',
+    title:old.source+' · tessera '+(i+1)+' da confermare',
+    how:'Separazione guidata '+(i+1)+'/2 · ANTEPRIMA NON VERIFICATA · sposta i quattro angoli sul bordo esterno della tessera prima del PDF'});
+  }
+ }catch(error){
+  note('Separazione non riuscita: la fotografia originale è rimasta intatta.');
+  console.warn('DocFix: separazione guidata non applicata',error);return false;
+ }
+ entries.splice(index,1,...made);
+ manuallyOrdered=true;lastPdfSize=null;repaint();
+ document.dispatchEvent(new CustomEvent('docfix:entries-added',{detail:{entries:made.slice()}}));
+ status('Foto divisa in due anteprime. Controlla i 4 angoli della prima e poi della seconda: PDF bloccato fino a entrambe le conferme.');
+ openCorrection(index);
+ return true;
+}
+function undoGuidedSplit(index){
+ if(busy||processing||exporting||emergencyExporting)return false;
+ const candidate=entries[index];
+ if(!candidate?.manualSplitPair||!candidate.manualSplitBackup)return false;
+ const positions=entries.map((e,i)=>e.manualSplitPair&&
+  e.sourceIndex===candidate.sourceIndex?i:-1).filter(i=>i>=0);
+ if(positions.length!==2){
+  note('Impossibile ripristinare la foto: la coppia è stata modificata.');return false;
+ }
+ const original=candidate.manualSplitBackup,min=Math.min(...positions);
+ for(const pos of positions.sort((a,b)=>b-a))entries.splice(pos,1);
+ entries.splice(min,0,original);
+ lastPdfSize=null;repaint();status('Separazione annullata: ripristinata la pagina originale.');
+ document.dispatchEvent(new CustomEvent('docfix:entries-added',{detail:{entries:[original]}}));
+ return true;
+}
 // Explicit safety fallback: clone the PAGE metadata, not the uploaded file.
  // Each copy retains the untouched high-resolution source and has its own
  // manual perspective selection. It cannot be exported until confirmed.
@@ -2384,7 +2474,11 @@ function editorTurn(delta){if(editIndex<0)return;editRotation=(editRotation+delt
 $('edit-rotate').onclick=()=>editorTurn(90);
 $('edit-left').onclick=()=>editorTurn(270);
 $('edit-flip').onclick=()=>editorTurn(180);
-$('edit-full').onclick=()=>{if(editIndex<0)return;const e=entries[editIndex];e.rotation=editRotation;e.processed=editSource;e.cropped=false;e.cropVerified=undefined;e.sourceQuad=null;e.vectorCrop=null;e.geometryReview=false;e.orientationReview=false;e.manualPending=false;const q=qualityAudit(e.processed,null);e.qualityReview=q.review;e.qualityIssues=q.issues;e.qualityMetrics=q.metrics;e.review=q.review;e.how='Pagina completa · Verso confermato'+(q.issues.length?' · '+q.issues.join(' · '):'');lastPdfSize=null;closeCorrection();repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}))};
+$('edit-full').onclick=()=>{if(editIndex<0)return;const e=entries[editIndex];
+ if(e.manualSplitPair===true){
+  alert('Questa pagina fa parte di due tessere separate. Conferma il perimetro con i 4 angoli oppure usa Annulla separazione.');return;
+ }
+ e.rotation=editRotation;e.processed=editSource;e.cropped=false;e.cropVerified=undefined;e.sourceQuad=null;e.vectorCrop=null;e.geometryReview=false;e.orientationReview=false;e.manualPending=false;const q=qualityAudit(e.processed,null);e.qualityReview=q.review;e.qualityIssues=q.issues;e.qualityMetrics=q.metrics;e.review=q.review;e.how='Pagina completa · Verso confermato'+(q.issues.length?' · '+q.issues.join(' · '):'');lastPdfSize=null;closeCorrection();repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}))};
 $('edit-apply').onclick=()=>{if(editIndex<0)return;if(!window.DocFixScanner.validQuad(editQuad)){alert('Gli angoli si incrociano. Riprova.');return}
  const e=entries[editIndex];e.rotation=editRotation;e.processed=window.DocFixScanner.process(editSource,{crop:true,quad:editQuad,rotation:0,filter:'original',strength:0},4200);e.cropped=true;e.cropVerified=true;e.geometryReview=false;e.orientationReview=false;e.vectorCrop=null;e.sourceQuad=rotatedQuad(editQuad,(360-editRotation)%360);e.manualPending=false;const q=qualityAudit(e.processed,e.sourceQuad);e.qualityReview=q.review;e.qualityIssues=q.issues;e.qualityMetrics=q.metrics;e.review=q.review;e.how='Ritaglio verificato'+(q.issues.length?' · '+q.issues.join(' · '):'');lastPdfSize=null;closeCorrection();repaint();document.dispatchEvent(new CustomEvent('docfix:entry-changed',{detail:{entry:e}}))};
 function sameSelectedFile(a,b){
