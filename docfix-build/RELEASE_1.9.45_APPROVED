@@ -1,0 +1,18 @@
+DocFix 1.9.45 — autorizzazione al rilascio Windows
+Data: 2026-11-17
+Base: 1.9.44, branch docfix-145-cie-four-corner-deskew-20261117
+Obiettivo: raddrizzare fronte/retro CIE dopo il rilevamento, usando i
+quattro bordi esterni in pixel originali, prospettiva unica e output ID-1
+soltanto entro limiti dimensionali coerenti.
+Sicurezza: le anteprime visive restano NON VERIFICATE, con 4 angoli da
+confermare prima del PDF. Se un lato non è affidabile, resta attivo il
+ritaglio già funzionante della 1.9.44. Niente filtro aggressivo, niente
+doppia trasformazione, originali intatti.
+Esito QA: 62/62 controlli Electron, test di rotazione ±3–4°, CIE fronte e
+retro MRZ, regressioni. QA:
+https://github.com/Jorrob98/PDF-Facile/actions/runs/44087150515
+Validazione sulle fotografie WhatsApp ORIGINALI: NON eseguita; prove
+effettuate su screenshot visivo e immagini sintetiche senza dati reali.
+Pubblicazione soggetta a secondo collaudo di pipeline, assembaggio
+Windows, verifica SHA-256 e produzione del ripristino della build
+precedente.
