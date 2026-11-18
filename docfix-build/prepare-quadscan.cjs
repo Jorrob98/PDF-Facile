@@ -21,7 +21,36 @@ const assets=[
  copy(path.join(lib,'models','lcnet100_h_e_bifpn_256_fp32.onnx'),'model.onnx'),
  copy(path.join(lib,'LICENSE'),'LICENSE-quadscan.txt'),
  copy(path.join(lib,'licenses','DocAligner-LICENSE.txt'),'LICENSE-DocAligner.txt'),
- copy(path.join(ort,'LICENSE'),'LICENSE-onnxruntime.txt')
+ // NPM's onnxruntime-web@1.20.1 tarball omits the MIT LICENSE file.
+ // Bundle Microsoft's upstream MIT text when not shipped by the tarball.
+ (()=>{const target=path.join(dir,'LICENSE-onnxruntime.txt');
+  const existing=['LICENSE','LICENSE.txt','LICENSE.md'].map(n=>path.join(ort,n)).find(fs.existsSync);
+  if(existing)return copy(existing,'LICENSE-onnxruntime.txt');
+  const license=`MIT License
+
+Copyright (c) Microsoft Corporation.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+`;
+  fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,license);
+  return {file:'vendor/quadscan/LICENSE-onnxruntime.txt',bytes:fs.statSync(target).size,sha256:sha(target)};
+ })()
 ];
 const wasmDir=path.join(ort,'dist');
 const wasm=fs.readdirSync(wasmDir).filter(name=>/\.wasm$/i.test(name));
