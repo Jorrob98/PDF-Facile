@@ -105,13 +105,19 @@
    let best=null;
    for(let offset=-radius;offset<=radius;offset+=1.25){
     for(const tilt of angleTrials){
-     const strengths=[],exterior=[];
+     const strengths=[],microStrengths=[],exterior=[];
      for(const p of base){
       const shift=offset+(p.t-.5)*L*tilt;
       const x=p.x+shift*nx,y=p.y+shift*ny;
       const inside=px(d,w,h,x+nx*3.6,y+ny*3.6);
       const outside=px(d,w,h,x-nx*3.6,y-ny*3.6);
       strengths.push(delta(inside,outside));
+      // Wide ±3.6px contrast finds the correct side but has a broad
+      // plateau. The ±1px transition pins the TRUE plastic boundary,
+      // instead of stopping 4–6 pixels before it.
+      microStrengths.push(delta(
+       px(d,w,h,x+nx*1.05,y+ny*1.05),
+       px(d,w,h,x-nx*1.05,y-ny*1.05)));
       exterior.push(delta(outside,bgRef));
      }
      const contrast=median(strengths);
@@ -119,14 +125,15 @@
      const exteriorDistance=median(exterior);
      const distribution=[0,1,2].map(k=>strengths.slice(Math.floor(k*samples/3),Math.floor((k+1)*samples/3))
       .filter(v=>v>=16).length/Math.max(1,Math.floor((k+1)*samples/3)-Math.floor(k*samples/3)));
-     const score=contrast*.58+
-      median(strengths.slice().sort((x,y)=>x-y).slice(0,Math.ceil(samples*.50)))*.42+
-      support*5-.14*Math.abs(offset)-Math.abs(tilt)*7-exteriorDistance*.14;
-     if(!best||score>best.score)best={score,offset,tilt,contrast,support,exteriorDistance,distribution};
+     const immediate=median(microStrengths);
+     const lowerImmediate=median(microStrengths.slice().sort((x,y)=>x-y).slice(0,Math.ceil(samples*.55)));
+     const score=contrast*.19+immediate*.57+lowerImmediate*.24+
+      support*4-.07*Math.abs(offset)-Math.abs(tilt)*7-exteriorDistance*.12;
+     if(!best||score>best.score)best={score,offset,tilt,contrast,immediate,support,exteriorDistance,distribution};
     }
    }
    const supported=best&&best.contrast>=22&&best.support>=.65&&
-    best.score>=17&&best.exteriorDistance<74&&best.distribution.filter(x=>x>.43).length>=2;
+    best.score>=13&&best.immediate>=11&&best.exteriorDistance<74&&best.distribution.filter(x=>x>.43).length>=2;
    if(!supported){sides.push({start:a,end:b,supported:false});continue;}
    const edgeStart={x:a.x+(best.offset-L*best.tilt/2)*nx,
     y:a.y+(best.offset-L*best.tilt/2)*ny};
