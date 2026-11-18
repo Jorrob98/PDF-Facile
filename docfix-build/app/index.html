@@ -854,7 +854,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-ml-offline.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -2232,12 +2232,38 @@ async function makeImageEntries(file,index,total=1,meta={}){
  }
  // Do not let single-card normalization crop away a second card after an
  // uncertain two-card hypothesis. Keep the entire source for manual recovery.
- const fixed=uncertainPair?{
+ let fixed=uncertainPair?{
   processed:original,rotation:0,review:true,cropVerified:false,manualPending:true,
   geometryReview:true,orientationReview:true,qualityReview:false,
   qualityIssues:[],qualityMetrics:null,cropped:false,sourceQuad:null,
   how:'Possibili due tessere: conservata la fotografia originale · usa + Tessera dalla stessa foto per selezionare ciascun documento'
  }:await normalizeRaster(original,{skipPageGuard:mode==='cards'});
+ // ML is an independent, OFFLINE fallback for a SINGLE card photographed
+ // against a low-contrast desk. It is never used to force an uncertain
+ // two-up image into one card and can never mark PDF corners as confirmed.
+ if(!uncertainPair&&mode!=='page'&&cropMode()==='smart'&&
+    fixed.cropVerified!==true&&portrait>.58&&portrait<2.2){
+  try{
+   const neural=await window.DocFixLocalML?.detect?.(
+     original,Array.isArray(fixed.sourceQuad)?fixed.sourceQuad:null)||null;
+   if(neural?.quad&&window.DocFixScanner.validQuad(neural.quad)){
+    const candidate=window.DocFixScanner.process(original,
+     {crop:true,quad:neural.quad,rotation:0,filter:'original',strength:0},4200);
+    if(!candidate?.width||!candidate?.height)throw Error('Crop IA non valido');
+    const health=multiCropHealthy(candidate);
+    if(health){
+     fixed={...fixed,processed:candidate,sourceQuad:neural.quad,
+      rotation:0,cropped:true,review:true,cropVerified:false,
+      manualPending:true,visualProvisional:true,
+      geometryReview:true,orientationReview:true,
+      how:'Ritaglio locale con modello DocAligner · quattro angoli proposti sulla foto originale · ANTEPRIMA NON VERIFICATA: controlla tutti i bordi prima del PDF'};
+    }else candidate.width=candidate.height=1;
+   }
+  }catch(error){
+   console.warn('DocFix: fallback IA locale non applicato',error);
+   detectorProblems.push('modello locale non applicabile');
+  }
+ }
  if(detectorProblems.length){fixed.review=true;fixed.geometryReview=true;
   fixed.how+=' · Controlli parziali: '+detectorProblems.join(', ')+' · verifica i ritagli';}
  if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
