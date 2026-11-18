@@ -207,6 +207,13 @@ async function runSelfTest(){
         const nativePoints=[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9},{x:.1,y:.9}];
         const moved=window.DocFixPrecisionEditor?.nudge?.(nativePoints,0,1,0,1600,1200,1);
         out.precisionPixelStep=!!moved&&Math.abs((moved[0].x-nativePoints[0].x)*1600-1)<1e-8;
+        out.precisionControls=!!document.getElementById('edit-zoom')&&
+          !!document.getElementById('edit-edge-snap')&&
+          !!document.getElementById('edit-nudge-left')&&
+          !!document.getElementById('edit-nudge-right')&&
+          !!document.getElementById('edit-nudge-up')&&
+          !!document.getElementById('edit-nudge-down')&&
+          getComputedStyle(document.querySelector('.editor-frame')).minHeight==='0px';
         const deskewFixture=document.createElement('canvas');
         deskewFixture.width=680;deskewFixture.height=480;
         const dg=deskewFixture.getContext('2d',{willReadFrequently:true});
