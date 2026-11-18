@@ -46,7 +46,7 @@ function validateEngineBundle({throwOnError=true}={}){
   if(cores.length<4)missing.push('vendor/tesseract-core (core WASM)');
   const ortDir=path.join(root,'vendor','quadscan','ort');
   let ortWasm=[];
-  try{ortWasm=fs.readdirSync(ortDir).filter(name=>/\\.wasm$/i.test(name));}catch{}
+  try{ortWasm=fs.readdirSync(ortDir).filter(name=>/\.wasm$/i.test(name));}catch{}
   if(!ortWasm.length)missing.push('vendor/quadscan/ort (onnx WASM)');
   try{if(fs.statSync(path.join(root,'vendor','quadscan','model.onnx')).size<4_000_000)
     missing.push('vendor/quadscan/model.onnx (too small)');}
