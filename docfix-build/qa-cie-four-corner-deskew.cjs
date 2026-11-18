@@ -72,8 +72,11 @@ assert.equal(win.DocFixCardDeskew.inspectRGBA(onlyPhoto.data,W,H,onlyPhoto.rough
  'portrait and internal printed elements without coloured plastic are not enough');
 assert.ok(html.includes('./docfix-card-deskew.js'));
 assert.ok(html.includes('window.DocFixCardDeskew?.refine?.(original,candidate.quad)'));
-assert.ok(html.includes('targetAspect:fitted?.targetAspect||null'));
+assert.ok(html.includes('targetAspect:finalFit?.targetAspect||null'),'four-side physical aspect preserved through final fit');
 assert.ok(html.includes('manualPending:true,visualProvisional:true'));
 assert.ok(html.includes("entries.some(e=>e.manualPending===true)"));
-assert.ok(html.includes("const quad=fitted?.quad&&scan.validQuad(fitted.quad)?fitted.quad:candidate.quad"),'safe old preview fallback');
+assert.ok(html.includes("const finalFit=fitted?.quad?fitted:consensus?.quad?consensus:null;"),
+ 'existing four-sided result always wins over new fallback');
+assert.ok(html.includes('const quad=finalFit?.quad&&scan.validQuad(finalFit.quad)?finalFit.quad:candidate.quad;'),
+ 'original safe preview fallback retained when all refiners fail');
 console.log('PASS: CIE tilted front/back -3°/+4° corrected on original; portrait, MRZ and scanner-line protection; manual confirmation and fallback');
