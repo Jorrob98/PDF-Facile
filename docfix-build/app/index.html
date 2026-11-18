@@ -1335,13 +1335,24 @@ async function normalizeRaster(original,{skipPageGuard=false}={}){
   const ml=await window.DocFixMLCorners?.detect?.(original,norm.sourceQuad)||null;
   if(ml?.quad&&window.DocFixScanner.validQuad(ml.quad)){
    try{
-    const preview=window.DocFixScanner.process(original,{crop:true,quad:ml.quad,
+    // ML locates the card at 256×256; the independent pixel-edge fitter
+    // may refine the four points on ORIGINAL pixels. It is optional and
+    // cannot replace the model if it proposes a substantially different
+    // shape. A tiny outward margin protects rounded plastic corners.
+    const optical=window.DocFixPrecisionEditor?.snap?.(original,ml.quad)||null;
+    const agreeing=optical?.quad&&window.DocFixScanner.validQuad(optical.quad)&&
+     window.DocFixMLCorners.roughlySame(optical.quad,ml.quad)&&
+     window.DocFixScanner.area(optical.quad)>=window.DocFixScanner.area(ml.quad)*.94;
+    const base=agreeing?optical.quad:ml.quad;
+    const quad=expandQuadSafe(base,.006);
+    const preview=window.DocFixScanner.process(original,{crop:true,quad,
      rotation:0,filter:'original',strength:0},4200);
     if(!preview?.width||!preview?.height)throw Error('Ritaglio ONNX vuoto');
-    norm={...norm,processed:preview,sourceQuad:ml.quad,
+    norm={...norm,processed:preview,sourceQuad:quad,
      previewOnly:true,cardLikely:true,review:true,physicallyVerified:false,
      confidence:ml.confidence,overPaper:false,licenceRear:false,
-     how:'Quattro angoli proposti dal modello locale · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF'};
+     how:(agreeing?'AI locale + rifinitura sul bordo fisico originale':'Quattro angoli proposti dal modello locale')+
+      ' · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF'};
    }catch(error){console.warn('DocFix proposta AI non applicata',error);}
   }
  }
