@@ -56,6 +56,7 @@ assert.ok(snap?.quad,'four physical edges on neutral table should yield a propos
 assert.equal(snap.physicallyVerified,false,'edge suggestion is not PDF confirmation');
 assert.ok(snap.matchedSides>=3,'sufficient distributed edge support');
 const edgePx=snap.quad.map(p=>({x:p.x*WW,y:p.y*HH}));
+console.log('SNAP QA GEOMETRY',JSON.stringify({edgePx,matchedSides:snap.matchedSides}));
 assert.ok(edgePx[0].x>95&&edgePx[0].x<110&&edgePx[0].y>100&&edgePx[0].y<118);
 assert.ok(edgePx[2].x>785&&edgePx[2].x<800&&edgePx[2].y>527&&edgePx[2].y<547,
  'third MRZ stripe and all physical plastic preserved');
