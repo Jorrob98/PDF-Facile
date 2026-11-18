@@ -1,0 +1,20 @@
+DocFix 1.9.51 RC1 — test controllato, NON stabile
+Data: 2026-11-18. Base Windows 1.9.50.
+Accettazione tecnica del solo pacchetto di prova per UN PC:
+- rilevamento da fonte originale di quattro lati fisici; alternativa
+  al fallback saltato sui documenti chiari; unico warp.
+- per foto con piu tessere, rifinitura locale soltanto su candidati
+  segmentati, mai conferma automatica di sicurezza PDF.
+- 60 immagini sintetiche: 36/36 regolari e 20/24 con contorno iniziale
+  spostato, 0 correzioni accettate oltre 12 pixel di errore per angolo.
+- 70/70 controlli Electron, regressioni OCR/PDF e aggiornamenti;
+  https://github.com/Jorrob98/PDF-Facile/actions/runs/44320763780
+- Questa verifica NON equivale a garanzia su fotografie reali:
+  l'operatore deve confrontare le anteprime sulle fotografie sorgente,
+  confermare i quattro angoli e solo dopo creare il PDF.
+
+Condizioni per la prerelease: build Windows con verifica packaging
+app.asar, SHA-256, test Electron del pacchetto, rollback verificato;
+release marcata PRERELEASE e non ultima stabile. NESSUN aggiornamento
+automatico proposto ai sei PC. Se il test con originali mostra errori,
+non promuovere come stabile.
