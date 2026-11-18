@@ -237,6 +237,16 @@ async function runSelfTest(){
          .then(()=>window.DocFixMLCorners.state().ready).catch(error=>{
           console.warn('DocFix ML startup selftest failed:',error);return false;
          });
+        const mlFixture=document.createElement('canvas');
+        mlFixture.width=640;mlFixture.height=460;
+        const mlCtx=mlFixture.getContext('2d',{alpha:false});
+        mlCtx.fillStyle='#ded7cd';mlCtx.fillRect(0,0,640,460);
+        mlCtx.fillStyle='#b1d3de';mlCtx.fillRect(112,94,420,265);
+        mlCtx.fillStyle='#3c515e';
+        for(let x=152;x<492;x+=15)mlCtx.fillRect(x,266,4,63);
+        out.mlInference=await window.DocFixMLCorners.probeInference(mlFixture)
+          .catch(error=>{console.warn('DocFix local ONNX inference failed:',error);return false;});
+        mlFixture.width=mlFixture.height=1;
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
