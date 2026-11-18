@@ -1,0 +1,36 @@
+DocFix 1.9.50 — autorizzazione tecnica Windows
+Data: 2026-11-18
+Versione di partenza: 1.9.49
+Ramo: docfix-150-precision-corner-editor-20261118
+
+Richiesta reale: rendere più preciso il perimetro delle tessere CIE,
+patenti e tessere sanitarie. In precedenti release il rilevatore
+automatico aveva talvolta confuso decorazioni/barcode e bordi esterni.
+
+Miglioramenti verificati:
+- editor 'Correggi' mostra la fotografia sorgente fino a 2200px al
+  posto della miniatura di 650px;
+- rimosso il min-height del riquadro che poteva introdurre letterboxing,
+  disallineando maniglie e pixel;
+- ingrandimento non interpolato del singolo angolo con punto centrale,
+  possibilità di selezionare uno dei quattro punti e muoverlo di
+  1 pixel SORGENTE con frecce e bottoni (Maiusc = 10 px);
+- comando opzionale 'Aggancia ai bordi esterni' su quattro linee
+  distribuite, con ricerca locale ristretta e derivata pixel per
+  distinguere perimetro reale da barre interne stampate;
+- se gli spigoli non hanno evidenza sufficiente, resta il quad già
+  selezionato, senza modificare il documento;
+- prospettiva una sola volta dalla sorgente; mai certificare un crop
+  opzionale senza conferma dell'operatore; PDF protetto.
+- modulo presente nel pacchetto offline e controllato in Electron.
+
+Collaudo finale PASS: 69/69 controlli Electron, regressioni OCR/PDF,
+casi a più tessere, precisione a 820/1600/2040 px, source-preserving
+e caso sintetico con barcode interno.
+https://github.com/Jorrob98/PDF-Facile/actions/runs/44268120592
+
+Limite dichiarato: l'automatismo senza intervento NON può essere
+considerato perfetto su ogni foto poco contrastata. I file originali
+delle CIE non vengono inseriti nella release né nel repository.
+Il rilascio deve rieseguire controlli, verificare artefatti/as ar,
+SHA-256, ripristino e avvio Windows prima della pubblicazione.
