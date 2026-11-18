@@ -90,7 +90,9 @@
   if(originalRatio<1.29||originalRatio>1.97||minor<90)return null;
   const radius=options.wideSearch===true?clamp(minor*.080,9,68):clamp(minor*.017,5,21);
   const samples=29;
-  const sides=[],angleTrials=[-.03,-.015,0,.015,.03];
+  const sides=[],angleTrials=options.wideSearch===true
+   ?[-.115,-.08,-.05,-.025,0,.025,.05,.08,.115]
+   :[-.03,-.015,0,.015,.03];
   for(let i=0;i<4;i++){
    const a=q[i],b=q[(i+1)%4],vx=b.x-a.x,vy=b.y-a.y,L=Math.hypot(vx,vy);
    if(L<65)return null;
