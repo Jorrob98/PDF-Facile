@@ -58,6 +58,8 @@ jobs:
           node --check app/card-auto-four-edge.js
           node --check qa-auto-four-edge-151.cjs
           node qa-auto-four-edge-151.cjs
+          node --check qa-fuzz-four-edge-151.cjs
+          node qa-fuzz-four-edge-151.cjs
           node --check qa-facsimile-card-stack.cjs
           node qa-facsimile-card-stack.cjs
       - name: Full existing regression tests
