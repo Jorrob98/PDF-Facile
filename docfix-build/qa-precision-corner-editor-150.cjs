@@ -38,6 +38,32 @@ const [src,sx,sy,sw,sh,dx,dy,dw,dh]=drawn[0];
 assert.equal(sx,776);assert.equal(sy,576);assert.equal(sw,48);assert.equal(sh,48);
 assert.ok(Math.abs(dx+(800-sx)*dw/sw-canvas.width/2)<1e-8,'selected source pixel centered');
 assert.ok(Math.abs(dy+(600-sy)*dh/sh-canvas.height/2)<1e-8);
+// Separate explicit snap test: four real plastic edges must win over
+// barcode stripes printed inside the material. No personal photos in CI.
+const WW=900,HH=650,rgba=new Uint8ClampedArray(WW*HH*4);
+for(let y=0;y<HH;y++)for(let x=0;x<WW;x++){
+ let rgb=[142,138,136];
+ if(x>=100&&x<=794&&y>=105&&y<=540){
+  rgb=[180,214,221];
+  if(x>=175&&x<715&&y>=443&&y<486&&x%8<4)rgb=[29,44,53];
+  if(x>=180&&x<720&&y>=498&&y<524&&x%16<11)rgb=[52,64,73];
+ }
+ const k=(y*WW+x)*4;rgba[k]=rgb[0];rgba[k+1]=rgb[1];rgba[k+2]=rgb[2];rgba[k+3]=255;
+}
+const initial=[[94,99],[801,99],[801,547],[94,547]].map(([x,y])=>({x:x/WW,y:y/HH}));
+const snap=ui.snapRGBA(rgba,WW,HH,initial);
+assert.ok(snap?.quad,'four physical edges on neutral table should yield a proposal');
+assert.equal(snap.physicallyVerified,false,'edge suggestion is not PDF confirmation');
+assert.ok(snap.matchedSides>=3,'sufficient distributed edge support');
+const edgePx=snap.quad.map(p=>({x:p.x*WW,y:p.y*HH}));
+assert.ok(edgePx[0].x>95&&edgePx[0].x<110&&edgePx[0].y>100&&edgePx[0].y<118);
+assert.ok(edgePx[2].x>785&&edgePx[2].x<800&&edgePx[2].y>527&&edgePx[2].y<547,
+ 'third MRZ stripe and all physical plastic preserved');
+const empty=new Uint8ClampedArray(WW*HH*4);
+for(let i=0;i<empty.length;i+=4){empty[i]=142;empty[i+1]=138;empty[i+2]=136;empty[i+3]=255;}
+assert.equal(ui.snapRGBA(empty,WW,HH,initial),null,'blank table must never create a card');
+assert.ok(html.includes("id=\"edit-edge-snap\""),'border snap is only an explicit user action');
+assert.ok(html.includes("window.DocFixPrecisionEditor?.snap?.(editSource,editQuad)"));
 assert.ok(html.includes("window.DocFixScanner.resize(editSource,2200)"),'editor must use high-resolution preview');
 assert.ok(!html.includes("img.src=thumb(editSource)"),'650px editor old bug is removed');
 assert.ok(html.includes('id="edit-zoom"')&&html.includes('id="edit-zoom-info"'));
