@@ -854,7 +854,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-auto-quad-consensus.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-auto-quad-consensus.js"></script><script src="./docfix-projected-edges.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -1217,8 +1217,15 @@ function photoNormalize(original){
    // Inspect the card's printed texture BEFORE the old cyan-only visual
    // detector, without weakening the independent four-edge auto-crop gate.
    // This is provisional only; operator must approve the source corners.
-   const candidate=window.DocFixTextureCard?.detect?.(original)
-     ||window.DocFixVisualCard?.detect?.(original)||null;
+   // A failed/invalid primary proposal must not hide a valid secondary
+   // detector, including when the primary throws unexpectedly.
+   let candidate=null;
+   try{candidate=window.DocFixTextureCard?.detect?.(original)||null;}
+   catch(error){errors.push('texture: '+String(error?.message||error));}
+   if(candidate?.status!=='found'||!scan.validQuad(candidate.quad)){
+    try{candidate=window.DocFixVisualCard?.detect?.(original)||null;}
+    catch(error){errors.push('visual: '+String(error?.message||error));candidate=null;}
+   }
    if(candidate?.status==='found'&&scan.validQuad(candidate.quad)){
     // Straighten the ORIGINAL source with FOUR colour-supported plastic
     // sides where available. Fallback to the already working 1.9.44 crop
@@ -1233,7 +1240,8 @@ function photoNormalize(original){
     // run three local high-resolution fits on the ORIGINAL photo.
     // No agreement => the old conservative crop remains unchanged.
     const consensus=!fitted?.quad
-     ?(window.DocFixAutoQuadConsensus?.refine?.(original,candidate.quad)||null):null;
+     ?(window.DocFixAutoQuadConsensus?.refine?.(original,candidate.quad)
+       ||window.DocFixProjectedEdges?.refine?.(original,candidate.quad)||null):null;
     const finalFit=fitted?.quad?fitted:consensus?.quad?consensus:null;
     const quad=finalFit?.quad&&scan.validQuad(finalFit.quad)?finalFit.quad:candidate.quad;
     const preview=scan.process(original,{crop:true,quad,
@@ -2580,9 +2588,15 @@ function updateEditor(){
   handle.onpointermove=ev=>{
    if(!handle.hasPointerCapture(ev.pointerId))return;
    const r=handles.getBoundingClientRect();
-   p.x=clamp((ev.clientX-r.left)/r.width,.005,.995);
-   p.y=clamp((ev.clientY-r.top)/r.height,.005,.995);
-   handle.style.left=(p.x*100)+'%';handle.style.top=(p.y*100)+'%';
+   // Read the CURRENT quad, not the corner object captured when the
+   // editor opened: nudge/snap replace editQuad with a fresh array.
+   const current=editQuad[i];if(!current)return;
+   const next=editQuad.map(v=>({...v}));
+   next[i].x=clamp((ev.clientX-r.left)/r.width,.005,.995);
+   next[i].y=clamp((ev.clientY-r.top)/r.height,.005,.995);
+   if(!window.DocFixScanner.validQuad(next))return;
+   editQuad=next;
+   handle.style.left=(next[i].x*100)+'%';handle.style.top=(next[i].y*100)+'%';
    drawFrame();
   };
   handles.append(handle);
