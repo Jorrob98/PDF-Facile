@@ -18,3 +18,5 @@ app.asar, SHA-256, test Electron del pacchetto, rollback verificato;
 release marcata PRERELEASE e non ultima stabile. NESSUN aggiornamento
 automatico proposto ai sei PC. Se il test con originali mostra errori,
 non promuovere come stabile.
+
+Verifica seconda attivazione workflow RC: la release di prova deve rimanere separata dal canale stabile.
