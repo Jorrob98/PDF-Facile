@@ -78,7 +78,7 @@
  // It only searches within ~1.5% of the existing operator-selected edge,
  // and requires 3 coherent full-length material boundaries. Printed MRZ
  // stripes cannot become an outside edge far from the operator's placement.
- function snapRGBA(d,w,h,rough){
+ function snapRGBA(d,w,h,rough,options={}){
   if(!d||d.length<w*h*4||w<170||h<120||!Array.isArray(rough)||rough.length!==4)return null;
   const q=rough.map(p=>({x:p.x*w,y:p.y*h}));
   if(q.some(p=>!Number.isFinite(p.x)||!Number.isFinite(p.y)))return null;
@@ -88,7 +88,8 @@
   const minor=(length(q[1],q[2])+length(q[3],q[0]))/2;
   const originalRatio=long/Math.max(1,minor);
   if(originalRatio<1.29||originalRatio>1.97||minor<90)return null;
-  const radius=clamp(minor*.017,5,21),samples=29;
+  const radius=options.wideSearch===true?clamp(minor*.080,9,68):clamp(minor*.017,5,21);
+  const samples=29;
   const sides=[],angleTrials=[-.03,-.015,0,.015,.03];
   for(let i=0;i<4;i++){
    const a=q[i],b=q[(i+1)%4],vx=b.x-a.x,vy=b.y-a.y,L=Math.hypot(vx,vy);
@@ -164,12 +165,12 @@
   return {quad,matchedSides:supported,needsReview:true,physicallyVerified:false,
    method:'bounded-source-edge-snap'};
  }
- function snap(source,rough){
+ function snap(source,rough,options={}){
   if(!source||!rough||!(source.width>0&&source.height>0))return null;
   try{
    const d=source.getContext('2d',{willReadFrequently:true})
     .getImageData(0,0,source.width,source.height).data;
-   return snapRGBA(d,source.width,source.height,rough);
+   return snapRGBA(d,source.width,source.height,rough,options);
   }catch(e){console.warn('DocFix edge snap unavailable',e);return null;}
  }
 
