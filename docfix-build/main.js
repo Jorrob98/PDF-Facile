@@ -24,11 +24,12 @@ function log(...parts){
   console.log(line.trim());
 }
 function requiredStartupFiles(){
-  return ['index.html','docfix-visual-card.js','docfix-texture-card.js','docfix-adaptive-id1.js','docfix-card-deskew.js','docfix-fine-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-stacked-blue-pair.js','card-guided-split.js','card-precision-editor.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
+  return ['index.html','docfix-visual-card.js','docfix-texture-card.js','docfix-adaptive-id1.js','docfix-ml-corners.js','vendor/quadscan/quadscan.iife.js','card-physical-edges.js','docfix-card-deskew.js','docfix-fine-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-stacked-blue-pair.js','card-guided-split.js','card-precision-editor.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
 }
 function requiredEngineFiles(){
   return [
     'vendor/pdfjs/pdf.min.mjs','vendor/pdfjs/pdf.worker.min.mjs','vendor/pdf-lib/pdf-lib.min.js',
+    'vendor/quadscan/model.onnx','vendor/quadscan/ort/ort-wasm-simd-threaded.wasm',
     'vendor/tesseract/tesseract.min.js','vendor/tesseract/worker.min.js','vendor/tessdata/eng.traineddata.gz','vendor/tessdata/ita.traineddata.gz'
   ];
 }
@@ -203,6 +204,9 @@ async function runSelfTest(){
         out.guidedSplitBridge=typeof window.DocFixGuidedSplit?.propose==='function'
           &&window.DocFixGuidedSplit.propose({width:260,height:460})?.requiresConfirmation===2;
         out.adaptiveID1Bridge=typeof window.DocFixAdaptiveID1?.detect==='function'&&typeof window.DocFixAdaptiveID1?.analyzeRGBA==='function';
+        out.mlCornerBridge=typeof window.DocFixMLCorners?.detect==='function'&&
+         typeof window.DocFixMLCorners?.safeCandidate==='function'&&
+         window.DocFixMLCorners.state().offlineOnly===true;
         out.precisionEditorBridge=typeof window.DocFixPrecisionEditor?.nudge==='function'
           &&typeof window.DocFixPrecisionEditor?.drawZoom==='function';
         const nativePoints=[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9},{x:.1,y:.9}];
