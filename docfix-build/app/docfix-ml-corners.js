@@ -75,5 +75,5 @@ async function detect(original,rough=null){
 function state(){
  return {ready:!!scanner,loading:!!loading,offlineOnly:true};
 }
-window.DocFixMLCorners=Object.freeze({detect,safeCandidate,roughlySame,state,version:'1.9.52-experimental'});
+window.DocFixMLCorners=Object.freeze({detect,warmup:initialize,safeCandidate,roughlySame,state,version:'1.9.52-experimental'});
 })();
