@@ -1,0 +1,6 @@
+DOCFIX 1.9.54 release candidate - TEST ONLY
+Source: docfix-154-no-phantom-pages-20261118
+QA PASS: https://github.com/Jorrob98/PDF-Facile/actions/runs/44362490915
+Purpose: Windows test updater with backup and rollback.
+NOT a stable/latest release; never offered by stable in-app updater.
+Customer photo verification in Windows is still required before promotion.
