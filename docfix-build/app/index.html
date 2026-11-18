@@ -1788,11 +1788,15 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
   // The two independent projections agree about document locations, NOT
   // necessarily the four plastic corners. Crop once with protective margins
   // and explicitly leave the resulting card marked for verification.
-  quad=sourceQuad.map(p=>({...p}));
+  const aligned=window.DocFixAutoFourEdge?.refine?.(original,sourceQuad)||null;
+  quad=aligned?.quad&&scan.validQuad(aligned.quad)?
+   aligned.quad.map(p=>({...p})):sourceQuad.map(p=>({...p}));
   processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
   physicalVerified=false;
   confidence=Math.min(.75,confidence);
-  tightMethod='due mappe indipendenti · bordi esterni da verificare';
+  tightMethod=aligned
+   ?'quattro bordi rifiniti sull originale · revisione richiesta'
+   :'due mappe indipendenti · bordi esterni da verificare';
  }else if(multiSafe&&sourceVerified&&cardKind!=='licence'){
   // Verified physical contours on the untouched original: exactly one perspective warp.
   quad=sourceQuad.map(p=>({...p}));
