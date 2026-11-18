@@ -72,8 +72,20 @@ async function detect(original,rough=null){
   return null;
  }
 }
+async function probeInference(canvas){
+ // Self-test only. Requires a synthetic canvas; do not record model input,
+ // heatmaps or customer documents in GitHub logs.
+ if(!canvas||!(canvas.width>0&&canvas.height>0))return false;
+ const instance=await initialize();
+ const result=await instance.scan(canvas,{mode:'detect',minDetectionConfidence:.01});
+ // success=false means "no document" but inference/decode did run;
+ // a returned result without inference timings is not an engine test.
+ return typeof result?.success==='boolean'&&
+  Array.isArray(result.timings)&&
+  result.timings.some(t=>t.step==='inference'&&Number.isFinite(t.ms));
+}
 function state(){
  return {ready:!!scanner,loading:!!loading,offlineOnly:true};
 }
-window.DocFixMLCorners=Object.freeze({detect,warmup:initialize,safeCandidate,roughlySame,state,version:'1.9.52-experimental'});
+window.DocFixMLCorners=Object.freeze({detect,warmup:initialize,probeInference,safeCandidate,roughlySame,state,version:'1.9.52-experimental'});
 })();
