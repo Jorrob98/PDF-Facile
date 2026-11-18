@@ -35,14 +35,14 @@
   const ex=Math.min(source.width,cx+radius),ey=Math.min(source.height,cy+radius);
   const drawW=Math.max(1,ex-sx),drawH=Math.max(1,ey-sy);
   const srcScale=Math.max(w/span,h/span);
-  const padX=(w-drawW*srcScale)/2+(radius-(cx-sx))*srcScale;
-  const padY=(h-drawH*srcScale)/2+(radius-(cy-sy))*srcScale;
+  const destX=w/2-(cx-sx)*srcScale;
+  const destY=h/2-(cy-sy)*srcScale;
   ctx.save();
   ctx.fillStyle='#e7ebef';ctx.fillRect(0,0,w,h);
   ctx.imageSmoothingEnabled=false;
   // Physical pixels are enlarged, not interpolated away.
   ctx.drawImage(source,sx,sy,drawW,drawH,
-    padX+(cx-sx-radius)*srcScale,padY+(cy-sy-radius)*srcScale,
+    destX,destY,
     drawW*srcScale,drawH*srcScale);
   ctx.strokeStyle='#fff';ctx.lineWidth=3;
   ctx.beginPath();ctx.moveTo(w/2,0);ctx.lineTo(w/2,h);
