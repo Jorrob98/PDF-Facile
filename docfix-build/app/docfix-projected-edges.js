@@ -73,7 +73,7 @@ function inspectRGBA(data,w,h,rough){
      medNear,medOuter};
    }
   }
-  if(!best)return null; // Never guess a missing side.
+  if(!best){if(window.DOCFIX_DEBUG_EDGES)console.warn('No supported side',i);return null;} // Never guess a missing side.
   const s0=best.offset-best.tilt*L*.5-1.5;
   const s1=best.offset+best.tilt*L*.5-1.5;
   fitted.push({start:{x:a.x+nx*s0,y:a.y+ny*s0},
@@ -82,12 +82,12 @@ function inspectRGBA(data,w,h,rough){
  }
  const corners=fitted.map((s,i)=>intersect(fitted[(i+3)%4],s));
  if(corners.some(p=>!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)||
-    p.x<3||p.y<3||p.x>w-4||p.y>h-4))return null;
+    p.x<3||p.y<3||p.x>w-4||p.y>h-4)){if(window.DOCFIX_DEBUG_EDGES)console.warn('Corner out of frame',corners);return null;}
  const cross=corners.map((p,i)=>{
   const b=corners[(i+1)%4],c=corners[(i+2)%4];
   return (b.x-p.x)*(c.y-b.y)-(b.y-p.y)*(c.x-b.x);
  });
- if(cross.some(v=>v<150))return null;
+ if(cross.some(v=>v<150)){if(window.DOCFIX_DEBUG_EDGES)console.warn('Non convex',cross);return null;}
  const width=(dist(corners[0],corners[1])+dist(corners[2],corners[3]))/2;
  const height=(dist(corners[1],corners[2])+dist(corners[3],corners[0]))/2;
  const ratio=width/height;
@@ -95,11 +95,11 @@ function inspectRGBA(data,w,h,rough){
   Math.max(dist(corners[0],corners[1]),dist(corners[2],corners[3]))/
    Math.min(dist(corners[0],corners[1]),dist(corners[2],corners[3]))>1.45||
   Math.max(dist(corners[1],corners[2]),dist(corners[3],corners[0]))/
-   Math.min(dist(corners[1],corners[2]),dist(corners[3],corners[0]))>1.45)return null;
+   Math.min(dist(corners[1],corners[2]),dist(corners[3],corners[0]))>1.45){if(window.DOCFIX_DEBUG_EDGES)console.warn('Shape',ratio,corners);return null;}
  const normalized=corners.map(p=>({x:p.x/w,y:p.y/h}));
  const change=area(normalized)/area(rough);
  if(change<.75||change>1.25||area(normalized)>.90||
-    corners.some((p,i)=>dist(p,q[i])>minor*.19))return null;
+    corners.some((p,i)=>dist(p,q[i])>minor*.19)){if(window.DOCFIX_DEBUG_EDGES)console.warn('Change',change,area(normalized),corners);return null;}
  return {quad:normalized,matchedSides:4,needsReview:true,
   physicallyVerified:false,confidence:.69,
   method:'four-side-oriented-gradient-provisional',
