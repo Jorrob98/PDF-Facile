@@ -61,6 +61,8 @@ jobs:
           node --check app/docfix-projected-edges.js
           node --check qa-projected-edges-151b.cjs
           node qa-projected-edges-151b.cjs
+          node --check qa-editor-drag-and-detection-fallback-151b.cjs
+          node qa-editor-drag-and-detection-fallback-151b.cjs
           node --check qa-facsimile-card-stack.cjs
           node qa-facsimile-card-stack.cjs
       - name: Full existing regression tests
