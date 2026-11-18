@@ -33,9 +33,9 @@
     dy=(result.quad[i].y-rough[i].y)*h;
    const distance=Math.hypot(dx,dy);
    max=Math.max(max,distance);total+=distance;
-   if(Math.abs(dx)>a.width*.036||Math.abs(dy)>a.height*.046)return null;
+   if(Math.abs(dx)>a.width*.075||Math.abs(dy)>a.height*.10)return null;
   }
-  if(max>diag*.045)return null;
+  if(max>diag*.075)return null;
   const edgeMove=total/4;
   if(edgeMove<.65)return null; // negligible change: do not claim correction
   return {quad:result.quad.map(p=>({x:p.x,y:p.y})),
