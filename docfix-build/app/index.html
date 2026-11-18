@@ -2232,27 +2232,28 @@ async function makeImageEntries(file,index,total=1,meta={}){
  }
  // Do not let single-card normalization crop away a second card after an
  // uncertain two-card hypothesis. Keep the entire source for manual recovery.
- let fixed=uncertainPair?{
+ const fixed=uncertainPair?{
   processed:original,rotation:0,review:true,cropVerified:false,manualPending:true,
   geometryReview:true,orientationReview:true,qualityReview:false,
   qualityIssues:[],qualityMetrics:null,cropped:false,sourceQuad:null,
   how:'Possibili due tessere: conservata la fotografia originale · usa + Tessera dalla stessa foto per selezionare ciascun documento'
  }:await normalizeRaster(original,{skipPageGuard:mode==='cards'});
+ let finalFixed=fixed;
  // ML is an independent, OFFLINE fallback for a SINGLE card photographed
  // against a low-contrast desk. It is never used to force an uncertain
  // two-up image into one card and can never mark PDF corners as confirmed.
  if(!uncertainPair&&mode!=='page'&&cropMode()==='smart'&&
-    fixed.cropVerified!==true&&portrait>.58&&portrait<2.2){
+    finalFixed.cropVerified!==true&&portrait>.58&&portrait<2.2){
   try{
    const neural=await window.DocFixLocalML?.detect?.(
-     original,Array.isArray(fixed.sourceQuad)?fixed.sourceQuad:null)||null;
+     original,Array.isArray(finalFixed.sourceQuad)?finalFixed.sourceQuad:null)||null;
    if(neural?.quad&&window.DocFixScanner.validQuad(neural.quad)){
     const candidate=window.DocFixScanner.process(original,
      {crop:true,quad:neural.quad,rotation:0,filter:'original',strength:0},4200);
     if(!candidate?.width||!candidate?.height)throw Error('Crop IA non valido');
     const health=multiCropHealthy(candidate);
     if(health){
-     fixed={...fixed,processed:candidate,sourceQuad:neural.quad,
+     finalFixed={...finalFixed,processed:candidate,sourceQuad:neural.quad,
       rotation:0,cropped:true,review:true,cropVerified:false,
       manualPending:true,visualProvisional:true,
       geometryReview:true,orientationReview:true,
@@ -2264,10 +2265,10 @@ async function makeImageEntries(file,index,total=1,meta={}){
    detectorProblems.push('modello locale non applicabile');
   }
  }
- if(detectorProblems.length){fixed.review=true;fixed.geometryReview=true;
-  fixed.how+=' · Controlli parziali: '+detectorProblems.join(', ')+' · verifica i ritagli';}
- if(original.docfixDownscaled)fixed.how+=' · Foto ridotta per evitare blocchi di memoria';
- return [{kind:'raster',original,...fixed,source:file.name,title:file.name,sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false}];
+ if(detectorProblems.length){finalFixed.review=true;finalFixed.geometryReview=true;
+  finalFixed.how+=' · Controlli parziali: '+detectorProblems.join(', ')+' · verifica i ritagli';}
+ if(original.docfixDownscaled)finalFixed.how+=' · Foto ridotta per evitare blocchi di memoria';
+ return [{kind:'raster',original,...finalFixed,source:file.name,title:file.name,sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false}];
 }
 window.DocFixDesktopDiagnostics=Object.freeze({
  multiCardCandidates,stackedCardCandidatesByGap,stackedCardCandidatesRecovery,chooseMultiCardMode,
