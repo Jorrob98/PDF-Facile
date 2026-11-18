@@ -1329,7 +1329,7 @@ async function normalizeRaster(original,{skipPageGuard=false}={}){
  // detector did NOT confirm a card. Do not touch PDF/A4 or existing
  // verified contours; reject ML/classical disagreement and single-model
  // guesses below the higher confidence gate.
- if(cropMode()==='smart'&&norm.physicallyVerified!==true&&
+ if(typeof cropMode==='function'&&cropMode()==='smart'&&norm.physicallyVerified!==true&&
     (norm.previewOnly===true||norm.review===true)&&
     original.width/original.height>=1.16&&original.width/original.height<=1.84){
   const ml=await window.DocFixMLCorners?.detect?.(original,norm.sourceQuad)||null;
