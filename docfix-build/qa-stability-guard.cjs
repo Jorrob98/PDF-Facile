@@ -654,8 +654,8 @@ const ids=x=>x.map(e=>e.id).join(',');
  // Cleanup must remain active even when recovery fails.
  {
   const flow=between(index,'async function drainPending(){','async function jpegBytes(');
-  assert.ok(flow.includes("try{await recoverIncompleteTwoByTwo();}"),
-    'recovery exception must be caught before resetting busy state');
+  assert.ok(!flow.includes("await recoverIncompleteTwoByTwo()"),
+    'never invent missing fourth card as a side effect of importing photos');
   assert.ok(flow.includes('processing=false;busy=false;'),
     'busy flag must clear on error');
  }
