@@ -18,3 +18,17 @@ const ita=find(path.join(nm,'@tesseract.js-data','ita'),'ita.traineddata.gz');
 if(!ita)throw new Error('ita.traineddata.gz non trovato');
 copy(ita,path.join(v,'tessdata','ita.traineddata.gz'));
 console.log('Vendor locale pronto: OCR italiano + inglese.');
+
+/* DocFix 1.9.52 prototype: 100% local pretrained four-corner model.
+   The 4.5 MB model and ORT WASM runtime are bundled with the Windows
+   installer. Never fall back to any remote URL for ID documents. */
+const ml=path.join(v,'quadscan'),ort=path.join(nm,'onnxruntime-web','dist');
+copy(path.join(nm,'quadscan','dist','quadscan.iife.js'),path.join(ml,'quadscan.iife.js'));
+copy(path.join(nm,'quadscan','models','lcnet100_h_e_bifpn_256_fp32.onnx'),path.join(ml,'model.onnx'));
+const runtimes=fs.readdirSync(ort).filter(f=>f.endsWith('.wasm')&&f.startsWith('ort-'));
+if(!runtimes.some(f=>f.includes('simd')))throw new Error('ONNX WASM SIMD runtime absent');
+for(const name of runtimes)copy(path.join(ort,name),path.join(ml,'ort',name));
+const license=path.join(nm,'quadscan','licenses','DocAligner-LICENSE.txt');
+if(fs.existsSync(license))copy(license,path.join(ml,'DocAligner-LICENSE.txt'));
+copy(path.join(nm,'quadscan','LICENSE'),path.join(ml,'quadscan-LICENSE'));
+console.log('Rilevatore ML offline presente: Quadscan, modello e runtimes locali.');
