@@ -24,12 +24,13 @@ function log(...parts){
   console.log(line.trim());
 }
 function requiredStartupFiles(){
-  return ['index.html','docfix-visual-card.js','docfix-texture-card.js','docfix-card-deskew.js','docfix-fine-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-stacked-blue-pair.js','card-guided-split.js','card-precision-editor.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
+  return ['index.html','docfix-visual-card.js','docfix-texture-card.js','docfix-card-deskew.js','docfix-fine-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-stacked-blue-pair.js','card-guided-split.js','card-precision-editor.js','card-ml-offline.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
 }
 function requiredEngineFiles(){
   return [
     'vendor/pdfjs/pdf.min.mjs','vendor/pdfjs/pdf.worker.min.mjs','vendor/pdf-lib/pdf-lib.min.js',
-    'vendor/tesseract/tesseract.min.js','vendor/tesseract/worker.min.js','vendor/tessdata/eng.traineddata.gz','vendor/tessdata/ita.traineddata.gz'
+    'vendor/tesseract/tesseract.min.js','vendor/tesseract/worker.min.js','vendor/tessdata/eng.traineddata.gz','vendor/tessdata/ita.traineddata.gz',
+    'vendor/quadscan/quadscan.iife.js','vendor/quadscan/model.onnx','vendor/quadscan/manifest.json'
   ];
 }
 function validateStartupBundle(){
@@ -43,6 +44,13 @@ function validateEngineBundle({throwOnError=true}={}){
   let cores=[];
   try{cores=fs.readdirSync(coreDir).filter(f=>/^tesseract-core.*\.wasm\.js$/.test(f));}catch{}
   if(cores.length<4)missing.push('vendor/tesseract-core (core WASM)');
+  const ortDir=path.join(root,'vendor','quadscan','ort');
+  let ortWasm=[];
+  try{ortWasm=fs.readdirSync(ortDir).filter(name=>/\\.wasm$/i.test(name));}catch{}
+  if(!ortWasm.length)missing.push('vendor/quadscan/ort (onnx WASM)');
+  try{if(fs.statSync(path.join(root,'vendor','quadscan','model.onnx')).size<4_000_000)
+    missing.push('vendor/quadscan/model.onnx (too small)');}
+  catch{missing.push('vendor/quadscan/model.onnx');}
   if(missing.length){
     const err=new Error('Componenti PDF/OCR mancanti: '+missing.join(', '));
     log('ENGINE_BUNDLE_FAIL',err.message);
@@ -207,6 +215,11 @@ async function runSelfTest(){
         const nativePoints=[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9},{x:.1,y:.9}];
         const moved=window.DocFixPrecisionEditor?.nudge?.(nativePoints,0,1,0,1600,1200,1);
         out.precisionPixelStep=!!moved&&Math.abs((moved[0].x-nativePoints[0].x)*1600-1)<1e-8;
+        out.localMlBridge=typeof window.DocFixLocalML?.detect==='function'&&
+          window.DocFixLocalML?.offlineOnly===true;
+        const localMl=out.localMlBridge?await window.DocFixLocalML.load():null;
+        out.localMlLoaded=!!localMl;
+        out.localMlOnly=window.DocFixLocalML?.offlineOnly===true;
         out.precisionControls=!!document.getElementById('edit-zoom')&&
           !!document.getElementById('edit-edge-snap')&&
           !!document.getElementById('edit-nudge-left')&&
