@@ -19,7 +19,7 @@ for(const [w,h] of [[1600,1200],[2040,1530],[820,615]]){
 }
 assert.equal(ui.nudge(points,-1,1,0,1600,1200,1,ok),null,'invalid index rejected');
 assert.equal(ui.nudge(points,0,1,0,0,1200,1,ok),null,'invalid image rejected');
-const rejected=ui.nudge(points,0,1,0,1600,1200,1000,ok);
+const rejected=ui.nudge(points,0,1,0,1600,1200,1600,ok);
 assert.equal(rejected,null,'invalid corner geometry must not be applied');
 const r={left:13,top:26,width:500,height:400};
 const p=ui.screenToImage(263,226,r,1600,1200);
