@@ -24,7 +24,7 @@ function log(...parts){
   console.log(line.trim());
 }
 function requiredStartupFiles(){
-  return ['index.html','docfix-visual-card.js','docfix-texture-card.js','docfix-card-deskew.js','docfix-fine-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-stacked-blue-pair.js','card-guided-split.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
+  return ['index.html','docfix-visual-card.js','docfix-texture-card.js','docfix-card-deskew.js','docfix-fine-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-stacked-blue-pair.js','card-guided-split.js','card-precision-editor.js','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
 }
 function requiredEngineFiles(){
   return [
@@ -202,6 +202,11 @@ async function runSelfTest(){
         out.stackedBluePairBridge=typeof window.DocFixStackedBluePair?.detect==='function'&&typeof window.DocFixStackedBluePair?.analyzeRGBA==='function';
         out.guidedSplitBridge=typeof window.DocFixGuidedSplit?.propose==='function'
           &&window.DocFixGuidedSplit.propose({width:260,height:460})?.requiresConfirmation===2;
+        out.precisionEditorBridge=typeof window.DocFixPrecisionEditor?.nudge==='function'
+          &&typeof window.DocFixPrecisionEditor?.drawZoom==='function';
+        const nativePoints=[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9},{x:.1,y:.9}];
+        const moved=window.DocFixPrecisionEditor?.nudge?.(nativePoints,0,1,0,1600,1200,1);
+        out.precisionPixelStep=!!moved&&Math.abs((moved[0].x-nativePoints[0].x)*1600-1)<1e-8;
         const deskewFixture=document.createElement('canvas');
         deskewFixture.width=680;deskewFixture.height=480;
         const dg=deskewFixture.getContext('2d',{willReadFrequently:true});
