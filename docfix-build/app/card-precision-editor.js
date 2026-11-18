@@ -148,8 +148,9 @@
   }
   const area=q=>Math.abs(q.reduce((sum,p,i)=>sum+p.x*q[(i+1)%4].y-p.y*q[(i+1)%4].x,0))/2;
   const oldArea=area(q),newArea=area(quad.map(p=>({x:p.x*w,y:p.y*h})));
-  const newLong=(length(quad[0],quad[1])+length(quad[2],quad[3]))*w/2;
-  const newMinor=(length(quad[1],quad[2])+length(quad[3],quad[0]))*h/2;
+  const sourcePixels=quad.map(p=>({x:p.x*w,y:p.y*h}));
+  const newLong=(length(sourcePixels[0],sourcePixels[1])+length(sourcePixels[2],sourcePixels[3]))/2;
+  const newMinor=(length(sourcePixels[1],sourcePixels[2])+length(sourcePixels[3],sourcePixels[0]))/2;
   if(newArea/oldArea<.93||newArea/oldArea>1.09||
    newLong/Math.max(1,newMinor)<1.39||newLong/Math.max(1,newMinor)>1.89)return null;
   if(quad.some((p,i)=>Math.hypot(p.x*w-q[i].x,p.y*h-q[i].y)>radius*3.6))return null;
