@@ -42,7 +42,7 @@ function inspectRGBA(data,w,h,rough){
   let nx=-vy/L,ny=vx/L;
   const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
   if((center.x-mid.x)*nx+(center.y-mid.y)*ny<0){nx=-nx;ny=-ny;}
-  let best=null;
+  let best=null,nearBest=null;
   for(let offset=-radius;offset<=radius;offset+=2){
    for(const tilt of [-.10,-.075,-.05,-.025,0,.025,.05,.075,.10]){
     const near=[],micro=[],wide=[],outer=[];
@@ -64,16 +64,17 @@ function inspectRGBA(data,w,h,rough){
     const support=thirds.reduce((s,v)=>s+v,0)/n;
     const coverage=thirds.map((v,k)=>v/Math.max(1,totals[k]));
     const medNear=median(near),medMicro=median(micro),medWide=median(wide),medOuter=median(outer);
-    if(support<.59||coverage.some(v=>v<.42)||medNear<15||
-       medMicro<9||medWide<16||medOuter>57)continue;
     const score=medNear*.31+medMicro*.38+medWide*.31+
      13*support+4*Math.min(...coverage)-.04*Math.abs(offset)-
      3*Math.abs(tilt)-.12*medOuter;
+    if(!nearBest||score>nearBest.score)nearBest={score,offset,tilt,support,coverage,medNear,medMicro,medWide,medOuter};
+    if(support<.59||coverage.some(v=>v<.42)||medNear<15||
+       medMicro<9||medWide<16||medOuter>57)continue;
     if(!best||score>best.score)best={score,offset,tilt,support,coverage,
      medNear,medOuter};
    }
   }
-  if(!best){if(window.DOCFIX_DEBUG_EDGES)console.warn('No supported side',i);return null;} // Never guess a missing side.
+  if(!best){if(window.DOCFIX_DEBUG_EDGES)console.warn('No supported side',i,nearBest);return null;} // Never guess a missing side.
   const s0=best.offset-best.tilt*L*.5-1.5;
   const s1=best.offset+best.tilt*L*.5-1.5;
   fitted.push({start:{x:a.x+nx*s0,y:a.y+ny*s0},
