@@ -69,7 +69,7 @@ function inspectRGBA(data,w,h,rough){
      3*Math.abs(tilt)-.12*medOuter;
     if(!nearBest||score>nearBest.score)nearBest={score,offset,tilt,support,coverage,medNear,medMicro,medWide,medOuter};
     if(support<.59||coverage.some(v=>v<.42)||medNear<15||
-       medMicro<9||medWide<16||medOuter>57)continue;
+       (medMicro<9&&medNear<32)||medWide<16||medOuter>57)continue;
     if(!best||score>best.score)best={score,offset,tilt,support,coverage,
      medNear,medOuter};
    }
