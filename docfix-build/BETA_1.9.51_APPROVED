@@ -1,0 +1,28 @@
+DOCFIX 1.9.51 BETA — AUTORIZZAZIONE SOLO TEST
+Data: 2026-11-18
+Base stabile: 1.9.50
+Ramo sperimentale: docfix-151-local-ml-quad-candidate-20261118
+
+Permesso solo il rilascio PRE-RELEASE (v1.9.51-beta.1) esplicitamente
+escluso da releases/latest e dal controllo aggiornamenti stabile.
+Non pubblicare, promuovere o sostituire la 1.9.50 come ultima stabile.
+
+Modifica: DocAligner LCNet100 + ONNX runtime Web WASM eseguiti
+esclusivamente su origine locale 127.0.0.1. Modello 4.7 MB incluso
+nell'installer; i file fotografici personali non vengono caricati
+su GitHub e non raggiungono servizi esterni.
+Il risultato e una proposta per UNA tessera non riconosciuta
+automaticamente, soggetta a controllo geometrico, margine protettivo,
+conferma esplicita dei quattro angoli e blocco del PDF.
+Le coppie/triple di documenti restano al rilevatore classico.
+
+QA: https://github.com/Jorrob98/PDF-Facile/actions/runs/44333901942
+73/73 controlli Electron PASS; il motore ha caricato l'ONNX
+e ha effettuato una inferenza REALE sul disegno sintetico con
+rete esterna bloccata. Regresioni OCR/PDF e multi-card PASS.
+
+NON ANCORA CONFERMATA la precisione sulle quattro foto originali
+CIE della pratica dell'utente. L'aggiornamento e SOLO beta per
+raccogliere prove reali, non una risoluzione certificata.
+Il workflow di rilascio dovra ripetere la suite, verificare il
+pacchetto e provare il programma di ripristino prima di pubblicare.
