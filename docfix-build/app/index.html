@@ -854,7 +854,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-auto-quad-consensus.js"></script><script src="./docfix-projected-edges.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-auto-quad-consensus.js"></script><script src="./docfix-projected-edges.js"></script><script src="./docfix-single-card-evidence.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -1897,8 +1897,17 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
   :blueOrientation?.trustworthy?{angle:0,review:false,trustworthy:false}
   :orientationKnown&&cardKind!=='identity'?{angle:0,review:false,trustworthy:false}
   :await inferTextOrientation(processed);
- if(mrz.trustworthy&&mrz.angle){processed=rotate(processed,mrz.angle);rotation=(rotation+mrz.angle)%360}
- else if(osd.trustworthy&&osd.angle){processed=rotate(processed,osd.angle);rotation=(rotation+osd.angle)%360}
+ // A landscape ID-1 card is never made portrait by a speculative OCR
+ // 90-degree guess. Leave it landscape and request operator confirmation.
+ let sidewaysOrientationBlocked=false;
+ const landscapeID1=cardKind==='identity'&&processed.width>processed.height*1.25;
+ if(mrz.trustworthy&&mrz.angle){
+  if(landscapeID1&&Math.abs(mrz.angle)%180===90)sidewaysOrientationBlocked=true;
+  else{processed=rotate(processed,mrz.angle);rotation=(rotation+mrz.angle)%360;}
+ }else if(osd.trustworthy&&osd.angle){
+  if(landscapeID1&&Math.abs(osd.angle)%180===90)sidewaysOrientationBlocked=true;
+  else{processed=rotate(processed,osd.angle);rotation=(rotation+osd.angle)%360;}
+ }
  // A perspective-corrected card must not be re-deskewed or cropped again.
  const licenceFinish=cardKind==='licence'&&!physicalVerified?window.DocFixLicenceFinish?.correct?.(processed):null;
  if(licenceFinish?.applied){
@@ -1913,7 +1922,7 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
   :(cardKind==='licence'?{canvas:processed,applied:false,angle:0,residual:0,verified:false}
    :(multiSafe?{canvas:processed,applied:false,angle:0,residual:0,verified:true}:fineDeskewCard(processed,{cardKind})));
  if(deskew.applied)processed=deskew.canvas;
- const orientationReview=!mrz.trustworthy&&!osd.trustworthy&&(cardKind==='identity'||textLines(processed).vertical);
+ const orientationReview=sidewaysOrientationBlocked||(!mrz.trustworthy&&!osd.trustworthy&&(cardKind==='identity'||textLines(processed).vertical));
  const geometryReview=!physicalVerified||confidence<.78,quality=qualityAudit(processed,tightened?null:quad),qualityReview=quality.review,review=geometryReview||orientationReview||qualityReview;
  // Provisional multi-card segmentations are previews, not export-ready pages.
  // Only the unverified smart-mode segments require manual confirmation.
@@ -1989,6 +1998,27 @@ async function makeImageEntries(file,index,total=1,meta={}){
  if(completePage)return [{kind:'raster',original,...completePage,source:file.name,title:file.name,
   sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,
   batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false,threeUp:false}];
+ // An original portrait photo with ONE dominant blue plastic ID-1 must NOT
+ // be split by weak two-card texture/projection guesses. This is a preview
+ // candidate only, still manually verified before PDF export.
+ if(mode!=='page'&&cropMode()==='smart'){
+  let singleton=null;
+  try{singleton=window.DocFixSingleCardEvidence?.detect?.(original)||null;}
+  catch(error){console.warn('DocFix: single-card guard unavailable',error);}
+  if(singleton?.strongSingle===true&&
+     window.DocFixScanner.validQuad(singleton.quad)){
+   const fixed=await normalizeKnownCard(original,singleton.quad,
+    'Una tessera azzurra rilevata',singleton.confidence,
+    {multiSafe:true,cardKind:'identity',sourceVerified:false,conservativeSegment:true});
+   fixed.manualPending=true;fixed.cropVerified=false;fixed.cropped=false;
+   fixed.geometryReview=true;fixed.review=true;
+   fixed.how+=' · 1 tessera sulla foto originale · conferma 4 angoli · nessuna seconda pagina inventata';
+   return [{kind:'raster',original,...fixed,source:file.name,title:file.name,
+    sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,
+    batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,twoUp:false,threeUp:false,
+    visualProvisional:true}];
+  }
+ }
  // A portrait image containing two landscape cards is analyzed in one pass.
  const portrait=original.height/Math.max(1,original.width);
  let sourceCards=null,tripleRaw=null;
