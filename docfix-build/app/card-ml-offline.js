@@ -25,7 +25,7 @@
   });
   if(!cross.every(n=>n>.002)&&!cross.every(n=>n<-.002))return false;
   const coverage=quadArea(q),s=shape(q,w,h);
-  if(coverage<.095||coverage>.82||s.aspect<1.40||s.aspect>1.86)return false;
+  if(coverage<.095||coverage>.82||s.aspect<1.45||s.aspect>1.83)return false;
   if(s.width<130||s.height<70)return false;
   if(Math.max(side(q[0],q[1],w,h),side(q[2],q[3],w,h))/
      Math.max(1,Math.min(side(q[0],q[1],w,h),side(q[2],q[3],w,h)))>1.40)return false;
