@@ -66,20 +66,23 @@ assert.ok(discovered>0,'physical-edge algorithm never accepted a candidate');
 assert.equal(bad,0,'no accepted automatic crop may be further than 12 px from ANY known plastic corner');
 // Separate harder corpus: old colour/texture candidate may be 10-20px
 // away from actual plastic. Accept no unsafe shifted internal rectangles.
-let farAccepted=0,farBad=0;
+let farAccepted=0,farBad=0,farFound=0;const farExamples=[];
 for(let n=0;n<24;n++){
  const angle=-5+rand()*10,skew=-9+rand()*18;
  const sample=scene(angle,skew,28+rand()*26,true);
  const rough=sample.q.map(p=>({x:(p.x+(rand()-.5)*38)/W,
   y:(p.y+(rand()-.5)*38)/H}));
  const fitted=window.DocFixPrecisionEditor.snapRGBA(sample.data,W,H,rough,{wideSearch:true});
+ if(fitted){farFound++;const pxerr=fitted.quad.map((p,i)=>Math.hypot(p.x*W-sample.q[i].x,p.y*H-sample.q[i].y));
+   farExamples.push({matched:fitted.matchedSides,error:+Math.max(...pxerr).toFixed(1),roughError:+Math.max(...rough.map((p,i)=>Math.hypot(p.x*W-sample.q[i].x,p.y*H-sample.q[i].y))).toFixed(1)});
+ }
  const out=window.DocFixAutoFourEdge.assess({width:W,height:H},rough,fitted,valid);
  if(!out)continue;
  farAccepted++;
  const pxError=out.quad.map((p,i)=>Math.hypot(p.x*W-sample.q[i].x,p.y*H-sample.q[i].y));
  if(Math.max(...pxError)>12)farBad++;
 }
-console.log('FOUR_EDGE_FAR_METRICS',JSON.stringify({cases:24,accepted:farAccepted,unsafeProposals:farBad}));
+console.log('FOUR_EDGE_FAR_METRICS',JSON.stringify({cases:24,found:farFound,accepted:farAccepted,unsafeProposals:farBad,examples:farExamples.slice(0,15)}));
 assert.equal(farBad,0,'imprecise initial crop must never become a wrong confirmed-looking geometry');
 assert.ok(farAccepted>=8,'wider source-edge search must recover some clearly visible misplaced rectangles');
 const blank=new Uint8ClampedArray(W*H*4);for(let i=0;i<blank.length;i+=4){
