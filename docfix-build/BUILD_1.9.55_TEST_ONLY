@@ -1,0 +1,5 @@
+DOCFIX 1.9.55 opt-in Windows build; only GitHub prerelease, NEVER latest stable.
+Source: docfix-155-neutral-permit-card-20261118
+Green QA: https://github.com/Jorrob98/PDF-Facile/actions/runs/44374830803
+One pale permit card on textured warm desk; original source preserved, manual border review required, false extra pages blocked.
+Customer files stay outside public GitHub and CI.
