@@ -854,7 +854,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-adaptive-id1.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -1217,7 +1217,8 @@ function photoNormalize(original){
    // Inspect the card's printed texture BEFORE the old cyan-only visual
    // detector, without weakening the independent four-edge auto-crop gate.
    // This is provisional only; operator must approve the source corners.
-   const candidate=window.DocFixTextureCard?.detect?.(original)
+   const candidate=window.DocFixAdaptiveID1?.detect?.(original)
+     ||window.DocFixTextureCard?.detect?.(original)
      ||window.DocFixVisualCard?.detect?.(original)||null;
    if(candidate?.status==='found'&&scan.validQuad(candidate.quad)){
     // Straighten the ORIGINAL source with FOUR colour-supported plastic
@@ -1226,7 +1227,8 @@ function photoNormalize(original){
     // The strict four-side detector stays first. On low-contrast CIE
     // photos, independently match the long TOP and BOTTOM plastic edges.
     // Both methods work on the ORIGINAL pixels before a single warp.
-    const fitted=candidate.method==='id1-light-background-provisional'
+    const fitted=['id1-light-background-provisional',
+     'adaptive-background-id1-3-edge-provisional'].includes(candidate.method)
      ?null:(window.DocFixCardDeskew?.refine?.(original,candidate.quad)
        ||window.DocFixFineDeskew?.refine?.(original,candidate.quad)||null);
     const quad=fitted?.quad&&scan.validQuad(fitted.quad)?fitted.quad:candidate.quad;
@@ -1242,7 +1244,9 @@ function photoNormalize(original){
       ?(fitted.method==='cie-postcrop-horizontal-edge-deskew'
         ?'Raddrizzamento fine CIE · bordi superiore e inferiore riallineati · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF'
         :'Tessera raddrizzata sui 4 bordi esterni · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF')
-      :(candidate.method==='id1-light-background-provisional'
+      :(candidate.method==='adaptive-background-id1-3-edge-provisional'
+        ?'Contorno CIE su piano chiaro · tre lati stimati e margine ISO protettivo · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF'
+        :candidate.method==='id1-light-background-provisional'
         ?'Tessera su sfondo chiaro individuata · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF'
         :'Tessera individuata: sfondo esterno escluso · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF');
    }
