@@ -48,7 +48,7 @@
   const scan=window.DocFixScanner;
   const fitter=window.DocFixPrecisionEditor;
   if(!scan?.validQuad?.(rough)||!fitter?.snap||!original)return null;
-  try{return assess(original,rough,fitter.snap(original,rough),scan.validQuad);}
+  try{return assess(original,rough,fitter.snap(original,rough,{wideSearch:true}),scan.validQuad);}
   catch(error){console.warn('DocFix: refinement blocked, initial preview preserved',error);return null;}
  }
  window.DocFixAutoFourEdge=Object.freeze({assess,refine,version:'1.9.51-candidate'});
