@@ -220,6 +220,20 @@ async function runSelfTest(){
         const localMl=out.localMlBridge?await window.DocFixLocalML.load():null;
         out.localMlLoaded=!!localMl;
         out.localMlOnly=window.DocFixLocalML?.offlineOnly===true;
+        let modelResult=null;
+        if(localMl){
+          // Run a complete 256x256 ONNX pass with synthetic pixels.
+          // Loading the session alone would not detect broken WASM inference.
+          const mlScene=document.createElement('canvas');
+          mlScene.width=800;mlScene.height=600;
+          const gc=mlScene.getContext('2d');
+          gc.fillStyle='#d9cfb5';gc.fillRect(0,0,800,600);
+          gc.fillStyle='#a5c9ce';gc.fillRect(95,95,610,395);
+          gc.strokeStyle='#435b69';gc.lineWidth=4;gc.strokeRect(95,95,610,395);
+          modelResult=await localMl.scan(mlScene,{mode:'detect',minDetectionConfidence:.05});
+        }
+        out.localMlInference=!!modelResult&&Array.isArray(modelResult.timings)&&
+          modelResult.timings.some(t=>t.step==='inference');
         out.precisionControls=!!document.getElementById('edit-zoom')&&
           !!document.getElementById('edit-edge-snap')&&
           !!document.getElementById('edit-nudge-left')&&
