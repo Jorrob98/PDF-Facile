@@ -64,11 +64,14 @@ async function run(){
      return {ids,counts,incomplete:counts.includes(1)&&counts.includes(2)};},
     ()=>true,()=>true,m=>msgs.push(m));
  win.DocFixRealCrop.detect=()=>({cards:pair});
- assert.equal(await ctx.recoverIncompleteTwoByTwo(),true);
- assert.equal(entries.length,4,'a 3/4 set must retain all four source-backed pages');
- assert.deepEqual([10,11].map(i=>entries.filter(e=>e.sourceIndex===i).length),[2,2]);
+ assert.equal(await ctx.recoverIncompleteTwoByTwo(),false,
+  'automatic missing-fourth recovery is forbidden');
+ assert.equal(entries.length,3,'no fictitious fourth card may be inserted');
+ assert.deepEqual([10,11].map(i=>entries.filter(e=>e.sourceIndex===i).length),[1,2]);
+ assert.equal(await ctx.rebuildSourceAsTwoUp(10,0),true,
+  'explicit operator recovery remains available after separate confirmation');
+ assert.equal(entries.length,4,'explicit split can create two review-only previews');
  assert.ok(entries.filter(e=>e.sourceIndex===10).every(e=>e.manualPending&&e.original===original));
- assert.ok(msgs.some(m=>m.includes('conferma i bordi')),'the operator gets an actionable warning');
  // No evidence of a second card = no split, no invented fourth page.
  pairs.geometry=()=>({ok:false,reason:'overlap'});
  const singleOriginal={sourceIndex:21,source:'A4-protected.jpg',original,
@@ -76,7 +79,7 @@ async function run(){
  entries.length=0;entries.push(singleOriginal);
  assert.equal(await ctx.rebuildSourceAsTwoUp(21,0),false,'geometry guard prevents hallucinated split');
  assert.strictEqual(entries[0],singleOriginal,'failed recovery does not delete source');
- console.log('DocFix lost-card recovery PASS: weak pair kept, 3-to-4, A4 protected, original untouched, invalid pair rejected');
+ console.log('DocFix source count PASS: no automatic 3-to-4, explicit manual split, A4 protected, original retained');
 }
 module.exports=run();
 if(require.main===module)module.exports.catch(e=>{console.error(e);process.exitCode=1});
