@@ -233,6 +233,10 @@ async function runSelfTest(){
         const fittedDeskew=window.DocFixCardDeskew?.refine?.(deskewFixture,deskewApprox);
         out.cardDeskewFitted=!!fittedDeskew?.quad&&fittedDeskew.needsReview===true
          &&fittedDeskew.physicallyVerified===false&&Math.abs(fittedDeskew.angleDeg)>1.8;
+        out.mlSessionReady=await window.DocFixMLCorners.warmup()
+         .then(()=>window.DocFixMLCorners.state().ready).catch(error=>{
+          console.warn('DocFix ML startup selftest failed:',error);return false;
+         });
         out.localFetch=(await fetch('./index.html',{cache:'no-store'})).ok;
         out.updaterBridge=!!window.DocFixUpdater;
         out.ocrBridge=!!window.DocFixOCRCloud;
