@@ -51,7 +51,7 @@ const start=index.indexOf('function twoByTwoCandidateMeta('),end=index.indexOf('
 assert.ok(start>0&&end>start,'candidate metadata check is present');
 const types=new Function(index.slice(start,end)+';return twoByTwoCandidateMeta;')();
 assert.equal(types([1,1],true,true),false,'two A4 photos in same portrait batch are NOT a four-card set');
-assert.equal(types([2,1],true,true),true,'a positively detected two-card source remains eligible for safe recovery');
+assert.equal(types([2,1],true,true),false,'a mixed 2+1 result must not invent a missing fourth card');
 assert.equal(types([2,2],true,true),true,'already verified two by two set is unchanged');
 const a=index.indexOf('function preserveFullA4Page('),b=index.indexOf('async function normalizeRaster(',a);
 assert.ok(a>=0&&b>a);

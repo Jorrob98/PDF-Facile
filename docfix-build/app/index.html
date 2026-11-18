@@ -2757,10 +2757,11 @@ function regroupLatestTwoUpSources(force=false){
  ordered.forEach(e=>e.pairGroup=a+'|'+b);applyFourCardLabels(ordered,slots);return true;
 }
 function twoByTwoCandidateMeta(counts,sameTwoFileBatch,portraitTwoUp){
- // Two portrait pages uploaded together are NOT proof of four ID cards.
- // An earlier version would split two A4 declarations in half here.
- const complete=counts[0]===2&&counts[1]===2,hasTwo=counts.includes(2);
- return complete||hasTwo;
+ // Page count is an OBSERVATION, never a target. Two files containing
+ // one document each are not a "missing 4th card" just because one
+ // detector invented an extra rectangle on a textured tabletop.
+ // Do not use portrait aspect, upload batch or a weak 2-up guess as proof.
+ return Array.isArray(counts)&&counts.length===2&&counts.every(n=>n===2);
 }
 function threeByTwoState(){
  const imageSources=sourceFiles.filter(s=>!/\.pdf$/i.test(s.file.name)&&s.file.type!=='application/pdf');
@@ -2831,21 +2832,11 @@ async function rebuildSourceAsTwoUp(sourceId,sourcePos){
  document.dispatchEvent(new CustomEvent('docfix:entries-added',{detail:{entries:made.slice()}}));
  return true;
 }
+// No automatic 3-to-4 recovery. It fabricated a second page from desk
+// material when two uploads were separate CIE front/back photos.
+// The operator can explicitly request "Separa in 2" from the UI.
 async function recoverIncompleteTwoByTwo(){
- let state=twoByTwoState();if(!state.incomplete)return false;
- let changed=false;
- for(let pos=0;pos<state.ids.length;pos++){
-  if(state.counts[pos]!==1)continue;
-  const ok=await rebuildSourceAsTwoUp(state.ids[pos],pos);
-  changed=changed||ok;
-  state=twoByTwoState();
- }
- if(!changed)return false;
- const paired=regroupLatestTwoUpSources()||regroupTwoFileFourCards(entries.find(e=>e.loadBatch!=null)?.loadBatch);
- if(paired)status(entries.some(e=>e.manualPending===true)
-  ?'Quattro tessere localizzate: conferma i bordi delle anteprime evidenziate prima del PDF.'
-  :'Recupero automatico riuscito: set completo 4/4.');
- return paired;
+ return false;
 }
 async function drainPending(){
  if(processing||exporting||!pending.length)return;
@@ -2876,9 +2867,8 @@ async function drainPending(){
   }
  }finally{
   if(token===sequence){
-   // Recovery is best-effort: one bad card must never lock the whole UI.
-   try{await recoverIncompleteTwoByTwo();}
-   catch(err){console.warn('DocFix recupero multiplo',err);note('Recupero automatico non riuscito: controlla la tessera evidenziata. Le altre pagine restano disponibili.');}
+   // No inferred fourth page. The operator can use the explicit manual
+   // split control, which keeps both unverified outputs PDF-locked.
    // Final guarantee: the pairing is checked again after EVERY input is processed.
    const sixGrouped=manuallyOrdered?false:regroupSixCards();
    processing=false;busy=false;activeSource=null;$('progress-wrap').hidden=true;

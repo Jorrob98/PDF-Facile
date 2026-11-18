@@ -194,7 +194,7 @@ function rectifyBox(component,w,h){
 function analyzeRGBA(pixels,w,h){
  if(!pixels||w<200||h<250)return {cards:[],reason:'immagine piccola'};
  const lab=toLab(pixels,w,h),bg=predictBackground(lab,w,h);
- let best=null;
+ let best=null,attempts=[];
  // Include low-contrast cards without adding an expensive extra scan:
  // four thresholds remain, with two calibrated to muted scanner photos.
  for(const threshold of [30,26,20,16]){
@@ -224,10 +224,32 @@ function analyzeRGBA(pixels,w,h){
    const yspread=Math.max(...cards.map(c=>center(c).y))-Math.min(...cards.map(c=>center(c).y));
    cards.sort((a,b)=>xspread>yspread?center(a).x-center(b).x:center(a).y-center(b).y);
   }
-  if(!best||Math.abs(cards.length-2)<Math.abs(best.cards.length-2))best={cards,threshold};
-  if(cards.length===2)break;
+  attempts.push({cards,threshold});
  }
-
+ // A "two cards" guess on a single threshold can turn marble or an
+ // internal print line into a second page. Two thresholds must locate
+ // the SAME two disjoint ID-1 regions. Do not guess from photo count.
+ const bounds=c=>({x0:Math.min(...c.quad.map(p=>p.x)),
+  y0:Math.min(...c.quad.map(p=>p.y)),x1:Math.max(...c.quad.map(p=>p.x)),
+  y1:Math.max(...c.quad.map(p=>p.y))});
+ const iou=(a,b)=>{const x=bounds(a),y=bounds(b),
+  w=Math.max(0,Math.min(x.x1,y.x1)-Math.max(x.x0,y.x0)),
+  h=Math.max(0,Math.min(x.y1,y.y1)-Math.max(x.y0,y.y0)),
+  ar=(x.x1-x.x0)*(x.y1-x.y0),br=(y.x1-y.x0)*(y.y1-y.y0);
+  return w*h/Math.max(.000001,ar+br-w*h);};
+ const pairs=attempts.filter(a=>a.cards.length===2&&
+  a.cards.every(c=>c.confidence>=.79));
+ let agreedPair=null;
+ for(let i=0;i<pairs.length&&!agreedPair;i++)for(let j=i+1;j<pairs.length;j++){
+  if(pairs[i].cards.every(c=>pairs[j].cards.some(t=>iou(c,t)>.72))&&
+    pairs[j].cards.every(c=>pairs[i].cards.some(t=>iou(c,t)>.72))){
+   agreedPair=pairs[i];break;
+  }
+ }
+ const singles=attempts.filter(a=>a.cards.length===1);
+ const strongestSingle=singles.sort((a,b)=>b.cards[0].coverage-a.cards[0].coverage)[0]||null;
+ best=agreedPair||strongestSingle||{cards:[],reason:'numero di tessere non dimostrato'};
+ 
  // Optional last-resort recovery for TWO extremely low-contrast documents.
  // Never replace an already recognized card, and never trust one faint mask.
  // The 8 and 6 thresholds must independently confirm two nearly identical,
