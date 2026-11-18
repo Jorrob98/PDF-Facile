@@ -43,7 +43,7 @@ assert.equal(robust.refine(original,rough),null,'three sides cannot establish au
 let count=0;
 win.DocFixPrecisionEditor={snap:()=>{
  count++;const q=rough.map(p=>({...p}));
- const offset=count%2?.026:-.026;
+ const offset=[-.025,0,.025][(count-1)%3];
  for(const p of q)p.x+=offset;
  return {quad:q,matchedSides:4};
 }};
