@@ -6,7 +6,7 @@ const html=fs.readFileSync(path.join(__dirname,'app/index.html'),'utf8');
 const W=900,H=650;
 const validQuad=q=>Array.isArray(q)&&q.length===4&&q.every(p=>
  Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>.001&&p.y>.001&&p.x<.999&&p.y<.999);
-const win={DocFixScanner:{validQuad,resize:c=>c}};
+const win={DOCFIX_DEBUG_EDGES:true,DocFixScanner:{validQuad,resize:c=>c}};
 vm.runInNewContext(code,{window:win,Math,console,Uint8ClampedArray});
 const solver=win.DocFixProjectedEdges;
 assert.ok(solver?.inspectRGBA&&solver?.refine,'module loaded');
