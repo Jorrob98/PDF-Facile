@@ -28,7 +28,7 @@ const wrongRatio={...result,corners:{...result.corners,
 assert.equal(ml.candidate(wrongRatio,W,H),null,'A4 ratio rejected');
 assert.equal(ml.candidate({...result,confidence:.1},W,H),null,'uncertain ML predictions rejected');
 assert.equal(ml.candidate(result,W,H,[
- {x:.02,y:.03},{x:.42,y:.03},{x:.42,y:.30},{x:.02,y:.30}]),null,'independent candidate disagreement rejected');
+ {x:.02,y:.03},{x:.43,y:.03},{x:.43,y:.38},{x:.02,y:.38}]),null,'independent candidate disagreement rejected');
 assert.ok(html.includes('await window.DocFixLocalML?.detect?.('));
 assert.ok(html.includes('manualPending:true,visualProvisional:true'),'model cannot approve a PDF');
 assert.ok(html.includes("entries.some(e=>e.manualPending===true)"),'PDF gating must remain');
