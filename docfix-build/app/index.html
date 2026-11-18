@@ -1217,8 +1217,15 @@ function photoNormalize(original){
    // Inspect the card's printed texture BEFORE the old cyan-only visual
    // detector, without weakening the independent four-edge auto-crop gate.
    // This is provisional only; operator must approve the source corners.
-   const candidate=window.DocFixTextureCard?.detect?.(original)
-     ||window.DocFixVisualCard?.detect?.(original)||null;
+   // A failed/invalid primary proposal must not hide a valid secondary
+   // detector, including when the primary throws unexpectedly.
+   let candidate=null;
+   try{candidate=window.DocFixTextureCard?.detect?.(original)||null;}
+   catch(error){errors.push('texture: '+String(error?.message||error));}
+   if(candidate?.status!=='found'||!scan.validQuad(candidate.quad)){
+    try{candidate=window.DocFixVisualCard?.detect?.(original)||null;}
+    catch(error){errors.push('visual: '+String(error?.message||error));candidate=null;}
+   }
    if(candidate?.status==='found'&&scan.validQuad(candidate.quad)){
     // Straighten the ORIGINAL source with FOUR colour-supported plastic
     // sides where available. Fallback to the already working 1.9.44 crop
@@ -2581,9 +2588,15 @@ function updateEditor(){
   handle.onpointermove=ev=>{
    if(!handle.hasPointerCapture(ev.pointerId))return;
    const r=handles.getBoundingClientRect();
-   p.x=clamp((ev.clientX-r.left)/r.width,.005,.995);
-   p.y=clamp((ev.clientY-r.top)/r.height,.005,.995);
-   handle.style.left=(p.x*100)+'%';handle.style.top=(p.y*100)+'%';
+   // Read the CURRENT quad, not the corner object captured when the
+   // editor opened: nudge/snap replace editQuad with a fresh array.
+   const current=editQuad[i];if(!current)return;
+   const next=editQuad.map(v=>({...v}));
+   next[i].x=clamp((ev.clientX-r.left)/r.width,.005,.995);
+   next[i].y=clamp((ev.clientY-r.top)/r.height,.005,.995);
+   if(!window.DocFixScanner.validQuad(next))return;
+   editQuad=next;
+   handle.style.left=(next[i].x*100)+'%';handle.style.top=(next[i].y*100)+'%';
    drawFrame();
   };
   handles.append(handle);
