@@ -44,5 +44,5 @@ assert.ok(html.includes('window.DocFixFineDeskew?.refine?.(original,candidate.qu
 assert.ok(html.includes('window.DocFixCardDeskew?.refine?.(original,candidate.quad)'));
 assert.ok(html.includes('manualPending:true,visualProvisional:true'));
 assert.ok(html.includes("entries.some(e=>e.manualPending===true)"),'PDF export must still require confirmation');
-assert.ok(html.includes("const quad=fitted?.quad&&scan.validQuad(fitted.quad)?fitted.quad:candidate.quad"));
+assert.ok(html.includes("const quad=finalFit?.quad&&scan.validQuad(finalFit.quad)?finalFit.quad:candidate.quad;"),"old safe crop fallback still applies");
 console.log('PASS: 1.9.46 synthetic CIE front and MRZ back, ±2° residual fine deskew, laptop/shadow ignored, original and PDF guards preserved');
