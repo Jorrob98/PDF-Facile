@@ -126,12 +126,18 @@ function analyzeRGBA(rgba,w,h){
  const top=scoreEdge('top'),leftEdge=scoreEdge('left'),rightEdge=scoreEdge('right'),bottom=scoreEdge('bottom');
  if(!top||!leftEdge||!rightEdge||top.score<12||leftEdge.score<9||rightEdge.score<9)return null;
  const leftPad=clamp(11+Math.max(0,leftEdge.p-x0)*1.6,8,30);
- const l=leftEdge.p-leftPad,r=rightEdge.p+8,t=top.p-5;
+ // A weaker right-hand contrast is often caused by pale translucent
+ // plastic. Do not blindly add 8px on that side: it retains too much desk.
+ const rightPad=clamp((rightEdge.support-.72)*34,0,8);
+ const l=leftEdge.p-leftPad,r=rightEdge.p+rightPad,t=top.p-4;
  const width=r-l;
- // ISO ID-1: 85.60×53.98mm (1.586). We do NOT force a stretch when a
- // weak lower edge is absent: use this only as a safe OUTER bound.
+ // ISO ID-1: 85.60×53.98mm (1.586). Use a conservative projected
+ // bound ONLY when the observed lower side is weak/too far inside (MRZ).
+ // A directly supported bottom boundary near the component perimeter wins.
  const guessedBottom=t+width/1.65;
- const b=Math.max(guessedBottom,bottom?bottom.p+3:0,y1+5);
+ const trustedBottom=!!bottom&&bottom.support>=.72&&Math.abs(y1-bottom.p)<=12;
+ const b=trustedBottom?Math.max(bottom.p+4,t+width/1.75)
+  :Math.max(guessedBottom,y1+8);
  if(l<3||r>w-4||t<3||b>h-4||width<=0)return null;
  const ratio=width/(b-t),area=width*(b-t)/(w*h);
  if(ratio<1.38||ratio>1.76||area<.22||area>.70)return null;
@@ -140,7 +146,7 @@ function analyzeRGBA(rgba,w,h){
   confidence:.69,method:'adaptive-background-id1-3-edge-provisional',
   diagnostic:{threshold:best.threshold,component:{x0,y0,x1,y1},
    edgeSupport:{top:top.support,left:leftEdge.support,right:rightEdge.support,bottom:bottom?.support??null},
-   inferredBottom:!bottom||bottom.p<guessedBottom}};
+   inferredBottom:!trustedBottom,finalAspect:ratio}};
 }
 function detect(original){
  const scanner=window.DocFixScanner;
