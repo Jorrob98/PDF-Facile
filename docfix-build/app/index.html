@@ -854,7 +854,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-auto-quad-consensus.js"></script><script src="./docfix-projected-edges.js"></script><script src="./docfix-single-card-evidence.js"></script><script src="./docfix-neutral-single.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-auto-quad-consensus.js"></script><script src="./docfix-projected-edges.js"></script><script src="./docfix-single-card-evidence.js"></script><script src="./docfix-neutral-single.js"></script><script src="./docfix-paper-pair.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -1994,6 +1994,38 @@ function decideTwoUpProof(original,candidates){
 async function makeImageEntries(file,index,total=1,meta={}){
  const original=await imageCanvas(file,total);
  const mode=meta.documentMode||documentMode();
+ // This landscape camera photo can contain TWO visibly separate real ID-1
+ // cards even if older portrait-only pair engines return null. Locate both
+ // material outlines on the original warm paper before any single-card path.
+ // One original photo => two preview pages ONLY if both shapes exist. Never
+ // invent a page to reach a target count. Crops require operator approval.
+ if(mode!=='page'&&cropMode()==='smart'&&original.width>original.height*1.12){
+  let paperPair=null;
+  try{paperPair=window.DocFixPaperPair?.detect?.(original)||null;}
+  catch(error){console.warn('DocFix: due tessere su foglio non disponibili',error);}
+  if(paperPair?.cards?.length===2&&
+     window.DocFixPairProof?.geometry?.(original,paperPair.cards)?.ok===true){
+   const out=[];
+   for(let i=0;i<2;i++){
+    const card=paperPair.cards[i];
+    const fixed=await normalizeKnownCard(original,card.quad,
+      'Due tessere distinte su foglio · tessera '+(i+1),card.confidence,
+      {multiSafe:true,cardKind:'generic',sourceVerified:false,conservativeSegment:true});
+    fixed.manualPending=true;fixed.cropVerified=false;fixed.cropped=false;
+    fixed.review=true;fixed.geometryReview=true;
+    fixed.how+=' · 2 tessere reali individuate · 4 bordi da confermare prima del PDF';
+    out.push({kind:'raster',original,...fixed,source:file.name,
+      title:file.name+' · tessera '+(i+1),sourceIndex:index,
+      loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,
+      batchSize:meta.batchSize??1,splitSlot:i,splitCount:2,
+      twoUp:true,threeUp:false,visualProvisional:true});
+   }
+   return out;
+  }
+ }
+
+ // Explicit A4 mode remains absolute. In automatic mode a source-backed
+ // two-card observation takes precedence over an ambiguous paper-like A4 score.
  const completePage=mode==='cards'?null:preserveFullA4Page(original,mode==='page');
  if(completePage)return [{kind:'raster',original,...completePage,source:file.name,title:file.name,
   sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,

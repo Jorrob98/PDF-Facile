@@ -3,11 +3,25 @@ const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('DocFixUpdater',Object.freeze({
   currentVersion:()=>ipcRenderer.invoke('docfix:update:version'),
   lastResult:()=>ipcRenderer.invoke('docfix:update:last-result'),
-  check:(channel='stable')=>ipcRenderer.invoke('docfix:update:check',channel),
-  install:(channel='stable')=>ipcRenderer.invoke('docfix:update:install',channel),
+  // Pass only primitive channel strings across the Electron IPC boundary.
+  // Catch DataCloneError at its origin so the main app can keep the practice.
+  check:async(channel='stable')=>{
+    try{return await ipcRenderer.invoke('docfix:update:check',channel==='beta'?'beta':'stable');}
+    catch(error){return {ok:false,available:false,error:'IPC check: '+String(error?.message||error)};}
+  },
+  install:async(channel='stable')=>{
+    try{return await ipcRenderer.invoke('docfix:update:install',channel==='beta'?'beta':'stable');}
+    catch(error){return {ok:false,available:false,error:'IPC install: '+String(error?.message||error)};}
+  },
   onProgress:(callback)=>{
     if(typeof callback!=='function')return ()=>{};
-    const handler=(_event,data)=>{try{callback(data)}catch{}};
+    const handler=(_event,data)=>{
+      const plain={phase:String(data?.phase||''),percent:Number(data?.percent)||0,
+       message:String(data?.message||''),downloaded:Number(data?.downloaded)||0,
+       total:Number(data?.total)||0,speed:Number(data?.speed)||0,
+       etaSeconds:Number.isFinite(data?.etaSeconds)?Number(data.etaSeconds):null};
+      try{callback(plain)}catch{}; // Never forward native IPC events.
+    };
     ipcRenderer.on('docfix:update:progress',handler);
     return ()=>ipcRenderer.removeListener('docfix:update:progress',handler);
   }

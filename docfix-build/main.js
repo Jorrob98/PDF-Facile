@@ -583,8 +583,25 @@ async function checkForUpdates(channel='stable'){
     available:isNewerVersion(latest.version,current),notes:latest.notes,
     channel:updateChannel(channel)};
 }
+// IPC boundary: only structured-cloneable primitive fields can cross
+// Electron's process boundary. Keep progress and response data serializable.
+function cloneSafeUpdateResult(r){
+ return {ok:r?.ok===true,available:r?.available===true,
+  current:String(r?.current||''),latest:String(r?.latest||''),
+  channel:r?.channel==='beta'?'beta':'stable',
+  notes:String(r?.notes||''),error:String(r?.error||''),
+  launching:r?.launching===true};
+}
 function sendUpdateProgress(sender,data){
-  try{if(sender&&!sender.isDestroyed())sender.send('docfix:update:progress',data)}catch{}
+ try{
+  if(!sender||sender.isDestroyed())return;
+  sender.send('docfix:update:progress',{
+   phase:String(data?.phase||''),percent:Number(data?.percent)||0,
+   message:String(data?.message||''),downloaded:Number(data?.downloaded)||0,
+   total:Number(data?.total)||0,speed:Number(data?.speed)||0,
+   etaSeconds:Number.isFinite(data?.etaSeconds)?Number(data.etaSeconds):null
+  });
+ }catch(error){log('UPDATE_PROGRESS_IPC_FAIL',String(error?.message||error))}
 }
 async function downloadVerifiedUpdate(sender,channel='stable'){
   sendUpdateProgress(sender,{phase:'preparing',percent:2,message:'Preparo aggiornamento…'});
@@ -639,20 +656,33 @@ function launchVerifiedUpdater(updater){
 
 ipcMain.handle('docfix:update:version',()=>app.getVersion());
 ipcMain.handle('docfix:update:last-result',()=>updateReceiptStatus);
-ipcMain.handle('docfix:update:check',async(_event,channel)=>{try{return {ok:true,...await checkForUpdates(channel)}}catch(e){log('UPDATE_CHECK_FAIL',e);return {ok:false,error:e.message||String(e)}}});
+ipcMain.handle('docfix:update:check',async(_event,channel)=>{
+ try{return cloneSafeUpdateResult({ok:true,...await checkForUpdates(channel)});}
+ catch(error){
+  log('UPDATE_CHECK_FAIL',error);
+  return cloneSafeUpdateResult({ok:false,error:String(error?.message||error)});
+ }
+});
 ipcMain.handle('docfix:update:install',async(event,channel)=>{
-  try{
-    const r=await downloadVerifiedUpdate(event.sender,channel);
-    if(!r.available)return {ok:true,...r};
-    sendUpdateProgress(event.sender,{phase:'install',percent:98,message:'Applico aggiornamento…',etaSeconds:4});
-    writeUpdateReceipt(r.latest);
-    try{await launchVerifiedUpdater(r.updater)}catch(e){clearUpdateReceipt();throw e}
-    sendUpdateProgress(event.sender,{phase:'restart',percent:99,message:'Installer avviato · versione da verificare al prossimo avvio',etaSeconds:null});
-    return {ok:true,...r,launching:true};
-  }catch(e){
-    sendUpdateProgress(event.sender,{phase:'error',percent:0,message:e.message||String(e)});
-    log('UPDATE_INSTALL_FAIL',e);return {ok:false,error:e.message||String(e)}
-  }
+ let stage='download';
+ try{
+  const r=await downloadVerifiedUpdate(event.sender,channel);
+  if(!r.available)return cloneSafeUpdateResult({ok:true,...r});
+  sendUpdateProgress(event.sender,{phase:'install',percent:98,message:'Applico aggiornamento…'});
+  writeUpdateReceipt(r.latest);
+  stage='launch';
+  try{await launchVerifiedUpdater(r.updater)}catch(error){clearUpdateReceipt();throw error;}
+  sendUpdateProgress(event.sender,{phase:'restart',percent:99,
+   message:'Installer avviato · versione da verificare al prossimo avvio'});
+  // Never send file handles, processes, Buffers or platform objects to UI.
+  return cloneSafeUpdateResult({ok:true,current:r.current,latest:r.latest,
+   channel,available:true,launching:true});
+ }catch(error){
+  const message=stage+': '+String(error?.message||error);
+  sendUpdateProgress(event.sender,{phase:'error',percent:0,message});
+  log('UPDATE_INSTALL_FAIL',stage,error);
+  return cloneSafeUpdateResult({ok:false,channel,error:message});
+ }
 });
 
 function fatalStartup(err){
