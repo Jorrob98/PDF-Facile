@@ -42,7 +42,7 @@ function make(current){return factory(mock,{getVersion:()=>current},stableUrl,be
  assert.ok(ui.includes("id='docfix-update-channel'")&&ui.includes('Versioni di prova'));
  assert.ok(ui.includes("channel.value='stable'"),'each startup defaults to stable');
  assert.ok(ui.includes("window.confirm(")&&ui.includes('DocFixUpdater.install(channel)'));
- assert.ok(preload.includes("check:(channel='stable')")&&preload.includes("install:(channel='stable')"));
+ assert.ok(preload.includes("check:async(channel='stable')")&&preload.includes("install:async(channel='stable')"), 'async IPC wrapper retains stable default');
  assert.ok(code.includes("crypto.createHash('sha256').update(exe)"),'download SHA-256 validation preserved');
  assert.ok(code.includes("writeUpdateReceipt(r.latest)"),'verify installed version after restart');
  assert.ok(code.includes('downloadVerifiedUpdate(event.sender,channel)'), 'IPC beta pass-through');
