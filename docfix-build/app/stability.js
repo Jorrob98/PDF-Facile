@@ -104,7 +104,7 @@
      }
    };
  }
- async async function refreshUpdateButton(button){
+ async function refreshUpdateButton(button){
    if(!button)return;
    button.disabled=false;button.classList.remove('available');
    if(!window.DocFixUpdater){button.hidden=true;return}
