@@ -192,10 +192,24 @@ jobs:
           fi
           grep -F 'SELF_TEST_RESULT' electron-selftest.log
 
-      - name: Install NSIS
+      - name: Install NSIS (retry mirrors without changing app)
+        shell: bash
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq nsis
+          set -euo pipefail
+          if command -v makensis >/dev/null 2>&1; then
+            makensis -VERSION
+            exit 0
+          fi
+          for attempt in 1 2 3 4; do
+            echo "NSIS repository attempt ${attempt}/4"
+            sudo apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=4 update -qq || true
+            if sudo DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::ForceIPv4=true -o Acquire::Retries=4 install -y -qq nsis; then
+              break
+            fi
+            sleep $((attempt*5))
+          done
+          command -v makensis
+          makensis -VERSION
 
       - name: Build Windows incremental updater
         shell: bash
