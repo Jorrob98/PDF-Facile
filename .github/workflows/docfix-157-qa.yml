@@ -71,6 +71,8 @@ jobs:
           node --check app/docfix-paper-pair.js
           node --check qa-paper-pair-157.cjs
           node qa-paper-pair-157.cjs
+          node --check qa-paper-pair-import-157.cjs
+          node qa-paper-pair-import-157.cjs
           node --check qa-updater-ipc-clone-157.cjs
           node qa-updater-ipc-clone-157.cjs
           node --check app/card-texture-crop.js
