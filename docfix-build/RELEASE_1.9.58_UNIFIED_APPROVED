@@ -1,0 +1,6 @@
+DOCFIX 1.9.58 — AGGIORNAMENTO UNICO.
+Autorizzazione a pubblicare come ultima versione ordinaria nel feed letto da Verifica aggiornamenti, senza menu o scelte di canale.
+Test regressione completi e Electron PASS: https://github.com/Jorrob98/PDF-Facile/actions/runs/44519899435
+Conserva riconoscimento CIE singola e permesso chiaro, integra due tessere su foglio (2+2 -> quattro anteprime da confermare).
+Gestore aggiornamenti usa soli valori serializzabili; checksum SHA256, riavvio e ripristino.
+Non caricare fotografie private dei clienti nel repository.
