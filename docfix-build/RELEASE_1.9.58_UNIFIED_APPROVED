@@ -4,3 +4,5 @@ Test regressione completi e Electron PASS: https://github.com/Jorrob98/PDF-Facil
 Conserva riconoscimento CIE singola e permesso chiaro, integra due tessere su foglio (2+2 -> quattro anteprime da confermare).
 Gestore aggiornamenti usa soli valori serializzabili; checksum SHA256, riavvio e ripristino.
 Non caricare fotografie private dei clienti nel repository.
+
+Build retry: NSIS packages unavailable from Ubuntu mirror; retry mirrored downloads via IPv4, code unchanged.
