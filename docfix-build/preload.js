@@ -3,14 +3,13 @@ const {contextBridge,ipcRenderer}=require('electron');
 contextBridge.exposeInMainWorld('DocFixUpdater',Object.freeze({
   currentVersion:()=>ipcRenderer.invoke('docfix:update:version'),
   lastResult:()=>ipcRenderer.invoke('docfix:update:last-result'),
-  // Pass only primitive channel strings across the Electron IPC boundary.
-  // Catch DataCloneError at its origin so the main app can keep the practice.
-  check:async(channel='stable')=>{
-    try{return await ipcRenderer.invoke('docfix:update:check',channel==='beta'?'beta':'stable');}
+  // No user-visible channels. Catch IPC errors so the practice stays open.
+  check:async()=>{
+    try{return await ipcRenderer.invoke('docfix:update:check');}
     catch(error){return {ok:false,available:false,error:'IPC check: '+String(error?.message||error)};}
   },
-  install:async(channel='stable')=>{
-    try{return await ipcRenderer.invoke('docfix:update:install',channel==='beta'?'beta':'stable');}
+  install:async()=>{
+    try{return await ipcRenderer.invoke('docfix:update:install');}
     catch(error){return {ok:false,available:false,error:'IPC install: '+String(error?.message||error)};}
   },
   onProgress:(callback)=>{
