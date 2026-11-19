@@ -6,3 +6,5 @@ Gestore aggiornamenti usa soli valori serializzabili; checksum SHA256, riavvio e
 Non caricare fotografie private dei clienti nel repository.
 
 Build retry: NSIS packages unavailable from Ubuntu mirror; retry mirrored downloads via IPv4, code unchanged.
+
+Build platform correction: Ubuntu 24.04 LTS runner instead of Ubuntu 26.04 broken apt mirror; code unchanged.
