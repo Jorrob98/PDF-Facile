@@ -77,6 +77,35 @@ body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,tr
 .source-mode{display:flex;align-items:center;justify-content:center;gap:11px;margin:10px auto -10px;color:#345c6b;font-size:13px;font-weight:750;flex-wrap:wrap}
 .source-mode select{border:1px solid #bfd5dc;border-radius:11px;background:#fff;color:#163a50;padding:9px 12px;font:inherit;max-width:100%}
 @media(max-width:600px){.source-mode{flex-direction:column;gap:5px;margin:8px auto -8px}}
+
+/* DocFix essential workflow: one primary action per document. Everything else
+   remains available under "Altre azioni", never mixed with the usual flow. */
+.page-card .card-controls{display:block!important;margin-top:10px}
+.page-card .card-controls button{width:100%!important;min-height:44px;font-size:13px!important;
+ padding:11px 14px!important;background:#e8f6f3!important;color:#12695f!important}
+.page-card .card-info{padding:12px 14px}
+.page-card .card-info strong{font-size:14px}
+.page-card .card-info small{font-size:12px;min-height:0;color:#6c8490;line-height:1.4}
+.card-extra{margin-top:8px;border-top:1px solid #e4ecef;padding-top:7px}
+.card-extra>summary{font-size:12px;color:#527282;cursor:pointer;list-style:none;padding:6px}
+.card-extra>summary::-webkit-details-marker{display:none}
+.card-extra>summary:after{content:"⌄";margin-left:7px}
+.card-extra[open]>summary:after{content:"⌃"}
+.card-extra-body{padding:8px 0 0}
+.card-rotations{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.card-rotations button,.card-extra-body>.source-extra,.card-extra-body .card-order button{
+  border:1px solid #cfdee5;background:#f8fbfc;color:#30566b;
+  border-radius:9px;font-size:12px;padding:9px 4px;min-height:38px}
+.card-extra-body>.source-extra{display:block;width:100%;margin-top:7px}
+.card-extra-body .card-order{margin-top:7px}
+.editor-advanced,.editor-more-tools{border:1px solid #d9e5e8;border-radius:11px;padding:8px 12px;margin-top:10px}
+.editor-advanced>summary,.editor-more-tools>summary{cursor:pointer;color:#44687a;font-weight:700;font-size:13px}
+.editor-advanced .precision-panel{margin:8px 0 0}
+.editor-more-tools>div{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.editor-more-tools button{border:1px solid #c8dce1;background:#f6f9fa;padding:9px;border-radius:9px}
+.has-document .bottom,.has-document footer{display:none}
+.action-bar #download-ready{display:none}
+.advanced-options[open]+.action-bar #download-ready{display:inline-flex}
 </style><title>DocFix Desktop</title><link rel="icon" href="./icon-192.png" type="image/png"><meta name="docfix-build" content="desktop-1.7.2-auto-clean-20261105"></head><body>
 <div class="shell"><header class="top"><a class="brand" href="./"><span class="logo">▣</span><span>Doc<span>Fix</span><small>by Jorrob</small></span></a><span class="safe"><span>●</span> Tutto sul tuo PC</span></header>
 <main><section class="intro"><div class="eyebrow">DOCUMENTI PRONTI IN POCHI PASSAGGI</div><h1>Carica le foto.<br><em>Scarica il PDF.</em></h1><p>Libretto, patente, carta d’identità e PDF: correggo orientamento e bordi, preservo la qualità e preparo il documento pronto da usare.</p></section>
@@ -86,7 +115,7 @@ body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,tr
 <div class="bottom"><div class="bottom-icon">♧</div><div><strong>Privacy sotto controllo</strong><span>PDF e correzioni restano sul PC. Se attivi OCR MAX Cloud, solo le immagini necessarie all’OCR vengono inviate ai provider cloud che hai configurato.</span></div></div></main>
 <footer>DocFix Desktop · Versione 1.9.34 · Gruppi 1–7 <span>by Jorrob</span></footer></div>
 <div id="editor" class="editor-overlay" hidden><div class="editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-title"><div class="editor-head"><div><span class="eyebrow">CORREZIONE</span><h2 id="edit-title">Pagina</h2></div><button type="button" id="edit-close" aria-label="Chiudi">×</button></div><p>Sposta i quattro punti se il bordo è sbagliato. Qui trovi solo ciò che serve.</p><div class="editor-frame"><img id="editor-image" alt="Documento da correggere"><div id="corners" class="corners"><svg class="quad" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon id="frame-poly" points=""/></svg></div></div>
-<div class="precision-panel" aria-label="Regolazione precisa degli angoli">
+<details class="editor-advanced"><summary>Regolazione precisa · facoltativa</summary><div class="precision-panel" aria-label="Regolazione precisa degli angoli">
  <div class="precision-zoom"><canvas id="edit-zoom" width="240" height="240" aria-label="Ingrandimento pixel dell'angolo selezionato"></canvas>
  <span id="edit-zoom-info">Angolo 1 / 4 · sposta di 1 pixel</span></div>
  <div class="precision-controls">
@@ -103,7 +132,7 @@ body{min-height:100vh;background:radial-gradient(circle at 18% -10%,#dcf6f0 0,tr
   <small>Ogni spostamento agisce sui pixel della foto originale, non sull'anteprima.</small>
  </div>
 </div>
-<div class="editor-actions"><button type="button" id="edit-left">↶ Sinistra 90°</button><button type="button" id="edit-rotate">↷ Destra 90°</button><button type="button" id="edit-flip">↻ Capovolgi 180°</button><button type="button" id="edit-full">Usa pagina completa</button><button type="button" id="edit-cancel">Annulla</button><button type="button" id="edit-apply" class="confirm">✓ Applica ritaglio</button></div></div></div>
+</details><div class="editor-actions"><details class="editor-more-tools"><summary>Ruota / altre opzioni</summary><div><button type="button" id="edit-left">↶ 90°</button><button type="button" id="edit-rotate">↷ 90°</button><button type="button" id="edit-flip">↻ 180°</button><button type="button" id="edit-full">Usa pagina completa</button></div></details><button type="button" id="edit-cancel">Annulla</button><button type="button" id="edit-apply" class="confirm">✓ Applica ritaglio</button></div></div></div>
 <script src="./group3-quality.js"></script><script src="./group5-export.js"></script><script>/* DocFix 37 — single, hardened PDF.js engine for every PDF operation. */
 'use strict';
 (() => {
@@ -2386,13 +2415,21 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
  const img=document.createElement('img');img.src=thumb(e.processed);img.alt='Anteprima pagina '+(i+1);
  const tag=document.createElement('span');tag.className='tag'+(e.review?' warning':'');tag.textContent=e.geometryReview||e.cropVerified===false?'Bordi da verificare':e.qualityReview?'Qualità da controllare':e.review?'Verifica consigliata':'Elaborata';
  const count=document.createElement('span');count.className='page-number';count.textContent='Pagina '+(i+1);pv.append(img,tag,count);
- const info=document.createElement('div');info.className='card-info';const name=document.createElement('strong');name.textContent=e.title;name.title=e.title;
- const desc=document.createElement('small');desc.textContent=e.how;
+ const info=document.createElement('div');info.className='card-info';const name=document.createElement('strong');name.textContent=e.pairLabel||('Documento '+(i+1));name.title=e.title;
+ const desc=document.createElement('small');
+ desc.textContent=e.manualPending===true?'Controlla i quattro angoli':e.review?'Controllo consigliato':'Pronto per il PDF';
+ desc.title=e.how||'';
  const controls=document.createElement('div');controls.className='card-controls';const fix=document.createElement('button');fix.type='button';fix.textContent='✎ Correggi';fix.onclick=()=>openCorrection(i);
  const turnL=document.createElement('button');turnL.type='button';turnL.textContent='↶ 90°';turnL.setAttribute('aria-label','Ruota la pagina '+(i+1)+' a sinistra');turnL.onclick=()=>turnEntry(i,270);
   const turnR=document.createElement('button');turnR.type='button';turnR.textContent='↷ 90°';turnR.setAttribute('aria-label','Ruota la pagina '+(i+1)+' a destra');turnR.onclick=()=>turnEntry(i,90);
   const flip=document.createElement('button');flip.type='button';flip.textContent='↻ 180°';flip.setAttribute('aria-label','Capovolgi pagina '+(i+1));flip.onclick=()=>turnEntry(i,180);
-  controls.append(turnL,turnR,flip,fix);
+  controls.append(fix);
+  const extra=document.createElement('details');extra.className='card-extra';
+  const more=document.createElement('summary');more.textContent='Altre azioni';
+  const moreBody=document.createElement('div');moreBody.className='card-extra-body';
+  const rotations=document.createElement('div');rotations.className='card-rotations';
+  rotations.append(turnL,turnR,flip);moreBody.append(rotations);
+  extra.append(more);
   const order=document.createElement('div');order.className='card-order';
   const up=document.createElement('button');up.type='button';up.textContent='↑ Prima';up.title='Sposta pagina '+(i+1)+' verso l’inizio';up.disabled=busy||i===0;up.onclick=()=>moveEntry(i,i-1);
   const down=document.createElement('button');down.type='button';down.textContent='↓ Dopo';down.title='Sposta pagina '+(i+1)+' verso la fine';down.disabled=busy||i===entries.length-1;down.onclick=()=>moveEntry(i,i+1);
@@ -2405,7 +2442,7 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
    addCard.title='Recupera un altro documento dalla stessa foto originale senza caricare un duplicato';
    addCard.disabled=busy||entries.length>=MAX_PAGES;
    addCard.onclick=()=>duplicateSourcePage(i);
-   controls.append(addCard);
+   moreBody.append(addCard);
   }
   if(canGuidedSplit(e)){
    const guided=document.createElement('button');guided.type='button';guided.classList.add('source-extra','guided-split');
@@ -2414,15 +2451,15 @@ function repaint(){cards.replaceChildren();entries.forEach((e,i)=>{
    guided.title='Sostituisce la foto intera con due anteprime da correggere; il PDF resta bloccato fino alla conferma';
    guided.disabled=busy||entries.length>=MAX_PAGES;
    guided.onclick=()=>guidedSplitSource(i);
-   controls.append(guided);
+   moreBody.append(guided);
   }else if(e.manualSplitPair===true){
    const undo=document.createElement('button');undo.type='button';undo.classList.add('source-extra','undo-split');
    undo.textContent='↶ Annulla separazione';
    undo.title='Ripristina la fotografia originale al posto delle due anteprime';
    undo.disabled=busy;undo.onclick=()=>undoGuidedSplit(i);
-   controls.append(undo);
+   moreBody.append(undo);
   }
-  order.append(up,down,del);info.append(name,desc,controls,order);item.append(pv,info);cards.append(item);
+  order.append(up,down,del);moreBody.append(order);extra.append(moreBody);info.append(name,desc,controls,extra);item.append(pv,info);cards.append(item);
   // Desktop drag reorder. Buttons above stay usable on touch devices and with keyboards.
   item.draggable=!busy;item.addEventListener('dragstart',ev=>{if(busy){ev.preventDefault();return}dragSource=i;item.classList.add('drag-sort');ev.dataTransfer.effectAllowed='move';ev.dataTransfer.setData('text/plain',String(i))});
   item.addEventListener('dragover',ev=>{if(dragSource>=0&&!busy)ev.preventDefault()});
