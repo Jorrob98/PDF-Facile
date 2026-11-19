@@ -1,0 +1,3 @@
+DOCFIX 1.9.59, aggiornamento unico via pulsante Verifica aggiornamenti.
+QA regressione, classificazione CIE e tessera sanitaria, geometria quattro lati, interfaccia semplificata ed Electron: https://github.com/Jorrob98/PDF-Facile/actions/runs/44529442066
+Nessuna categoria stabile/prova nell'app. Non usare immagini personali nelle CI.
