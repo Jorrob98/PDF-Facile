@@ -2,3 +2,5 @@ DocFix 1.9.56-rc1 opt-in app test update, based on 1.9.55 neutral permit detecto
 Full QA and Electron pass: https://github.com/Jorrob98/PDF-Facile/actions/runs/44486143389
 Do not publish as stable; release beta with SHA-256 checksum and Windows rollback only.
 No customer documents included in GitHub CI.
+
+Retry: release candidate intentionally includes the beta selector in-app; package requires it.
