@@ -1,0 +1,104 @@
+name: DocFix 1.9.58 one-button updates and four-document crop QA
+on:
+  push:
+    branches:
+      - docfix-158-one-update-button-20261119
+permissions:
+  contents: read
+jobs:
+  test-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout candidate source
+        uses: actions/checkout@v4
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install local dependencies
+        working-directory: docfix-build
+        run: npm install --no-audit --no-fund
+      - name: Prepare offline engines
+        working-directory: docfix-build
+        run: npm run prepare-vendor
+      - name: Syntax and new small-card test
+        working-directory: docfix-build
+        run: |
+          set -euo pipefail
+          node --check main.js
+          node qa-electron-inline-syntax.cjs
+          node --check app/card-over-paper.js
+          node --check app/card-touching-pair.js
+          node --check qa-small-card-a4.cjs
+          node qa-small-card-a4.cjs
+          node --check app/docfix-visual-card.js
+          node --check qa-visual-photo-preview.cjs
+          node qa-visual-photo-preview.cjs
+          node --check qa-cie-front-office.cjs
+          node qa-cie-front-office.cjs
+          node --check app/docfix-card-deskew.js
+          node --check qa-cie-four-corner-deskew.cjs
+          node qa-cie-four-corner-deskew.cjs
+          node --check app/docfix-fine-deskew.js
+          node --check qa-fine-deskew-146.cjs
+          node qa-fine-deskew-146.cjs
+          node --check app/docfix-texture-card.js
+          node --check qa-light-desk-147.cjs
+          node qa-light-desk-147.cjs
+          node --check app/card-stacked-blue-pair.js
+          node --check qa-stacked-blue-148.cjs
+          node qa-stacked-blue-148.cjs
+          node --check app/card-guided-split.js
+          node --check qa-guided-split-149.cjs
+          node qa-guided-split-149.cjs
+          node --check app/card-precision-editor.js
+          node --check qa-precision-corner-editor-150.cjs
+          node qa-precision-corner-editor-150.cjs
+          node --check app/card-auto-quad-consensus.js
+          node --check qa-auto-quad-consensus-151.cjs
+          node qa-auto-quad-consensus-151.cjs
+          node --check app/docfix-projected-edges.js
+          node --check qa-projected-edges-151b.cjs
+          node qa-projected-edges-151b.cjs
+          node --check app/docfix-single-card-evidence.js
+          node --check qa-single-card-evidence-153.cjs
+          node qa-single-card-evidence-153.cjs
+          node --check app/docfix-neutral-single.js
+          node --check qa-neutral-permit-155.cjs
+          node qa-neutral-permit-155.cjs
+          node --check app/stability.js
+          node --check preload.js
+          node qa-single-updater.cjs
+          node --check app/docfix-paper-pair.js
+          node --check qa-paper-pair-157.cjs
+          node qa-paper-pair-157.cjs
+          node --check qa-paper-pair-import-157.cjs
+          node qa-paper-pair-import-157.cjs
+          node --check qa-updater-ipc-clone-157.cjs
+          node qa-updater-ipc-clone-157.cjs
+          node --check app/card-texture-crop.js
+          node qa-missing-fourth-card.cjs
+          node --check qa-editor-drag-and-detection-fallback-151b.cjs
+          node qa-editor-drag-and-detection-fallback-151b.cjs
+          node --check qa-facsimile-card-stack.cjs
+          node qa-facsimile-card-stack.cjs
+      - name: Full existing regression tests
+        working-directory: docfix-build
+        run: |
+          set -euo pipefail
+          node qa-stability-guard.cjs
+          npm run test:docfix:qa
+      - name: Electron smoke test (no publication)
+        working-directory: docfix-build
+        env:
+          ELECTRON_DISABLE_SECURITY_WARNINGS: 'true'
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb
+          # Exit status alone is insufficient: Electron can quit 0 after a logged
+          # SELF_TEST_FAIL in some Linux runners. Require an actual pass report.
+          timeout 180s xvfb-run -a ./node_modules/.bin/electron --no-sandbox . --self-test 2>&1 | tee electron-selftest.log
+          if grep -Fq 'SELF_TEST_FAIL' electron-selftest.log; then echo 'Electron self-test explicitly failed'; exit 1; fi
+          grep -F 'SELF_TEST_RESULT' electron-selftest.log
