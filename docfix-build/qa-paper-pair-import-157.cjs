@@ -13,7 +13,7 @@ const ctx={window:{DocFixPaperPair:{detect:()=>({cards:quads.map(quad=>({quad,co
  DocFixScanner:{validQuad:q=>Array.isArray(q)&&q.length===4},
  DocFixPairProof:{geometry:()=>({ok:true})}},
  imageCanvas:async()=>original,documentMode:()=> 'auto',
- preserveFullA4Page:()=>null,cropMode:()=> 'smart',
+ preserveFullA4Page:()=>({processed:original,pageProtected:true}),cropMode:()=> 'smart',
  normalizeKnownCard:async(_,quad)=>({processed:{width:680,height:430},how:'ritaglio provvisorio',
   sourceQuad:quad,cropped:false,cropVerified:false})};
 vm.runInNewContext(code.slice(from,until)+';this.runImage=makeImageEntries;',ctx);
@@ -29,5 +29,10 @@ vm.runInNewContext(code.slice(from,until)+';this.runImage=makeImageEntries;',ctx
  assert.ok(all.every(x=>x.original===original&&x.twoUp===true));
  assert.ok(all.every(x=>x.manualPending===true&&x.cropVerified===false&&x.cropped===false));
  assert.ok(all.every(x=>x.geometryReview===true&&x.review===true));
+ const forced=await ctx.runImage({name:'declaration.jpeg'},2,1,
+  {documentMode:'page',batchId:2,batchPos:0,batchSize:1});
+ assert.equal(forced.length,1,'explicit A4 mode must take priority over two-card detector');
+ assert.equal(forced[0].pageProtected,true);
+
  console.log('PASS: real makeImageEntries source code produces four reviewed pages (2+2) without phantom pages');
 })().catch(e=>{console.error(e);process.exitCode=1});
