@@ -1,0 +1,5 @@
+DOCFIX 1.9.59 — AGGIORNAMENTO UNICO.
+La release è destinata al pulsante Verifica aggiornamenti già presente, senza stabili/prova o scaricamenti separati.
+QA completo, sorter 4 card, regressioni e smoke Electron PASS: https://github.com/Jorrob98/PDF-Facile/actions/runs/44529442066
+UI semplificata (Correggi + Altre azioni), due anteprime grandi, ordinamento CIE/TS soltanto con segnali chiari, bordo originale raffinato solo se 4 lati sono supportati e sempre da confermare.
+No fotografie cliente caricate su GitHub. Mantieni SHA256, possibilità di ripristino e copia originale.
