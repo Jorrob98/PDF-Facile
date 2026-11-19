@@ -2037,12 +2037,29 @@ async function makeImageEntries(file,index,total=1,meta={}){
    const out=[];
    for(let i=0;i<2;i++){
     const card=paperPair.cards[i];
-    const fixed=await normalizeKnownCard(original,card.quad,
-      'Due tessere distinte su foglio · tessera '+(i+1),card.confidence,
+    // The material detector locates the DOCUMENT, but its approximate
+    // rectangle does not prove physical corners. Ask the independent four-
+    // side gradient finder on the ORIGINAL photo, not on the warped preview.
+    // If it cannot prove all sides, keep the generous crop for correction.
+    let refined=null;
+    try{refined=window.DocFixProjectedEdges?.refine?.(original,card.quad)||null;}
+    catch(error){console.warn('DocFix: bordi indipendenti non disponibili',error);}
+    const scan=window.DocFixScanner;
+    const rough=card.quad;
+    const w=Math.max(...rough.map(p=>p.x))-Math.min(...rough.map(p=>p.x));
+    const h=Math.max(...rough.map(p=>p.y))-Math.min(...rough.map(p=>p.y));
+    const closeEnough=refined?.matchedSides===4&&scan.validQuad(refined.quad)&&
+      refined.quad.every((p,j)=>Math.hypot((p.x-rough[j].x)/w,(p.y-rough[j].y)/h)<.11);
+    const selected=closeEnough?refined.quad:rough;
+    const fixed=await normalizeKnownCard(original,selected,
+      'Tessera '+(i+1)+' · bordi '+(closeEnough?'affinati':'da confermare'),
+      Math.min(.75,card.confidence),
       {multiSafe:true,cardKind:'generic',sourceVerified:false,conservativeSegment:true});
     fixed.manualPending=true;fixed.cropVerified=false;fixed.cropped=false;
     fixed.review=true;fixed.geometryReview=true;
-    fixed.how+=' · 2 tessere reali individuate · 4 bordi da confermare prima del PDF';
+    fixed.how+=' · 2 tessere reali individuate · '+(closeEnough?
+      '4 bordi ricavati sulla fotografia originale, conferma richiesta':
+      'perimetro prudente, sposta gli angoli sui bordi reali')+' · conferma prima del PDF';
     out.push({kind:'raster',original,...fixed,source:file.name,
       title:file.name+' · tessera '+(i+1),sourceIndex:index,
       loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,
