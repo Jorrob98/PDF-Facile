@@ -165,9 +165,9 @@ jobs:
           grep -F 'docfix-card-deskew.js' verify/app/index.html
           grep -F 'card-touching-pair.js' verify/app/index.html
           grep -F 'padTwoCardQuad' verify/app/index.html
-          if grep -Fq 'docfix-update-channel' verify/app/stability.js; then
-            echo 'ERROR: the removed two-channel selector remains in packaged UI'; exit 1
-          fi
+          grep -Fq 'docfix-update-channel' verify/app/stability.js
+          grep -Fq 'Versioni di prova' verify/app/stability.js
+          grep -Fq 'UPDATE_TEST_API' verify/main.js
           test -f verify/app/vendor/pdfjs/pdf.min.mjs
           test -f verify/app/vendor/tessdata/ita.traineddata.gz
           size=$(stat -c%s DocFix-1.9.56-app.asar)
