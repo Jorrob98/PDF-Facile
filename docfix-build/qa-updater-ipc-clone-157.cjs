@@ -28,7 +28,7 @@ assert.equal(ctx.testResult.capture.value.etaSeconds,null);
 assert.ok(preload.includes("check:async()=>")&&preload.includes("install:async()=>"),'no update-channel arguments');
 assert.ok(preload.includes('IPC install:'),'clone errors are displayed, not silently hidden');
 assert.ok(preload.includes('callback(plain)'),'native IPC event never forwarded');
-assert.ok(source.includes('downloadVerifiedUpdate(event.sender,channel)'),'operator choice is preserved');
+assert.ok(source.includes('downloadVerifiedUpdate(event.sender)'),'single updater, no channel arguments');
 assert.ok(!ui.includes("id='docfix-update-channel'"),'one button, no channel picker');
 assert.ok(ui.includes("DocFixUpdater.install()"),'update is available from the one button');
 console.log('PASS: cloned updater replies, progress payload, single updater, visible IPC errors');
