@@ -2,3 +2,5 @@ DocFix 1.9.55 stable updater bridge; keep existing 1.9.54 cropping base, add in-
 QA verified: https://github.com/Jorrob98/PDF-Facile/actions/runs/44485878365
 Stable default; beta only after explicit in-app selection; SHA-256, backup, rollback required.
 Requested by user to avoid manual .exe downloads on future fixes.
+
+Build retry after packaging guard corrected: selector is required for this bridge.
