@@ -16,7 +16,6 @@
  .docfix-update-button{appearance:none;border:1px solid #cddde4;background:#fff;color:#17384b;border-radius:12px;padding:9px 13px;font:800 12px/1 system-ui;box-shadow:0 5px 16px #173b4b0d;transition:.16s}
  .docfix-update-button:hover{transform:translateY(-1px);border-color:#87bbb8;background:#f7fffd}.docfix-update-button:disabled{opacity:.55;transform:none}
  .docfix-update-button.available{border-color:#77cabb;background:#e8faf6;color:#0b6b62}
- .docfix-update-channel{min-height:36px;max-width:154px;padding:6px 9px;border:1px solid #cddde4;border-radius:10px;background:#fff;color:#194053;font:750 12px system-ui;cursor:pointer}.docfix-update-channel:focus-visible{outline:3px solid #1a9e91}
 
  .docfix-update-modal{position:fixed;inset:0;z-index:11000;display:grid;place-items:center;padding:24px;background:#102f434f;backdrop-filter:blur(7px)}
  .docfix-update-card{width:min(460px,100%);background:#fff;border-radius:22px;padding:26px;box-shadow:0 28px 90px #0d2f4340;border:1px solid #dce7eb}
@@ -105,25 +104,20 @@
      }
    };
  }
- async function updateChannel(){
-   return document.getElementById('docfix-update-channel')?.value==='beta'?'beta':'stable';
- }
- async function refreshUpdateButton(button){
+ async async function refreshUpdateButton(button){
    if(!button)return;
    button.disabled=false;button.classList.remove('available');
    if(!window.DocFixUpdater){button.hidden=true;return}
    button.hidden=false;
    button.textContent='↻ Verifica aggiornamenti';
-   button.title='Controlla gli aggiornamenti del canale selezionato';
-   const channel=updateChannel();
+   button.title='Controlla se esiste una nuova versione di DOCFIX';
    try{
-     const r=await window.DocFixUpdater.check(channel);
-     if(channel!==updateChannel())return; // channel changed during network call
+     const r=await window.DocFixUpdater.check();
      if(!r?.ok){button.textContent='↻ Riprova aggiornamenti';button.title=r?.error||'Server non disponibile';return}
      if(!r.available){button.textContent='✓ Nessun aggiornamento';return}
      button.dataset.latest=r.latest||'';
-     button.textContent=(channel==='beta'?'★ Prova ':'↻ Aggiorna a ')+(r.latest||'');
-     button.title=channel==='beta'?'Versione sperimentale: controlla i documenti prima del PDF':'Aggiornamento stabile disponibile';
+     button.textContent='↻ Aggiorna a '+(r.latest||'');
+     button.title='Nuova versione disponibile';
      button.classList.add('available');
    }catch(e){
      console.warn('Controllo aggiornamenti non disponibile',e);
@@ -134,15 +128,10 @@
  async function handleUpdate(button){
    if(!window.DocFixUpdater){button.hidden=true;return}
    button.disabled=true;
-   const channel=updateChannel();
    try{
-     const r=await window.DocFixUpdater.check(channel);
+     const r=await window.DocFixUpdater.check();
      if(!r?.ok)throw Error(r?.error||'Controllo aggiornamenti non riuscito');
      if(!r.available){button.disabled=false;await refreshUpdateButton(button);return}
-     if(channel==='beta'&&!window.confirm(
-       'DocFix '+r.latest+' è una versione di prova. I ritagli non sono ancora verificati su tutti i documenti reali. Vuoi installarla su questo PC?')){
-       button.disabled=false;return;
-     }
      openUpdateProgress(r.latest);
      const view=progressView(r.latest);
      button.hidden=true;
@@ -150,7 +139,7 @@
      if(window.DocFixUpdater.onProgress)unsubscribe=window.DocFixUpdater.onProgress(p=>view?.update(p));
      try{
        view?.update({percent:1,message:'Preparo aggiornamento…'});
-       const install=await window.DocFixUpdater.install(channel);
+       const install=await window.DocFixUpdater.install();
        if(!install?.ok)throw Error(install?.error||'Installazione aggiornamento non riuscita');
        if(!install.available){
          document.querySelector('.docfix-update-modal')?.remove();
@@ -174,19 +163,9 @@
      const tools=document.createElement('div');tools.className='desktop-tools';
      const version=document.createElement('span');version.className='desktop-version';version.textContent='v'+VERSION;
      const badge=document.createElement('span');badge.className='desktop-ready';badge.innerHTML='<i></i> Pronto';
-     const channel=document.createElement('select');channel.id='docfix-update-channel';
-     channel.className='docfix-update-channel';channel.setAttribute('aria-label','Canale aggiornamenti');
-     channel.innerHTML='<option value="stable">Aggiornamenti stabili</option><option value="beta">Versioni di prova</option>';
-     if(window.DocFixUpdater){
-       channel.value='stable'; // Safe default at every app launch
-     }else channel.hidden=true;
      const update=document.createElement('button');update.id='docfix-update-button';update.className='docfix-update-button';update.type='button';update.hidden=!window.DocFixUpdater;update.textContent='↻ Verifica aggiornamenti';
-     channel.addEventListener('change',()=>{
-       // Channel is deliberately NOT persisted; test builds are opt-in.
-       void refreshUpdateButton(update);
-     });
      update.addEventListener('click',()=>handleUpdate(update));
-     tools.append(version,badge,channel,update);top.appendChild(tools);
+     tools.append(version,badge,update);top.appendChild(tools);
      window.DocFixUpdater?.currentVersion?.().then(v=>{if(v)version.textContent='v'+v}).catch(()=>{});
      window.DocFixUpdater?.lastResult?.().then(r=>{
        if(r?.status==='unconfirmed')toast('Aggiornamento '+r.target+' non confermato: è ancora installata la versione '+r.current+'. Riprova dal pulsante aggiornamento.','error');
