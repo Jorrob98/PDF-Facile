@@ -197,3 +197,25 @@ footer{border-top-color:#dbe8f1!important;color:#7d92a5!important}
  .editor-dialog{padding:15px!important}.editor-frame img{max-height:48vh!important}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* Diagnostic export stays distinct from the official protected PDF. */
+.qa-review-panel{
+ display:flex;align-items:center;justify-content:space-between;gap:18px;
+ padding:18px 20px;margin:12px 0 20px;border:1px solid #cfe5eb;
+ border-radius:15px;background:linear-gradient(110deg,#e9f5f9,#f8fcfe);
+}
+.qa-review-panel[hidden]{display:none!important}
+.qa-review-info{display:flex;flex-direction:column;gap:5px;min-width:0}
+.qa-review-info strong{font-size:14px;color:#164c6b;font-weight:850}
+.qa-review-info small{max-width:700px;font-size:12px;line-height:1.55;color:#557587}
+#qa-review-download{
+ flex-shrink:0;min-height:44px;border-radius:10px;padding:10px 18px;
+ border:1px solid #b0d6e2;background:#fff;color:#116d8e;font-weight:850;font-size:13px;
+ white-space:nowrap;
+}
+#qa-review-download:not(:disabled):hover{background:#ebf7fb;box-shadow:0 5px 18px #0c668a13}
+#qa-review-download:disabled{opacity:.6;cursor:wait}
+@media(max-width:720px){
+ .qa-review-panel{flex-direction:column;align-items:stretch;padding:15px}
+ #qa-review-download{width:100%;white-space:normal}
+}
