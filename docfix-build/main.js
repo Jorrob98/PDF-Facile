@@ -549,12 +549,11 @@ function httpsBuffer(url,headers={},redirects=0,onProgress=null,totalHint=0){
     req.on('error',reject);
   });
 }
-// One update channel only. Existing DocFix 1.9.37 checks this same
-// /releases/latest URL, so every PC sees the next verified release.
-// Keep ordinary in-app updates stable by default. Test packages are visible
-// ONLY when the operator chooses "Versioni di prova" inside DocFix.
-// One update stream: the latest complete release. No test/preview channel.
-// Each install is explicitly verified by size + SHA-256 and checked on restart.
+// One update flow, one button: the latest numbered GitHub release.
+// No user-visible stable/beta/preview channel. The same /releases/latest
+// endpoint works with previously installed DocFix versions.
+// Each update requires a complete release, size and SHA-256 verification,
+// and a post-restart version receipt. Preserve the rollback mechanism.
 async function getLatestUpdate(){
   const data=JSON.parse((await httpsBuffer(UPDATE_API)).toString('utf8'));
   if(!data||data.draft||data.prerelease||!/^v\d+\.\d+\.\d+$/.test(String(data.tag_name||'')))
