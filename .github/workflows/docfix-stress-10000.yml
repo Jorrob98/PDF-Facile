@@ -5,11 +5,28 @@ on:
     paths:
       - 'docfix-build/qa-stress-10000.cjs'
       - 'docfix-build/qa-stress-10000-aggregate.cjs'
+      - 'docfix-build/app/docfix-wood-physical-edges.js'
       - '.github/workflows/docfix-stress-10000.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
+  regression:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check previous 600-case regressions, corner safety, and PDF fidelity
+        working-directory: docfix-build
+        run: |
+          set -euo pipefail
+          node qa-edge-corner-165.cjs
+          node qa-wood-four-physical-164.cjs
+          node qa-single-wood-163.cjs
+          node qa-safe-pdf-163.cjs
+          node qa-pdf-image-integrity-165.cjs
   stress:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -41,7 +58,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
   aggregate:
-    needs: stress
+    needs: [stress, regression]
     if: always()
     runs-on: ubuntu-24.04
     steps:
