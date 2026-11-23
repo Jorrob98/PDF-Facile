@@ -209,6 +209,10 @@ async function runSelfTest(){
         const moved=window.DocFixPrecisionEditor?.nudge?.(nativePoints,0,1,0,1600,1200,1);
         out.precisionPixelStep=!!moved&&Math.abs((moved[0].x-nativePoints[0].x)*1600-1)<1e-8;
         out.autoQuadConsensusBridge=typeof window.DocFixAutoQuadConsensus?.refine==='function'&&typeof window.DocFixAutoQuadConsensus?.shape==='function';
+        // Validate bundled ONNX inference in real Electron, not only file sizes.
+        const onnxHealth=await window.DocFixNeuralEdges?.selfTest?.();
+        out.neuralOfflineInference=!!onnxHealth?.ok&&onnxHealth.offline===true;
+        if(!out.neuralOfflineInference)console.warn('DOCFIX_OFFLINE_ML_TEST_FAILED',onnxHealth);
         out.precisionControls=!!document.getElementById('edit-zoom')&&
           !!document.getElementById('edit-edge-snap')&&
           !!document.getElementById('edit-nudge-left')&&
