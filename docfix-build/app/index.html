@@ -933,9 +933,9 @@ function syncActions(){
  const available=availablePages(),incomplete=setState.incomplete||setThree.incomplete;
  // Missing cards are a WARNING, not a permanent lock on the user's PDF.
  // Never export while pages are still being added via the main workflow.
- dl.disabled=busy||exporting||emergencyExporting||pending.length>0||available.length===0||available.length!==entries.length||entries.some(e=>e.manualPending===true);
+ dl.disabled=busy||exporting||emergencyExporting||pending.length>0||available.length===0||available.length!==entries.length;
  const pendingManual=entries.filter(e=>e.manualPending===true).length;
- dl.textContent=pendingManual?'✎ Conferma '+pendingManual+' '+(pendingManual===1?'pagina':'pagine')+' · bordi da verificare':
+ dl.textContent=pendingManual?'↓ Scarica originali (senza ritagli)':
   (incomplete?'↓ Scarica PDF ('+available.length+' pagine · set incompleto)':'↓ Scarica PDF pronto');
  const save=$('download-ready');
  save.hidden=!available.length||(!incomplete&&!busy&&!pending.length);
@@ -3084,13 +3084,13 @@ async function jpegBytes(c){return window.DocFixGroup3.encodeJPEG(c,$('pdf-quali
 // When vector preservation is unavailable offline, export from the previews
 // with an explicit note instead of abandoning the practice.
 const exportLayout=()=>$('pdf-layout').value==='a4'?'a4':'document';
-function downloadBlob(blob,pages=entries,partial=false){
+function downloadBlob(blob,pages=entries,partial=false,filenameOverride=null){
  window.DocFixGroup5.validate(blob,pages.length);
  if(currentURL)URL.revokeObjectURL(currentURL);
  currentURL=URL.createObjectURL(blob);
  const a=document.createElement('a');a.href=currentURL;
  const name=window.DocFixGroup5.filename(pages);
- a.download=partial?name.replace(/\.pdf$/i,'-INCOMPLETO-'+pages.length+'-pagine.pdf'):name;
+ a.download=filenameOverride||(partial?name.replace(/\.pdf$/i,'-INCOMPLETO-'+pages.length+'-pagine.pdf'):name);
  document.body.appendChild(a);a.click();a.remove();
  lastPdfSize=blob.size;syncActions();
 }
@@ -3168,7 +3168,52 @@ async function exportPdf(){
   if(pending.length)void drainPending();
  }
 }
-// Emergency save is deliberately independent of the OCR/crop busy lock.
+// When borders have NOT been confirmed, the only safe direct PDF is the
+ // FULL source photo. Never export the provisional crop or an invented
+ // second page. One original raster file = one PDF page; vector pages are
+ // preserved as rendered pages. Collaudo comparisons remain in Opzioni PDF.
+ async function exportOriginalsSafely(){
+  if(busy||exporting||emergencyExporting||pending.length||!entries.length)return;
+  if(!entries.some(e=>e.manualPending===true)){await exportPdf();return;}
+  const pages=[],seen=new Set();
+  for(let i=0;i<entries.length;i++){
+   const e=entries[i];
+   if(e.kind==='raster'){
+    if(!e.original?.width||!e.original?.height){
+     status('Non posso salvare senza tagli: manca una fotografia originale.');
+     return;
+    }
+    const sourceKey=e.sourceIndex??e.source??i;
+    if(seen.has(sourceKey))continue;
+    seen.add(sourceKey);
+    pages.push({...e,processed:e.original,cropped:false,manualPending:false,
+     cropVerified:undefined,kind:'raster'});
+   }else{
+    if(!e.processed?.width||!e.processed?.height){
+     status('Non posso salvare: una pagina non è ancora disponibile.');
+     return;
+    }
+    pages.push({...e,processed:e.processed,manualPending:false,kind:'raster'});
+   }
+  }
+  if(!pages.length){
+   status('Non ci sono fotografie originali disponibili.');return;
+  }
+  exporting=true;busy=true;syncActions();
+  status('Salvo '+pages.length+' originali interi senza applicare ritagli incerti…');
+  try{
+   const blob=await exportRasterOffline(pages);
+   downloadBlob(blob,pages,false,'DocFix-ORIGINALI-bordi-da-verificare.pdf');
+   status('PDF salvato: '+pages.length+' originali senza ritagli · '+fmt(blob.size)+'.');
+   note('PDF originali senza ritagli: nessun bordo è stato eliminato. Per il PDF rifinito usa Correggi e conferma i quattro angoli.');
+  }catch(error){
+   status('Salvataggio degli originali non riuscito: '+String(error?.message||error));
+   note('Le foto originali sono ancora disponibili; puoi riprovare.');
+  }finally{
+   exporting=false;busy=false;$('progress-wrap').hidden=true;repaint();
+  }
+ }
+ // Emergency save is deliberately independent of the OCR/crop busy lock.
 // It takes an immutable snapshot of the ready canvases before a late batch
 // can update the live entries. It does NOT claim that missing pages exist.
 async function saveAvailablePages(){
@@ -3195,7 +3240,7 @@ async function saveAvailablePages(){
  }
 }
 $('download-ready').onclick=saveAvailablePages;
-dl.onclick=exportPdf;
+dl.onclick=()=>entries.some(e=>e.manualPending===true)?exportOriginalsSafely():exportPdf();
 // Read-only local snapshot for a separate diagnostic PDF. It never calls
  // exportPdf, bypasses a real PDF safety gate or changes entries.
  window.DocFixQAData=Object.freeze({snapshot:()=>entries.map(e=>({
