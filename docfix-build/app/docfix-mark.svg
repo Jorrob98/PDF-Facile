@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="DocFix">
+ <defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#092a57"/><stop offset=".56" stop-color="#0a558b"/><stop offset="1" stop-color="#0d8eab"/></linearGradient>
+  <linearGradient id="paper" x1=".2" y1=".1" x2=".8" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#e5f3fc"/></linearGradient>
+  <linearGradient id="sea" x1="0" y1="0" x2="1" y2=".6"><stop stop-color="#0ed7d3"/><stop offset="1" stop-color="#02a8b7"/></linearGradient>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="13" stdDeviation="14" flood-color="#002447" flood-opacity=".3"/></filter>
+ </defs>
+ <rect x="16" y="16" width="480" height="480" rx="104" fill="url(#bg)"/>
+ <path d="M16 375Q240 280 496 350v42Q496 496 392 496H120Q16 496 16 392Z" fill="#19c7cb" opacity=".16"/>
+ <g stroke="url(#sea)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none">
+  <path d="M89 177v-47q0-41 42-41h54"/><path d="M323 89h58q42 0 42 42v49"/>
+  <path d="M89 331v49q0 43 43 43h49"/><path d="M331 423h49q43 0 43-43v-50"/>
+ </g>
+ <g filter="url(#shadow)">
+  <path d="M176 130h118l54 57v184q0 23-23 23H176q-26 0-26-26V157q0-27 26-27Z" fill="url(#paper)"/>
+  <path d="M294 130v43q0 14 15 14h39Z" fill="#99d9fa"/>
+  <path d="M195 229h105M195 264h105M195 299h75" stroke="#69b0dc" stroke-width="17" stroke-linecap="round"/>
+ </g>
+ <circle cx="300" cy="356" r="70" fill="#ffffff" opacity=".99"/>
+ <circle cx="300" cy="356" r="60" fill="#099d9a"/>
+ <path d="m265 357 25 24 47-53" fill="none" stroke="#fff" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
