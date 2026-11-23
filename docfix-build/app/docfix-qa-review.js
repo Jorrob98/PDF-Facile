@@ -114,7 +114,9 @@
   }
  }
  function init(){
-  const host=document.querySelector('#workspace .review-row');
+  // The optional diagnostic tool belongs inside collapsed 'Opzioni PDF',
+  // NOT above the document thumbnails or in the main toolbar.
+  const host=document.querySelector('#workspace .advanced-options');
   if(!host||$('qa-review-panel'))return;
   const panel=document.createElement('div');panel.id='qa-review-panel';panel.className='qa-review-panel';panel.hidden=true;
   const info=document.createElement('div');info.className='qa-review-info';
@@ -123,7 +125,7 @@
   info.append(title,hint);
   const button=document.createElement('button');button.type='button';button.id='qa-review-download';button.textContent='↓ Scarica PDF per collaudo';
   button.addEventListener('click',save);
-  panel.append(info,button);host.insertAdjacentElement('afterend',panel);
+  panel.append(info,button);host.appendChild(panel);
   document.addEventListener('docfix:repaint',update);
   document.addEventListener('docfix:reset',()=>{panel.hidden=true;});
   update();
