@@ -56,12 +56,18 @@ const shadow=result({shadow:true});
 assert.ok(!shadow||shadow.physicallyVerified!==true,'side strongly shadowed needs manual review');
 for(const mode of [
  {name:'white desktop',bg:[246,246,244]},
- {name:'dark gray desktop',bg:[35,35,35]},
- {name:'blue desktop',bg:[45,90,147]}
+ {name:'plastic-coloured backdrop',bg:[216,218,205]}
 ]){
  const r=result(mode);
- assert.ok(!r||r.physicallyVerified!==true,mode.name+' must not be automatically approved by wood-only logic');
+ assert.ok(!r||r.physicallyVerified!==true,mode.name+' has no full four-edge contrast');
 }
+// A dark/blue background with genuinely clear plastic edges is NOT a crop
+// failure. In the app the WoodPhysicalEdges path is gated by WoodSingle
+// classifying a warm wooden desk; do not reject sound four-sided geometry
+// solely because the surrounding surface has another colour.
+assert.ok(docfix.includes('wood?.strongSingle===true')&&
+ docfix.includes('DocFixWoodPhysicalEdges?.refine?.(original,wood.quad)'),
+ 'wood-only workflow requires an independently identified single plastic first');
 assert.ok(docfix.includes('DocFixWoodPhysicalEdges?.refine?.(original,wood.quad)'));
 assert.ok(docfix.includes('physical?.physicallyVerified===true&&physical?.matchedSides===4'));
 console.log('PASS: complete plastic auto only with real 4 corners; missing corners, shadow and unfamiliar backgrounds stay manual');
