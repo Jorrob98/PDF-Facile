@@ -1,4 +1,4 @@
-name: DocFix 1.9.62 RC1 - PDF collaudo bordi da verificare
+name: DocFix 1.9.62 - Aggiornamento unico in app
 on:
   push:
     branches: [docfix-162-collaudo-export-20261123]
@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 jobs:
-  build-preview:
+  build-update:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout DocFix source
@@ -450,7 +450,7 @@ jobs:
           file DocFix_Ripristina_Precedente.exe | grep -Ei 'PE32|MS Windows'
           sha256sum DocFix_Ripristina_Precedente.exe > DocFix_Ripristina_Precedente.sha256
 
-      - name: Publish optional prerelease, not offered by stable auto-updater
+      - name: Pubblica aggiornamento unico rilevabile dall'app
         shell: bash
         working-directory: docfix-build
         env:
@@ -461,18 +461,20 @@ jobs:
           short=$(echo "$version" | cut -d. -f1,2)
           updater="DocFix_Aggiornamento_${short}.exe"
           shafile="DocFix_Aggiornamento_${short}.sha256"
-          tag="v${version}-rc1"
-          title="DocFix ${version} - Esporta PDF collaudo ritagli (anteprima)"
-          notes='DOCFIX 1.9.62 RC1: aggiunto Scarica PDF per collaudo anche quando i ritagli sono da confermare, con fotografia originale e anteprima DocFix affiancate e stato di verifica. Il PDF definitivo continua a richiedere la conferma dei bordi e non e stato sbloccato. Dati elaborati localmente, senza Railway e senza upload cloud. Nuova grafica PWA e modello DocAligner offline invariati. Anteprima per collaudo, non versione stabile.'
+          tag="v${version}"
+          title="DocFix ${version} - Aggiornamento"
+          notes='DocFix 1.9.62. Scarica PDF per collaudo con foto originali e anteprime affiancate, anche quando i bordi richiedono conferma. Il PDF definitivo rimane protetto dai ritagli incerti. Interfaccia PWA e modello di riconoscimento locale mantenuti. Un solo canale di aggiornamento in app, nessun Railway.'
 
+          sha256sum -c "$shafile"
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" "$updater" "$shafile" DocFix_Ripristina_Precedente.exe DocFix_Ripristina_Precedente.sha256 --clobber
-            gh release edit "$tag" --title "$title" --notes "$notes" --prerelease
+            gh release edit "$tag" --title "$title" --notes "$notes" --latest
           else
-            gh release create "$tag" "$updater" "$shafile" DocFix_Ripristina_Precedente.exe DocFix_Ripristina_Precedente.sha256 --target docfix-162-collaudo-export-20261123 --title "$title" --notes "$notes" --prerelease
+            gh release create "$tag" "$updater" "$shafile" DocFix_Ripristina_Precedente.exe DocFix_Ripristina_Precedente.sha256 --target docfix-162-collaudo-export-20261123 --title "$title" --notes "$notes" --latest
           fi
 
-          gh release view "$tag" --json isPrerelease --jq .isPrerelease | grep -Fx true
+          gh release view "$tag" --json isPrerelease --jq .isPrerelease | grep -Fx false
+          test "$(gh api repos/Jorrob98/PDF-Facile/releases/latest --jq .tag_name)" = "$tag"
           gh release view "$tag" --json assets --jq '.assets[].name' | grep -Fx "$updater"
           gh release view "$tag" --json assets --jq '.assets[].name' | grep -Fx "$shafile"
           gh release view "$tag" --json assets --jq '.assets[].name' | grep -Fx DocFix_Ripristina_Precedente.exe
