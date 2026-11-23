@@ -1,0 +1,7 @@
+DocFix 1.9.65 • Unico aggiornamento in-app
+23/11/2026
+- Bordo CIE e altri ID1: verifica fisica anche di entrambi gli estremi di ciascun lato (8 bracci). Se angolo coperto/tagliato, non approvare automaticamente
+- Resta il controllo indipendente a quattro lati e il download senza ritagli quando non verificati
+- QA sintetico multi-sfondo, ombre, doppie tessere; test integrità PDF JPEG e 2 pagine
+- Dati e immagini elaborati offline; nessun Railway
+- La matrice di test reale di altri documenti richiede ancora immagini originali e PDF esportato dal PC
