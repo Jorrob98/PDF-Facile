@@ -215,7 +215,13 @@
     const x=Math.round(side.vertical?p:t),y=Math.round(side.vertical?t:p);
     const inside=colorAverage(side.vertical,x,y,side.in,false);
     const outside=colorAverage(side.vertical,x,y,side.out,false);
-    votes.push(inside>=.69&&outside<=.30&&inside-outside>=.49);
+    // A fitted edge can be 3-4px away from the actual plastic while its
+    // far-away colour samples still look correct. Check the IMMEDIATE
+    // 1-2px neighbourhood of the proposed physical border, too.
+    const nearInside=colorAverage(side.vertical,x,y,side.in,true);
+    const nearOutside=colorAverage(side.vertical,x,y,side.out,true);
+    votes.push(inside>=.69&&outside<=.30&&inside-outside>=.49&&
+      nearInside>=.58&&nearOutside<=.42&&nearInside-nearOutside>=.28);
    }
    let misses=0,longestMiss=0;
    for(const good of votes){
