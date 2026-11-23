@@ -8,6 +8,7 @@ on:
       - 'docfix-build/qa-border-score-v2.cjs'
       - 'docfix-build/qa-border-score-v2.test.cjs'
       - 'docfix-build/qa-neural-borders-v2.cjs'
+      - 'docfix-build/qa-single-final-gate.cjs'
       - 'docfix-build/prepare-vendor.js'
       - 'docfix-build/package.json'
       - 'docfix-build/main.js'
@@ -56,3 +57,14 @@ jobs:
           console.log('PASS: '+wasm.length+' local runtimes + '+modelSize+' byte model');
           NODE
           npm run test:docfix:qa
+      - name: Validate ONNX model in real Electron offline
+        working-directory: docfix-build
+        env:
+          ELECTRON_DISABLE_SECURITY_WARNINGS: 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb
+          timeout 240s xvfb-run -a ./node_modules/.bin/electron --no-sandbox . --self-test 2>&1 | tee electron-bordi-v2.log
+          grep -F 'SELF_TEST_RESULT' electron-bordi-v2.log
+          if grep -Fq 'SELF_TEST_FAIL' electron-bordi-v2.log; then exit 1; fi
+          grep -F '"neuralOfflineInference":true' electron-bordi-v2.log
