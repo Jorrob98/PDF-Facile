@@ -17,4 +17,20 @@ copy(eng,path.join(v,'tessdata','eng.traineddata.gz'));
 const ita=find(path.join(nm,'@tesseract.js-data','ita'),'ita.traineddata.gz');
 if(!ita)throw new Error('ita.traineddata.gz non trovato');
 copy(ita,path.join(v,'tessdata','ita.traineddata.gz'));
-console.log('Vendor locale pronto: OCR italiano + inglese.');
+
+/* Local DocAligner model and local ONNX Runtime: ZERO CDN fetch at runtime. */
+const ort=path.join(nm,'onnxruntime-web','dist'),ml=path.join(v,'docfix-ml');
+copy(path.join(ort,'ort.min.js'),path.join(ml,'ort.min.js'));
+let wasmCount=0;
+for(const name of fs.readdirSync(ort)){
+  if(/^ort-wasm.*\.(?:wasm|mjs)$/.test(name)){
+    copy(path.join(ort,name),path.join(ml,name));wasmCount++;
+  }
+}
+if(wasmCount<1)throw new Error('ONNX Runtime WASM assente');
+copy(path.join(nm,'quadscan','models','lcnet100_h_e_bifpn_256_fp32.onnx'),
+ path.join(ml,'lcnet100_h_e_bifpn_256_fp32.onnx'));
+copy(path.join(nm,'quadscan','licenses','DocAligner-LICENSE.txt'),
+ path.join(ml,'DocAligner-LICENSE.txt'));
+console.log('Vendor locale pronto: OCR italiano + inglese + DocAligner AI offline (nessun CDN).');
+
