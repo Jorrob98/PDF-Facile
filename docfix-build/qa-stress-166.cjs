@@ -15,7 +15,7 @@ const ROOT=__dirname,W=420,H=560,SEED=16620261123;
 let state=SEED>>>0;function rand(){state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;}
 function range(a,b){return a+(b-a)*rand();}
 function choice(a){return a[Math.floor(rand()*a.length)];}
-const count={total:0,single:0,physical:0,auto:0,manual:0,falseSingle:0,unsafeAuto:0,
+const count={signals:{good:[],bad:[]},total:0,single:0,physical:0,auto:0,manual:0,falseSingle:0,unsafeAuto:0,
  accurateAuto:0,proposedGood:0,proposedBad:0,errors:0,byScenario:{},worst:[]};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function canvasFactory(){
@@ -208,6 +208,11 @@ for(const name of names)for(let i=0;i<N;i++){
   if(iou>=.97)count.proposedGood++;else count.proposedBad++;
   if(fitted.physicallyVerified===true){
    count.auto++;k.auto++;
+   const signal={iou:+iou.toFixed(4),
+    minSupport:fitted.diagnostic?.minSupport,
+    maxError:fitted.diagnostic?.maxError,
+    maxShiftPx:fitted.diagnostic?.maxShiftPx};
+   count.signals[iou>=.97?'good':'bad'].push(signal);
    if(iou<.97||['missingCorner','missingSide','clipped'].includes(name)){
     count.unsafeAuto++;k.unsafeAuto++;
     if(count.worst.length<12)count.worst.push({name,index:i,iou:+iou.toFixed(3),
@@ -222,6 +227,16 @@ for(const name of names)for(let i=0;i<N;i++){
 for(const k of Object.values(count.byScenario)){
  k.meanIoU=k.physical?+(k.meanIoU/k.physical).toFixed(4):null;
  k.minIoU=k.physical?+k.minIoU.toFixed(4):null;
+}
+// Report accuracy versus confidence without changing the safety threshold.
+for(const group of ['good','bad']){
+ const data=count.signals[group];const summary={n:data.length};
+ for(const key of ['iou','minSupport','maxError','maxShiftPx']){
+  const arr=data.map(x=>x[key]).filter(Number.isFinite).sort((a,b)=>a-b);
+  summary[key]=arr.length?{min:arr[0],median:arr[Math.floor(arr.length/2)],
+   max:arr[arr.length-1]}:null;
+ }
+ count.signals[group]=summary;
 }
 count.seed=SEED;count.dimensions=[W,H];count.scenesPerScenario=N;
 count.success=count.errors===0&&count.unsafeAuto===0&&count.falseSingle===0;
