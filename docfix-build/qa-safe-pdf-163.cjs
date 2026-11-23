@@ -8,7 +8,12 @@ assert.ok(src.includes("dl.onclick=()=>entries.some(e=>e.manualPending===true)?e
 assert.ok(src.includes("dl.textContent=pendingManual?'↓ Scarica originali (senza ritagli)'"),'visible warning: no automatic crops');
 assert.ok(!src.includes('dl.disabled=busy||exporting||emergencyExporting||pending.length>0||available.length===0||available.length!==entries.length||entries.some(e=>e.manualPending===true)'),
  'unconfirmed borders must not permanently disable the bottom download');
-assert.ok(src.includes("if(entries.some(e=>e.manualPending===true)){\n   status('Prima conferma i quattro bordi"),'official cropped-PDF gate remains closed');
+const exportStart=src.indexOf('async function exportPdf(){');
+const exportEnd=src.indexOf('// When borders have NOT been confirmed',exportStart);
+const official=src.slice(exportStart,exportEnd);
+assert.ok(official.includes('if(entries.some(e=>e.manualPending===true))')&&
+ official.includes('Prima conferma i quattro bordi'),
+ 'official cropped-PDF gate remains closed');
 function make(entries){
  const statusMessages=[],notes=[],calls=[],originals=entries.map(e=>e.original);
  const element={hidden:false};
