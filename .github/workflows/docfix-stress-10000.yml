@@ -1,0 +1,70 @@
+name: DocFix - 10.000 stress cases / 20 deterministic shards
+on:
+  push:
+    branches: [docfix-167-stress-10000-20261123]
+    paths:
+      - 'docfix-build/qa-stress-10000.cjs'
+      - 'docfix-build/qa-stress-10000-aggregate.cjs'
+      - '.github/workflows/docfix-stress-10000.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stress:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Stress real shipped JavaScript border detectors (500 scenes)
+        working-directory: docfix-build
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check qa-stress-10000.cjs
+          timeout 480s node qa-stress-10000.cjs ${{ matrix.shard }} | tee stress-shard-${{ matrix.shard }}.log
+      - name: Upload results for each shard, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stress-10000-shard-${{ matrix.shard }}
+          path: |
+            docfix-build/stress-10000-shard-${{ matrix.shard }}.json
+            docfix-build/stress-shard-${{ matrix.shard }}.log
+          if-no-files-found: warn
+          retention-days: 14
+  aggregate:
+    needs: stress
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all independent shard reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: stress-10000-shard-*
+          path: docfix-build/stress-10k-shards
+          merge-multiple: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Strictly verify every scene, aggregate counts and generate audit report
+        working-directory: docfix-build
+        run: node qa-stress-10000-aggregate.cjs
+      - name: Publish final aggregate stress report, even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DocFix-10000-aggregate-report
+          path: |
+            docfix-build/STRESS_10000_RESULTS.json
+            docfix-build/STRESS_10000_RESULTS.md
+          if-no-files-found: warn
+          retention-days: 30
