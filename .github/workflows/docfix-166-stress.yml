@@ -25,6 +25,12 @@ jobs:
         run: |
           set -o pipefail
           node --check qa-stress-166.cjs
+          node --check app/docfix-wood-physical-edges.js
+          node qa-edge-corner-165.cjs
+          node qa-wood-four-physical-164.cjs
+          node qa-single-wood-163.cjs
+          node qa-safe-pdf-163.cjs
+          node qa-pdf-image-integrity-165.cjs
           timeout 600s node qa-stress-166.cjs | tee stress-166.log
       - name: Attach aggregate results only (NO personal document images)
         if: always()
