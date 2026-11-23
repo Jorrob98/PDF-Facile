@@ -446,14 +446,90 @@ jobs:
           file DocFix_Ripristina_Precedente.exe | grep -Ei 'PE32|MS Windows'
           sha256sum DocFix_Ripristina_Precedente.exe > DocFix_Ripristina_Precedente.sha256
 
-      - name: Create complete Windows installer with NEW desktop icon
+      - name: Create complete Windows installer with NEW desktop icon (no Wine)
         shell: bash
         working-directory: docfix-build
         run: |
           set -euo pipefail
-          npm run dist
-          test -f dist/DocFix_Setup_1.9.61.exe
-          cp dist/DocFix_Setup_1.9.61.exe DocFix_Setup_1.9.61.exe
+          # Electron-builder only unpacks the Windows app. Direct NSIS avoids
+          # the otherwise required Wine process and still preserves all files.
+          ./node_modules/.bin/electron-builder --win --dir --x64 --publish never
+          test -f dist/win-unpacked/DocFix.exe
+          test -f dist/win-unpacked/resources/app.asar
+          python3 - <<'PY'
+          import pathlib,struct,subprocess
+          sizes=(16,32,48,64,128,256)
+          icons=[]
+          for size in sizes:
+              icons.append((size,subprocess.run(
+                  ['rsvg-convert','-w',str(size),'-h',str(size),'app/docfix-mark.svg'],
+                  check=True,stdout=subprocess.PIPE).stdout))
+          offset=6+16*len(icons)
+          out=bytearray(struct.pack('<HHH',0,1,len(icons)))
+          for size,data in icons:
+              out.extend(struct.pack('<BBBBHHII',
+                  0 if size==256 else size,0 if size==256 else size,
+                  0,0,1,32,len(data),offset))
+              offset+=len(data)
+          for _,data in icons: out.extend(data)
+          pathlib.Path('build/DocFix.ico').write_bytes(out)
+          print('Windows icon',len(out),'bytes in',len(icons),'sizes')
+          PY
+          cat > full-setup.nsi <<'NSI'
+          Unicode true
+          Name "DocFix 1.9.61"
+          OutFile "DocFix_Setup_1.9.61.exe"
+          RequestExecutionLevel user
+          InstallDir "$LOCALAPPDATA\Programs\docfix-desktop"
+          SetCompressor /SOLID lzma
+          SetCompressorDictSize 64
+          ShowInstDetails show
+          AutoCloseWindow true
+          Icon "build/DocFix.ico"
+          UninstallIcon "build/DocFix.ico"
+          Page instfiles
+          UninstPage instfiles
+
+          Section "Installa"
+            IfFileExists "$LOCALAPPDATA\Programs\docfix-desktop\DocFix.exe" selected tryalt
+          tryalt:
+            IfFileExists "$LOCALAPPDATA\Programs\DocFix\DocFix.exe" 0 trylocal
+            StrCpy $INSTDIR "$LOCALAPPDATA\Programs\DocFix"
+            Goto selected
+          trylocal:
+            IfFileExists "$LOCALAPPDATA\DocFix\DocFix.exe" 0 selected
+            StrCpy $INSTDIR "$LOCALAPPDATA\DocFix"
+          selected:
+            nsExec::ExecToStack 'taskkill /IM "DocFix.exe" /F'
+            Pop $0
+            Pop $1
+            Sleep 850
+            SetOutPath "$INSTDIR"
+            File /r "dist/win-unpacked/*"
+            File /oname=DocFix.ico "build/DocFix.ico"
+            CreateDirectory "$SMPROGRAMS\DocFix"
+            CreateShortcut "$DESKTOP\DocFix.lnk" "$INSTDIR\DocFix.exe" "" "$INSTDIR\DocFix.ico" 0
+            CreateShortcut "$SMPROGRAMS\DocFix\DocFix.lnk" "$INSTDIR\DocFix.exe" "" "$INSTDIR\DocFix.ico" 0
+            WriteUninstaller "$INSTDIR\Disinstalla-DocFix.exe"
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DocFix" "DisplayName" "DocFix"
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DocFix" "DisplayVersion" "1.9.61"
+            WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DocFix" "UninstallString" '"$INSTDIR\Disinstalla-DocFix.exe"'
+            WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DocFix" "NoModify" 1
+            WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DocFix" "NoRepair" 1
+          SectionEnd
+
+          Section "Uninstall"
+            nsExec::ExecToStack 'taskkill /IM "DocFix.exe" /F'
+            Pop $0
+            Pop $1
+            Delete "$DESKTOP\DocFix.lnk"
+            Delete "$SMPROGRAMS\DocFix\DocFix.lnk"
+            RMDir "$SMPROGRAMS\DocFix"
+            RMDir /r "$INSTDIR"
+            DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\DocFix"
+          SectionEnd
+          NSI
+          makensis -V2 full-setup.nsi
           file DocFix_Setup_1.9.61.exe | grep -Ei 'PE32|MS Windows'
           size=$(stat -c%s DocFix_Setup_1.9.61.exe)
           if [ "$size" -lt 40000000 ]; then echo "Windows installer incompleto: $size"; exit 1; fi
