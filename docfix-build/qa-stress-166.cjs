@@ -126,10 +126,15 @@ function newScene(name,index){
  if(name==='missingSide'){
   const sx=Math.round(Math.min(q[0].x,q[3].x)),sy=Math.round((q[0].y+q[3].y)/2);
   const rad=range(24,85);
-  for(let y=clamp(sy-rad,0,H-1);y<clamp(sy+rad,0,H-1);y++)
-   for(let x=clamp(sx-6,0,W-1);x<clamp(sx+rad,0,W-1);x++){
-    const i=(y*W+x)*4;rgba[i]=bg[0];rgba[i+1]=bg[1];rgba[i+2]=bg[2];
+  // Typed arrays IGNORE fractional pixel offsets. Always round raster
+  // loop bounds, otherwise the synthetic occlusion is never rendered!
+  for(let y=Math.max(0,Math.floor(sy-rad));y<Math.min(H,Math.ceil(sy+rad));y++)
+   for(let x=Math.max(0,Math.floor(sx-6));x<Math.min(W,Math.ceil(sx+rad));x++){
+    const k=(y*W+x)*4;rgba[k]=bg[0];rgba[k+1]=bg[1];rgba[k+2]=bg[2];
    }
+  const probe=(sy*W+sx+5)*4;
+  if(rgba[probe]!==bg[0]||rgba[probe+1]!==bg[1]||rgba[probe+2]!==bg[2])
+   throw Error('Synthetic occlusion missing: invalid raster generation');
  }
  if(name==='shadow'){
   const xc=range(100,350),strength=range(.38,.82);
