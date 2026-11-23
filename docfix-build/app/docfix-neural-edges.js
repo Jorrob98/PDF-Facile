@@ -172,6 +172,17 @@
    return null;
   }
  }
- window.DocFixNeuralEdges=Object.freeze({propose,decodeHeatmap,orderPoints,acceptProposal,
+ async function selfTest(){
+  const engine=await getSession();
+  if(!engine)return {ok:false,reason:'Runtime or model unavailable'};
+  try{
+   const input=new Float32Array(3*INPUT*INPUT);input.fill(.42);
+   const output=await engine.run({[engine.inputNames[0]]:new window.ort.Tensor('float32',input,[1,3,INPUT,INPUT])});
+   const data=output[engine.outputNames[0]]?.data;
+   return {ok:!!data&&data.length>=4*HEATMAP*HEATMAP,
+    tensorLength:data?.length||0,offline:true};
+  }catch(error){return {ok:false,reason:String(error?.message||error)};}
+ }
+ window.DocFixNeuralEdges=Object.freeze({propose,selfTest,decodeHeatmap,orderPoints,acceptProposal,
   validQuad,roiOf,version:'bordi-v2-offline-1.9.60'});
 })();
