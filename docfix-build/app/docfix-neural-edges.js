@@ -108,7 +108,7 @@
    // One CPU thread works in sandboxed Electron with no dependency on
    // COOP/COEP, WebGPU, remote workers, or external services.
    ort.env.wasm.numThreads=1;
-   ort.env.wasm.wasmPaths=BASE;
+   ort.env.wasm.wasmPaths=new URL(BASE,window.location.href).href;
    const response=await fetch(MODEL,{cache:'no-store',credentials:'omit'});
    if(!response.ok)throw Error('Modello ONNX locale assente ('+response.status+')');
    const bytes=new Uint8Array(await response.arrayBuffer());
