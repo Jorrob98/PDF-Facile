@@ -5,3 +5,5 @@ Il workflow deve verificare tutte le regressioni, bundling ONNX, Electron reale
 e generare SOLO una GitHub prerelease manuale, non installata dall'updater stabile.
 Il PDF non deve esportare un ritaglio neurale senza verifica dei quattro angoli.
 Nessun Railway, nessun servizio cloud per la foto. Tutto in locale.
+
+Revision 3: focused safety smoke before packaging (complete QA remains separate).
