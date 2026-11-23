@@ -24,7 +24,7 @@ function log(...parts){
   console.log(line.trim());
 }
 function requiredStartupFiles(){
-  return ['index.html','docfix-visual-card.js','docfix-texture-card.js','docfix-card-deskew.js','docfix-fine-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-stacked-blue-pair.js','card-guided-split.js','card-precision-editor.js','card-auto-quad-consensus.js','docfix-pwa-refresh.css','docfix-ui-refresh.js','docfix-mark.svg','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
+  return ['index.html','docfix-visual-card.js','docfix-texture-card.js','docfix-card-deskew.js','docfix-fine-deskew.js','group1-safe-crop.js','card-physical-edges.js','card-onepass.js','card-texture-crop.js','card-stacked-blue-pair.js','card-guided-split.js','card-precision-editor.js','card-auto-quad-consensus.js','docfix-pwa-refresh.css','docfix-ui-refresh.js','docfix-qa-review.js','docfix-mark.svg','card-threeup.js','card-threeup-polish.js','card-licence-guard.js','group2-orientation.js','group3-quality.js','group5-export.js','stability.js','ocr-max.js'];
 }
 function requiredEngineFiles(){
   return [
@@ -209,6 +209,9 @@ async function runSelfTest(){
           !!document.querySelector('.pages')&&
           !!document.querySelector('#download')&&
           !!document.querySelector('#edit-apply');
+        out.qaDownload=typeof window.DocFixQAReport?.buildReport==='function'&&
+          typeof window.DocFixQAData?.snapshot==='function'&&
+          !!document.querySelector('#qa-review-download');
         out.precisionEditorBridge=typeof window.DocFixPrecisionEditor?.nudge==='function'
           &&typeof window.DocFixPrecisionEditor?.drawZoom==='function';
         const nativePoints=[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9},{x:.1,y:.9}];
