@@ -174,9 +174,36 @@
    }
   }
   const cornersSupported=endpointVotes.every(v=>v>=2);
+  // A four-line fit can hide large MISSING stretches: with 68% inliers
+  // and an independent audit looking mostly at average edge contrast,
+  // 45/50 simulated side occlusions had been AUTO-approved. Require
+  // continuous physical edge evidence in 13 distributed checkpoints on
+  // EVERY side, including its middle. A failed point permits a preview,
+  // but it must never auto-approve the final PDF.
+  const sideCoverage={};
+  for(const side of sided){
+   const model=fitted[side.name],votes=[];
+   for(let j=0;j<13;j++){
+    const t=side.start+side.length*(.07+.86*j/12);
+    const p=model.a*t+model.b;
+    const x=side.vertical?p:t,y=side.vertical?t:p;
+    const inside=colorAverage(side.vertical,x,y,side.in,false);
+    const outside=colorAverage(side.vertical,x,y,side.out,false);
+    votes.push(inside>=.69&&outside<=.30&&inside-outside>=.49);
+   }
+   let misses=0,longestMiss=0;
+   for(const good of votes){
+    misses=good?0:misses+1;
+    longestMiss=Math.max(longestMiss,misses);
+   }
+   const accepted=votes.filter(Boolean).length;
+   sideCoverage[side.name]={supported:accepted,samples:votes.length,
+    maxMissingRun:longestMiss,continuous:accepted>=11&&longestMiss<=1};
+  }
+  const continuousSides=Object.values(sideCoverage).every(s=>s.continuous);
   const minSupport=Math.min(...Object.values(fitted).map(s=>s.count/s.total));
   const maxError=Math.max(...Object.values(fitted).map(s=>s.error));
-  const strong=minSupport>=.78&&maxError<=1.5&&cornersSupported;
+  const strong=minSupport>=.78&&maxError<=1.5&&cornersSupported&&continuousSides;
   let independentlyVerified=false,auditSupport=null;
   // Strong photographic colour contrast locates edges but MUST NOT
   // auto-approve a PDF by itself. Use an independent gradient-based
@@ -203,6 +230,7 @@
     maxShiftPx:+Math.max(...distances).toFixed(2),ratio:+ratio.toFixed(3),
     minSupport:+minSupport.toFixed(3),maxError:+maxError.toFixed(2),
     cornerArms:endpointVotes,cornersSupported,
+    sideCoverage,continuousSides,
     independentAudit:independentlyVerified,auditSupport}};
  }
  function refine(source,rough){
