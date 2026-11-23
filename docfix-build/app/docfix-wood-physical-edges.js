@@ -143,9 +143,40 @@
   const newArea=width*height;
   if(newArea/originalArea<.78||newArea/originalArea>1.12)return null;
   const quad=corners.map(p=>({x:p.x/w,y:p.y/h}));
+  // Check the short arms of EVERY physical corner. Side fitting samples
+  // 14–86% of each side; without this guard an occluded/missing corner
+  // can be extrapolated into a plausible rectangle and auto-approved.
+  // Plastic ID cards have small rounded corners, so evaluate points at
+  // 6.5/11.5/18% along each arm instead of the extreme corner pixel.
+  const endpointVotes=[];
+  function aroundNeutral(x,y){
+   let count=0,total=0;
+   for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    const ix=Math.round(x)+dx,iy=Math.round(y)+dy;
+    if(ix<0||iy<0||ix>=w||iy>=h)continue;
+    count+=mask[iy*w+ix];total++;
+   }
+   return total?count/total:0;
+  }
+  for(let i=0;i<4;i++){
+   const a=corners[i],b=corners[(i+1)%4];
+   const vx=b.x-a.x,vy=b.y-a.y,L=Math.hypot(vx,vy);
+   const nx=-vy/L,ny=vx/L;
+   for(const end of [0,1]){
+    let good=0;
+    for(const p of [.065,.115,.18]){
+     const t=end===0?p:1-p,x=a.x+vx*t,y=a.y+vy*t;
+     const inside=aroundNeutral(x+nx*10,y+ny*10);
+     const outside=aroundNeutral(x-nx*8,y-ny*8);
+     if(inside>=.70&&outside<=.30)good++;
+    }
+    endpointVotes.push(good);
+   }
+  }
+  const cornersSupported=endpointVotes.every(v=>v>=2);
   const minSupport=Math.min(...Object.values(fitted).map(s=>s.count/s.total));
   const maxError=Math.max(...Object.values(fitted).map(s=>s.error));
-  const strong=minSupport>=.78&&maxError<=1.5;
+  const strong=minSupport>=.78&&maxError<=1.5&&cornersSupported;
   let independentlyVerified=false,auditSupport=null;
   // Strong photographic colour contrast locates edges but MUST NOT
   // auto-approve a PDF by itself. Use an independent gradient-based
@@ -171,6 +202,7 @@
     support:+(value.count/value.total).toFixed(3),error:+value.error.toFixed(2)}])),
     maxShiftPx:+Math.max(...distances).toFixed(2),ratio:+ratio.toFixed(3),
     minSupport:+minSupport.toFixed(3),maxError:+maxError.toFixed(2),
+    cornerArms:endpointVotes,cornersSupported,
     independentAudit:independentlyVerified,auditSupport}};
  }
  function refine(source,rough){
