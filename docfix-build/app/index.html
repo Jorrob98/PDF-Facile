@@ -3170,6 +3170,8 @@ async function saveAvailablePages(){
   syncActions();
  }
 }
+$('download-ready').onclick=saveAvailablePages;
+dl.onclick=exportPdf;
 // Read-only local snapshot for a separate diagnostic PDF. It never calls
  // exportPdf, bypasses a real PDF safety gate or changes entries.
  window.DocFixQAData=Object.freeze({snapshot:()=>entries.map(e=>({
@@ -3179,8 +3181,7 @@ async function saveAvailablePages(){
   manualPending:e.manualPending===true,cropVerified:e.cropVerified,
   geometryReview:e.geometryReview===true,qualityReview:e.qualityReview===true
  }))});
- $('download-ready').onclick=saveAvailablePages;
-dl.onclick=exportPdf;
+ 
 
 })();
 </script><script src="./stability.js"></script><script src="./ocr-max.js"></script><script src="./docfix-ui-refresh.js"></script><script src="./docfix-qa-review.js"></script></body></html>
