@@ -1,0 +1,36 @@
+name: DocFix 1.9.62 - PDF collaudo independent export QA
+on:
+  push:
+    branches: [docfix-162-collaudo-export-20261123]
+    paths:
+      - 'docfix-build/app/docfix-qa-review.js'
+      - 'docfix-build/app/index.html'
+      - 'docfix-build/app/docfix-pwa-refresh.css'
+      - 'docfix-build/main.js'
+      - 'docfix-build/qa-collaudo-pdf-162.cjs'
+      - '.github/workflows/docfix-162-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: QA export collaudo con bordi non confermati
+        working-directory: docfix-build
+        run: |
+          set -euo pipefail
+          node --check app/docfix-qa-review.js
+          node --check main.js
+          node qa-collaudo-pdf-162.cjs
+          node qa-electron-inline-syntax.cjs
+          node qa-export-safety.cjs
+          node qa-single-final-gate.cjs
+          node qa-pwa-ui-161.cjs
+          node qa-neural-borders-v2.cjs
+          node qa-simple-ui-and-four-card-order-159.cjs
+          echo "PASS DOCFIX 1.9.62 COLLAUDO"
