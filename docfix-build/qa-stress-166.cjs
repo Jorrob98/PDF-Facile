@@ -178,7 +178,16 @@ for(const name of names)for(let i=0;i<N;i++){
   if(!fitted){count.manual++;continue;}
   count.physical++;k.physical++;
   if(name==='missingSide'&&i===0){
+    const trueQ=cards[0],sx=Math.round(Math.min(trueQ[0].x,trueQ[3].x)),
+       sy=Math.round((trueQ[0].y+trueQ[3].y)/2);
+    const px=(x,y)=>Array.from(source.rgba.slice((y*W+x)*4,(y*W+x)*4+3));
     count.debugMissingSide={rough:one.quad,fit:fitted.quad,
+     trueQ,probePos:{sx,sy},probes:[
+      {point:'trueLeftPlus5',rgb:px(clamp(sx+5,0,W-1),clamp(sy,0,H-1))},
+      {point:'trueLeftPlus20',rgb:px(clamp(sx+20,0,W-1),clamp(sy,0,H-1))},
+      {point:'trueLeftPlus60',rgb:px(clamp(sx+60,0,W-1),clamp(sy,0,H-1))},
+      {point:'trueLeftMidUp60',rgb:px(clamp(sx+5,0,W-1),clamp(sy-60,0,H-1))}
+     ],
      sideCoverage:fitted.diagnostic?.sideCoverage,
      cornersSupported:fitted.diagnostic?.cornersSupported,
      independent:fitted.diagnostic?.independentAudit};
