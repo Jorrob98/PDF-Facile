@@ -1,0 +1,9 @@
+DocFix 1.9.66 — Stress test release
+Data: 23/11/2026
+- 600 deterministic synthetic real-engine border stress cases MUST pass before build
+- No false automatically approved cropped/occluded document; 185 good auto approvals in verified run
+- Four sides independently audited, full side continuity, corner evidence
+- Safety offset adjusted to 0.5 px; original document pixels preserved
+- 400 additional independent perturbations of two user photos processed locally, no private photos in repository
+- Existing HTML UI, single update button, PDF integrity and Windows rollback unchanged
+- No Railway, local processing only
