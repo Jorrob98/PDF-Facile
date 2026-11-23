@@ -123,10 +123,12 @@
   ];
   if(intersections.some(p=>!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)||
     p.x<6||p.y<6||p.x>w-7||p.y>h-7))return null;
-  // One pixel protective outward bias avoids removing the plastic edge.
+  // Subpixel outward safety bias keeps the rounded plastic rim while
+  // avoiding a visible 1px strip of desk around a small document.
+  const outwardBias=.5;
   const corners=intersections.map((p,i)=>({
-   x:p.x+(i===0||i===3?-1.0:1.0),
-   y:p.y+(i<2?-1.0:1.0)
+   x:p.x+(i===0||i===3?-outwardBias:outwardBias),
+   y:p.y+(i<2?-outwardBias:outwardBias)
   }));
   const distances=corners.map((p,i)=>Math.hypot(p.x-rx[i],p.y-ry[i]));
   if(Math.max(...distances)>Math.min(bw,bh)*.105)return null;
