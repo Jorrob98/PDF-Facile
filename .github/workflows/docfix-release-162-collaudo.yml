@@ -71,6 +71,7 @@ jobs:
           node qa-pair-proof.cjs
           node qa-simple-ui-and-four-card-order-159.cjs
           node qa-single-updater.cjs
+          node qa-unico-aggiornamento-162.cjs
           node qa-updater-ipc-clone-157.cjs
           echo "BORDI_V2_PREVIEW_QA_PASS"
 
