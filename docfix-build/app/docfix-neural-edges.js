@@ -47,10 +47,10 @@
  }
  function bounds(q){const xs=q.map(p=>p.x),ys=q.map(p=>p.y);
   return {x:Math.min(...xs),y:Math.min(...ys),r:Math.max(...xs),b:Math.max(...ys)};}
- function validQuad(q,format='card'){
+ function validQuad(q,format='card',sourceWidth=1,sourceHeight=1){
   if(!Array.isArray(q)||q.length!==4||q.some(p=>!finite(p?.x)||!finite(p?.y)||p.x<=.003||p.y<=.003||p.x>=.997||p.y>=.997))return false;
   const a=area(q);if(a<.025||a>.90)return false;
-  const lens=q.map((p,i)=>dist(p,q[(i+1)%4]));
+  const lens=q.map((p,i)=>Math.hypot((p.x-q[(i+1)%4].x)*sourceWidth,(p.y-q[(i+1)%4].y)*sourceHeight));
   const ratio=Math.max((lens[0]+lens[2])/(lens[1]+lens[3]),(lens[1]+lens[3])/(lens[0]+lens[2]));
   if(format==='card'&&(ratio<1.28||ratio>2.02))return false;
   if(lens.some(n=>n<.035))return false;
@@ -68,8 +68,8 @@
  }
  // Keep a candidate within its own source ROI: an adjacent document may
  // not steal the centre or create a phantom page.
- function acceptProposal(rough,proposal,{format='card'}={}){
-  if(!validQuad(proposal,format))return false;
+ function acceptProposal(rough,proposal,{format='card',sourceWidth=1,sourceHeight=1}={}){
+  if(!validQuad(proposal,format,sourceWidth,sourceHeight))return false;
   if(!rough)return true;
   if(!validQuad(rough,'document'))return false;
   const a=area(rough),b=area(proposal),ratio=b/a;
@@ -152,11 +152,11 @@
   if(rough&&!validQuad(rough,'document'))return null;
   try{
    const roi=roiOf(source,rough),result=await infer(source,roi);
-   if(!result||!acceptProposal(rough,result.quad,{format}))return null;
+   if(!result||!acceptProposal(rough,result.quad,{format,sourceWidth:source.width,sourceHeight:source.height}))return null;
    let finalQuad=result.quad,independent=false;
    if(window.DocFixProjectedEdges?.refine){
     const fitted=window.DocFixProjectedEdges.refine(source,result.quad);
-    if(fitted?.matchedSides===4&&acceptProposal(rough,fitted.quad,{format})){
+    if(fitted?.matchedSides===4&&acceptProposal(rough,fitted.quad,{format,sourceWidth:source.width,sourceHeight:source.height})){
      const deviation=Math.max(...fitted.quad.map((p,i)=>dist(p,result.quad[i])));
      if(deviation<Math.min(roi.w/source.width,roi.h/source.height)*.075){
       finalQuad=fitted.quad;independent=true;
