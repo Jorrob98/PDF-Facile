@@ -905,7 +905,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-auto-quad-consensus.js"></script><script src="./docfix-projected-edges.js"></script><script src="./docfix-neural-edges.js"></script><script src="./docfix-single-card-evidence.js"></script><script src="./docfix-neutral-single.js"></script><script src="./docfix-wood-single.js"></script><script src="./docfix-paper-pair.js"></script><script src="./docfix-four-card-order.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-auto-quad-consensus.js"></script><script src="./docfix-projected-edges.js"></script><script src="./docfix-neural-edges.js"></script><script src="./docfix-single-card-evidence.js"></script><script src="./docfix-neutral-single.js"></script><script src="./docfix-wood-single.js"></script><script src="./docfix-wood-physical-edges.js"></script><script src="./docfix-paper-pair.js"></script><script src="./docfix-four-card-order.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -2129,13 +2129,26 @@ async function makeImageEntries(file,index,total=1,meta={}){
    try{wood=window.DocFixWoodSingle?.detect?.(original)||null;}
    catch(error){console.warn('DocFix: tessera singola su legno',error);}
    if(wood?.strongSingle===true&&wood.cardCount===1&&window.DocFixScanner.validQuad(wood.quad)){
+    // Fit 4 plastic edges to the ORIGINAL high-resolution photo. The
+    // colour mask is only a proposal; auto-confirm is permitted solely
+    // after the independent gradient audit also verifies all four sides.
+    let physical=null;
+    try{physical=window.DocFixWoodPhysicalEdges?.refine?.(original,wood.quad)||null;}
+    catch(error){console.warn('DocFix: perfezionamento bordi CIE',error);}
+    const picked=physical?.quad&&window.DocFixScanner.validQuad(physical.quad)
+     ?physical.quad:wood.quad;
+    const audited=physical?.physicallyVerified===true&&physical?.matchedSides===4;
     const processed=window.DocFixScanner.process(original,
-     {crop:true,quad:wood.quad,rotation:0,filter:'original',strength:0},4200);
+     {crop:true,quad:picked,rotation:0,filter:'original',strength:0},4200);
     if(processed?.width>50&&processed?.height>40){
-     const fixed={processed,rotation:0,review:true,manualPending:true,visualProvisional:true,
-      cropVerified:false,geometryReview:true,orientationReview:false,qualityReview:false,
-      qualityIssues:[],qualityMetrics:null,cropped:false,sourceQuad:wood.quad,
-      how:'Una sola tessera fisica sullo sfondo di legno · foto originale conservata · verifica i 4 bordi'};
+     const fixed={processed,rotation:0,review:!audited,manualPending:!audited,
+      visualProvisional:!audited,cropVerified:audited,geometryReview:!audited,
+      orientationReview:false,qualityReview:false,qualityIssues:[],qualityMetrics:null,
+      cropped:audited,sourceQuad:picked,
+      how:audited?'4 bordi fisici confermati sulla fotografia originale · PDF pronto':
+       physical?.matchedSides===4
+       ?'4 bordi della plastica rifiniti sul legno · conferma indipendente non conclusiva · verifica gli angoli'
+       :'Una tessera sul legno · rifinitura non sicura · controlla i quattro angoli'};
      return [{kind:'raster',original,...fixed,source:file.name,title:file.name,
       sourceIndex:index,loadBatch:meta.batchId??null,batchPos:meta.batchPos??0,
       batchSize:meta.batchSize??1,splitSlot:0,splitCount:1,
