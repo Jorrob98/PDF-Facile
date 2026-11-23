@@ -233,9 +233,36 @@
     maxMissingRun:longestMiss,continuous:accepted>=11&&longestMiss<=1};
   }
   const continuousSides=Object.values(sideCoverage).every(s=>s.continuous);
+  // Independently estimate physical card orientation using the pale
+  // material mask's second moments. The short side-fit can occasionally
+  // return a plausible but too-large AXIS-ALIGNED rectangle around a
+  // tilted card. This must remain a manual proposal, not an auto export.
+  let mN=0,mX=0,mY=0,mXX=0,mYY=0,mXY=0;
+  for(let y=Math.max(0,Math.floor(y0));y<=Math.min(h-1,Math.ceil(y1));y+=3){
+   for(let x=Math.max(0,Math.floor(x0));x<=Math.min(w-1,Math.ceil(x1));x+=3){
+    if(!mask[y*w+x])continue;
+    mN++;mX+=x;mY+=y;mXX+=x*x;mYY+=y*y;mXY+=x*y;
+   }
+  }
+  let orientationAgreement=false,maskAngle=NaN,fitAngle=NaN,angleDelta=NaN;
+  if(mN>=300){
+   const vx=mXX/mN-(mX/mN)**2,
+         vy=mYY/mN-(mY/mN)**2,
+         cov=mXY/mN-mX*mY/(mN*mN);
+   const spread=Math.hypot(vx-vy,2*cov);
+   maskAngle=.5*Math.atan2(2*cov,vx-vy);
+   const thetaTop=Math.atan2(corners[1].y-corners[0].y,
+     corners[1].x-corners[0].x);
+   const thetaBottom=Math.atan2(corners[2].y-corners[3].y,
+     corners[2].x-corners[3].x);
+   fitAngle=(thetaTop+thetaBottom)/2;
+   angleDelta=Math.abs(Math.atan2(Math.sin(maskAngle-fitAngle),
+     Math.cos(maskAngle-fitAngle)));
+   orientationAgreement=spread/Math.max(1,vx+vy)>=.24&&angleDelta<=.022;
+  }
   const minSupport=Math.min(...Object.values(fitted).map(s=>s.count/s.total));
   const maxError=Math.max(...Object.values(fitted).map(s=>s.error));
-  const strong=minSupport>=.78&&maxError<=1.5&&cornersSupported&&continuousSides&&visibleMaterialAtCorners;
+  const strong=minSupport>=.78&&maxError<=1.5&&cornersSupported&&continuousSides&&visibleMaterialAtCorners&&orientationAgreement;
   let independentlyVerified=false,auditSupport=null;
   // Strong photographic colour contrast locates edges but MUST NOT
   // auto-approve a PDF by itself. Use an independent gradient-based
@@ -263,6 +290,9 @@
     minSupport:+minSupport.toFixed(3),maxError:+maxError.toFixed(2),
     cornerArms:endpointVotes,cornersSupported,cornerMaterial,visibleMaterialAtCorners,
     sideCoverage,continuousSides,
+    orientationAgreement,maskAngle:Number.isFinite(maskAngle)?+maskAngle.toFixed(4):null,
+    fitAngle:Number.isFinite(fitAngle)?+fitAngle.toFixed(4):null,
+    angleDelta:Number.isFinite(angleDelta)?+angleDelta.toFixed(4):null,
     independentAudit:independentlyVerified,auditSupport}};
  }
  function refine(source,rough){
