@@ -7,7 +7,7 @@ const {registerOcrHandlers}=require('./ocr-cloud-main');
 let server=null, mainWindow=null, logFile=null, quitting=false, pendingSecondInstance=false, updateReceiptStatus=null;
 const SELF_TEST=process.argv.includes('--self-test');
 const root=path.join(__dirname,'app');
-const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.wasm':'application/wasm','.gz':'application/gzip','.pdf':'application/pdf'};
+const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.wasm':'application/wasm','.onnx':'application/octet-stream','.gz':'application/gzip','.pdf':'application/pdf'};
 
 function initLog(){
   try{
@@ -29,7 +29,8 @@ function requiredStartupFiles(){
 function requiredEngineFiles(){
   return [
     'vendor/pdfjs/pdf.min.mjs','vendor/pdfjs/pdf.worker.min.mjs','vendor/pdf-lib/pdf-lib.min.js',
-    'vendor/tesseract/tesseract.min.js','vendor/tesseract/worker.min.js','vendor/tessdata/eng.traineddata.gz','vendor/tessdata/ita.traineddata.gz'
+    'vendor/tesseract/tesseract.min.js','vendor/tesseract/worker.min.js','vendor/tessdata/eng.traineddata.gz','vendor/tessdata/ita.traineddata.gz',
+    'docfix-neural-edges.js','vendor/docfix-ml/ort.min.js','vendor/docfix-ml/lcnet100_h_e_bifpn_256_fp32.onnx'
   ];
 }
 function validateStartupBundle(){
