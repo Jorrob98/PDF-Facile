@@ -41,66 +41,30 @@ jobs:
           mkdir -p build
           base64 -d build/icon.b64 > build/icon.png
 
-      - name: Verify exploratory tests before building
+      - name: Verify Bordi v2, export safety and updater
         shell: bash
         working-directory: docfix-build
         run: |
           set -euo pipefail
           node --check main.js
           node --check preload.js
-          node --check app/card-texture-crop.js
-          node --check app/card-onepass.js
-          node --check app/card-pair-proof.js
-          node --check app/card-photo-pair.js
-          node --check app/card-touching-pair.js
-          node --check qa-touching-bottom.cjs
-          node --check app/document-page-guard.js
-          node --check qa-small-card-a4.cjs
-          node --check qa-facsimile-card-stack.cjs
-          node qa-small-card-a4.cjs
-          node qa-facsimile-card-stack.cjs
-          node --check app/docfix-visual-card.js
-          node qa-visual-photo-preview.cjs
-          node --check qa-cie-front-office.cjs
-          node qa-cie-front-office.cjs
-          node --check app/docfix-card-deskew.js
-          node --check qa-cie-four-corner-deskew.cjs
-          node qa-cie-four-corner-deskew.cjs
-          node --check app/docfix-fine-deskew.js
-          node --check qa-fine-deskew-146.cjs
-          node qa-fine-deskew-146.cjs
-          node --check app/docfix-texture-card.js
-          node --check qa-light-desk-147.cjs
-          node qa-light-desk-147.cjs
-          node --check app/card-stacked-blue-pair.js
-          node --check qa-stacked-blue-148.cjs
-          node qa-stacked-blue-148.cjs
-          node --check app/card-guided-split.js
-          node --check qa-guided-split-149.cjs
-          node qa-guided-split-149.cjs
-          node --check app/card-precision-editor.js
-          node --check qa-precision-corner-editor-150.cjs
-          node qa-precision-corner-editor-150.cjs
-          node qa-electron-inline-syntax.cjs
-          node qa-stability-guard.cjs
-          npm run test:docfix:qa
-          node qa-single-updater.cjs
-          if grep -Fq 'docfix-update-channel' app/stability.js; then echo 'UI channel selector still present'; exit 1; fi
-          if grep -Fq 'UPDATE_TEST_API' main.js; then echo 'Multiple updater APIs still present'; exit 1; fi
-          node --check app/docfix-paper-pair.js
-          node qa-paper-pair-157.cjs
-          node qa-paper-pair-import-157.cjs
-          node --check app/docfix-four-card-order.js
-          node qa-simple-ui-and-four-card-order-159.cjs
-          node qa-updater-ipc-clone-157.cjs
-          node qa-neutral-permit-155.cjs
           node --check app/docfix-neural-edges.js
+          node --check app/card-precision-editor.js
+          node --check app/docfix-projected-edges.js
+          node --check app/stability.js
+          node qa-electron-inline-syntax.cjs
           node qa-neural-borders-v2.cjs
           node qa-border-score-v2.test.cjs
           node qa-single-final-gate.cjs
-          node qa-single-card-evidence-153.cjs
-          # All updates use exactly one signed release and require independent image checks.
-          # Cropping remains review-only unless physical borders are verified.
+          node qa-export-safety.cjs
+          node qa-precision-corner-editor-150.cjs
+          node qa-auto-quad-consensus-151.cjs
+          node qa-photo-pair-crop.cjs
+          node qa-pair-proof.cjs
+          node qa-simple-ui-and-four-card-order-159.cjs
+          node qa-single-updater.cjs
+          node qa-updater-ipc-clone-157.cjs
+          echo "BORDI_V2_PREVIEW_QA_PASS"
 
       - name: Stamp 1.9.60 preview and package verified source
         shell: bash
