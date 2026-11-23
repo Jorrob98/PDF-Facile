@@ -7,6 +7,11 @@ const ai=win.DocFixNeuralEdges;
 assert.equal(ai.version,'bordi-v2-offline-1.9.60');
 const card=[{x:.1,y:.2},{x:.9,y:.2},{x:.9,y:.71},{x:.1,y:.71}];
 assert.ok(ai.validQuad(card));
+const portraitCard=[{x:.2,y:.25},{x:.8,y:.25},{x:.8,y:.54},{x:.2,y:.54}];
+assert.equal(ai.validQuad(portraitCard,'card'),false,'normalized aspect ratio is misleading in portrait photos');
+assert.equal(ai.validQuad(portraitCard,'card',900,1200),true,'real pixel dimensions recover ID1 ratio');
+assert.equal(ai.acceptProposal(portraitCard,portraitCard,{sourceWidth:900,sourceHeight:1200}),true,
+ 'portrait 2-up / 3-up photos must allow the physical ID1 perimeter');
 assert.ok(ai.acceptProposal(null,card));
 assert.ok(ai.acceptProposal(card,card));
 assert.equal(ai.validQuad([{x:.1,y:.2},{x:.9,y:.71},{x:.9,y:.2},{x:.1,y:.71}]),false);
