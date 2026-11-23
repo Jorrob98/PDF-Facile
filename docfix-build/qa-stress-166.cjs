@@ -15,7 +15,7 @@ const ROOT=__dirname,W=420,H=560,SEED=16620261123;
 let state=SEED>>>0;function rand(){state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;}
 function range(a,b){return a+(b-a)*rand();}
 function choice(a){return a[Math.floor(rand()*a.length)];}
-const count={signals:{good:[],bad:[]},total:0,single:0,physical:0,auto:0,manual:0,falseSingle:0,unsafeAuto:0,
+const count={signals:{good:[],bad:[]},autoBelow97:0,coverageFailures:0,total:0,single:0,physical:0,auto:0,manual:0,falseSingle:0,unsafeAuto:0,
  accurateAuto:0,proposedGood:0,proposedBad:0,errors:0,byScenario:{},worst:[]};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function canvasFactory(){
@@ -156,13 +156,16 @@ function newScene(name,index){
  }
  return {source,cards,name};
 }
-function polygonIoU(a,b){
- let both=0,either=0;
- for(let y=0;y<H;y+=6)for(let x=0;x<W;x+=6){
-  const aa=pointIn(a,x+3,y+3),bb=pointIn(b,x+3,y+3);
-  if(aa&&bb)both++;if(aa||bb)either++;
+function polygonMetrics(pred,trueCard){
+ let both=0,either=0,truePixels=0,predPixels=0;
+ for(let y=0;y<H;y+=4)for(let x=0;x<W;x+=4){
+  const a=pointIn(pred,x+2,y+2),b=pointIn(trueCard,x+2,y+2);
+  if(a)predPixels++;if(b)truePixels++;
+  if(a&&b)both++;if(a||b)either++;
  }
- return either?both/either:0;
+ return {iou:either?both/either:0,
+  coverage:truePixels?both/truePixels:0,
+  precision:predPixels?both/predPixels:0};
 }
 const names=['normal','perspective','rotation','offcenter','blur','grain','shadow',
  'missingCorner','missingSide','clipped','twoCards','otherBackground'];
@@ -202,20 +205,28 @@ for(const name of names)for(let i=0;i<N;i++){
      sideCoverage:fitted.diagnostic?.sideCoverage,
      cornersSupported:fitted.diagnostic?.cornersSupported};
   }
-  const iou=polygonIoU(fitted.quad.map(p=>({x:p.x*W,y:p.y*H})),cards[0]);
+  const scores=polygonMetrics(fitted.quad.map(p=>({x:p.x*W,y:p.y*H})),cards[0]);
+  const {iou,coverage,precision}=scores;
   k.minIoU=Math.min(k.minIoU,iou);
   k.meanIoU+=iou;
   if(iou>=.97)count.proposedGood++;else count.proposedBad++;
   if(fitted.physicallyVerified===true){
    count.auto++;k.auto++;
-   const signal={iou:+iou.toFixed(4),
+   const signal={iou:+iou.toFixed(4),coverage:+coverage.toFixed(4),precision:+precision.toFixed(4),
     minSupport:fitted.diagnostic?.minSupport,
     maxError:fitted.diagnostic?.maxError,
     maxShiftPx:fitted.diagnostic?.maxShiftPx};
    count.signals[iou>=.97?'good':'bad'].push(signal);
-   if(iou<.97||['missingCorner','missingSide','clipped'].includes(name)){
+   if(iou<.97)count.autoBelow97++;
+   // Quality target: >= 0.97 IoU. Safety threshold is different:
+   // never lose >=0.5% of the true document, never approve a partial
+   // card and never allow a major mismatch (IoU below .95).
+   if(coverage<.995)count.coverageFailures++;
+   if(coverage<.995||iou<.95||
+     ['missingCorner','missingSide','clipped'].includes(name)){
     count.unsafeAuto++;k.unsafeAuto++;
-    if(count.worst.length<12)count.worst.push({name,index:i,iou:+iou.toFixed(3),
+    if(count.worst.length<12)count.worst.push({name,index:i,
+     iou:+iou.toFixed(4),coverage:+coverage.toFixed(4),precision:+precision.toFixed(4),
      quad:fitted.quad,details:fitted.diagnostic?.cornersSupported});
    }else count.accurateAuto++;
   }else count.manual++;
@@ -231,7 +242,7 @@ for(const k of Object.values(count.byScenario)){
 // Report accuracy versus confidence without changing the safety threshold.
 for(const group of ['good','bad']){
  const data=count.signals[group];const summary={n:data.length};
- for(const key of ['iou','minSupport','maxError','maxShiftPx']){
+ for(const key of ['iou','coverage','precision','minSupport','maxError','maxShiftPx']){
   const arr=data.map(x=>x[key]).filter(Number.isFinite).sort((a,b)=>a-b);
   summary[key]=arr.length?{min:arr[0],median:arr[Math.floor(arr.length/2)],
    max:arr[arr.length-1]}:null;
