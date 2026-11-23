@@ -1,0 +1,38 @@
+name: DocFix 1.9.66 - 600 real-engine stress cases (offline)
+on:
+  push:
+    branches: [docfix-166-stress-realistic-20261123]
+    paths:
+      - 'docfix-build/qa-stress-166.cjs'
+      - 'docfix-build/app/docfix-wood-single.js'
+      - 'docfix-build/app/docfix-wood-physical-edges.js'
+      - 'docfix-build/app/card-quad-audit.js'
+      - '.github/workflows/docfix-166-stress.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  run-600:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Execute 600 seeded stress scenes through real shipped JS detector modules
+        working-directory: docfix-build
+        run: |
+          set -o pipefail
+          node --check qa-stress-166.cjs
+          timeout 600s node qa-stress-166.cjs | tee stress-166.log
+      - name: Attach aggregate results only (NO personal document images)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: DocFix-166-stress-aggregate
+          path: |
+            docfix-build/stress-166-summary.json
+            docfix-build/stress-166.log
+          if-no-files-found: warn
+          retention-days: 14
