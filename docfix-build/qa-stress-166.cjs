@@ -177,6 +177,17 @@ for(const name of names)for(let i=0;i<N;i++){
   const fitted=window.DocFixWoodPhysicalEdges.refine(source,one.quad);
   if(!fitted){count.manual++;continue;}
   count.physical++;k.physical++;
+  if(name==='missingSide'&&i===0){
+    count.debugMissingSide={rough:one.quad,fit:fitted.quad,
+     sideCoverage:fitted.diagnostic?.sideCoverage,
+     cornersSupported:fitted.diagnostic?.cornersSupported,
+     independent:fitted.diagnostic?.independentAudit};
+  }
+  if(name==='normal'&&i===0){
+    count.debugNormal={rough:one.quad,fit:fitted.quad,
+     sideCoverage:fitted.diagnostic?.sideCoverage,
+     cornersSupported:fitted.diagnostic?.cornersSupported};
+  }
   const iou=polygonIoU(fitted.quad.map(p=>({x:p.x*W,y:p.y*H})),cards[0]);
   k.minIoU=Math.min(k.minIoU,iou);
   k.meanIoU+=iou;
