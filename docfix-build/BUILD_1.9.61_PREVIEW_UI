@@ -1,1 +1,3 @@
 DocFix PWA visual 1.9.61 RC1 preview. New native Windows icon via SVG -> PNG. Complete setup and optional updater. Builds only after QA. No Railway; AI/document crop is offline. Stable version remains untouched.
+
+Revision 2: full Windows installer with custom NSIS and multiple-resolution ICO, without Wine.
