@@ -5,6 +5,7 @@ on:
     paths:
       - 'docfix-build/app/docfix-wood-physical-edges.js'
       - 'docfix-build/qa-edge-corner-165.cjs'
+      - 'docfix-build/qa-pdf-image-integrity-165.cjs'
       - '.github/workflows/docfix-165-qa.yml'
   workflow_dispatch:
 permissions:
@@ -23,6 +24,7 @@ jobs:
           set -euo pipefail
           node --check app/docfix-wood-physical-edges.js
           node qa-edge-corner-165.cjs
+          node qa-pdf-image-integrity-165.cjs
           node qa-wood-four-physical-164.cjs
           node qa-single-wood-163.cjs
           node qa-safe-pdf-163.cjs
