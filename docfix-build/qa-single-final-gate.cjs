@@ -20,7 +20,7 @@ function ratio(q,w,h){
  const hh=(dist(a[1],a[2])+dist(a[3],a[0]))/2;
  return Math.max(ww,hh)/Math.max(1,Math.min(ww,hh));
 }
-function run(auditedQuad,edgesOk=4){
+async function run(auditedQuad,edgesOk=4){
  let calls=0;
  const scanner={
   validQuad:q=>Array.isArray(q)&&q.length===4&&q.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1),
@@ -39,21 +39,24 @@ function run(auditedQuad,edgesOk=4){
  const api=new Function('window','console','cropMode','quadCardRatio','expandQuadSafe','trimCardBackground',
   code+';return {photoNormalize,singleCropGate};')(
   win,console,()=> 'smart',ratio,q=>q,processed=>processed);
- const output=api.photoNormalize(original);
+ const output=await api.photoNormalize(original);
  return {output,calls,gate:api.singleCropGate(original,{status:'found',quad:auditedQuad,confidence:.95,cardLikely:true},'generic')};
 }
-const invalid=run(faceOnly);
+async function main(){
+const invalid=await run(faceOnly);
 assert.strictEqual(invalid.output.processed,original,'face-only audited quad must preserve original');
 assert.equal(invalid.calls,0,'never render a crop around the portrait');
 assert.equal(invalid.output.review,true,'face-only detection must need review');
-const badEdges=run(complete,3);
+const badEdges=await run(complete,3);
 assert.strictEqual(badEdges.output.processed,original,'three edges are not enough');
 assert.equal(badEdges.calls,0);
-const edge=run(nearEdge);
+const edge=await run(nearEdge);
 assert.strictEqual(edge.output.processed,original,'audited quad touching image edge is rejected');
 assert.equal(edge.calls,0);
-const valid=run(complete);
+const valid=await run(complete);
 assert.equal(valid.calls,1,'complete four-sided document remains crop-enabled');
 assert.equal(valid.output.review,false,'complete audited document passes geometry');
 assert.equal(valid.output.sourceQuad.length,4);
 console.log('DocFix final single-card audit PASS: face-only, invalid edge, missing side rejected; complete quad accepted');
+}
+main().catch(err=>{console.error(err);process.exitCode=1;});
