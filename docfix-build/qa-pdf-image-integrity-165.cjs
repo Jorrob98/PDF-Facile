@@ -7,7 +7,18 @@ const win={};
 vm.runInNewContext(source,{window:win,console,Math,Uint8Array,TextEncoder,Blob});
 vm.runInNewContext(quality,{window:win,console,Math});
 const pdf=win.DocFixGroup5,group3=win.DocFixGroup3;
-const jpg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAAwAEgDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAP/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAIRAxEAPwCswFUQAAAAAAAAAAAAAAAAAAAAAAAAAAAH/9k=','base64');
+const jpg=Buffer.from([
+ '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQ',
+ 'UGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0d',
+ 'Hx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh',
+ '4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4e',
+ 'Hh4eHh4eHh7/wAARCAAwAEgDASIAAhEBAxEB/8QAFQABAQAAAA',
+ 'AAAAAAAAAAAAAAAAj/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QA',
+ 'FQEBAQAAAAAAAAAAAAAAAAAAAAP/xAAUEQEAAAAAAAAAAAAAAA',
+ 'AAAAAA/9oADAMBAAIRAxEAPwCswFUQAAAAAAAAAAAAAAAAAAAA',
+ 'AAAAAAAH/9k='
+].join(''),'base64');
+assert.equal(jpg.byteLength,308,'known complete JPEG bytes');
 assert.deepEqual(Array.from([pdf.jpegInfo(jpg).width,pdf.jpegInfo(jpg).height]),[72,48]);
 assert.equal(group3.inputScale(1200,1600),1,'no downsampling for real source photographs');
 assert.equal(group3.inputScale(4000,6000)<1,true,'large photos receive bounded scaling');
