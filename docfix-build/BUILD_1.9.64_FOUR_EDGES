@@ -1,0 +1,1 @@
+DocFix 1.9.64: improve physical ID1 edges on original CIE wood photos with 4-line fitting, second gradient audit needed for automatic PDF confirmation, otherwise manual. Retain 1 photo 1 document guard, download-safe original fallback, optional collaudo only in PDF options. Local offline processing and one in-app update channel.
