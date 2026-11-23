@@ -125,7 +125,7 @@
     p.x<6||p.y<6||p.x>w-7||p.y>h-7))return null;
   // Subpixel outward safety bias keeps the rounded plastic rim while
   // avoiding a visible 1px strip of desk around a small document.
-  const outwardBias=.5;
+  const outwardBias=1.0;
   const corners=intersections.map((p,i)=>({
    x:p.x+(i===0||i===3?-outwardBias:outwardBias),
    y:p.y+(i<2?-outwardBias:outwardBias)
@@ -176,6 +176,28 @@
    }
   }
   const cornersSupported=endpointVotes.every(v=>v>=2);
+  // Independent near-corner MATERIAL check. Side-line extrapolation can
+  // reconstruct all 4 geometric corners even when the plastic itself is
+  // missing in the corner. Test 3 diagonal positions inside each actual
+  // corner; allow naturally rounded plastic but not a circular bite.
+  // This is only an AUTO-approval gate, never a restriction on manual edit.
+  const cornerMaterial=[];
+  for(let i=0;i<4;i++){
+   const current=corners[i],before=corners[(i+3)%4],after=corners[(i+1)%4];
+   const lenA=Math.max(1,dist(current,before)),
+         lenB=Math.max(1,dist(current,after));
+   const unitA={x:(before.x-current.x)/lenA,y:(before.y-current.y)/lenA};
+   const unitB={x:(after.x-current.x)/lenB,y:(after.y-current.y)/lenB};
+   const diagonal=[];
+   for(const d of [6,10,14]){
+    const cx=current.x+(unitA.x+unitB.x)*d,
+          cy=current.y+(unitA.y+unitB.y)*d;
+    diagonal.push(aroundNeutral(cx,cy)>=.72);
+   }
+   cornerMaterial.push({supported:diagonal.filter(Boolean).length,
+    first:diagonal[0],second:diagonal[1],third:diagonal[2]});
+  }
+  const visibleMaterialAtCorners=cornerMaterial.every(v=>v.supported>=2);
   // A four-line fit can hide large MISSING stretches: with 68% inliers
   // and an independent audit looking mostly at average edge contrast,
   // 45/50 simulated side occlusions had been AUTO-approved. Require
@@ -207,7 +229,7 @@
   const continuousSides=Object.values(sideCoverage).every(s=>s.continuous);
   const minSupport=Math.min(...Object.values(fitted).map(s=>s.count/s.total));
   const maxError=Math.max(...Object.values(fitted).map(s=>s.error));
-  const strong=minSupport>=.78&&maxError<=1.5&&cornersSupported&&continuousSides;
+  const strong=minSupport>=.78&&maxError<=1.5&&cornersSupported&&continuousSides&&visibleMaterialAtCorners;
   let independentlyVerified=false,auditSupport=null;
   // Strong photographic colour contrast locates edges but MUST NOT
   // auto-approve a PDF by itself. Use an independent gradient-based
@@ -233,7 +255,7 @@
     support:+(value.count/value.total).toFixed(3),error:+value.error.toFixed(2)}])),
     maxShiftPx:+Math.max(...distances).toFixed(2),ratio:+ratio.toFixed(3),
     minSupport:+minSupport.toFixed(3),maxError:+maxError.toFixed(2),
-    cornerArms:endpointVotes,cornersSupported,
+    cornerArms:endpointVotes,cornersSupported,cornerMaterial,visibleMaterialAtCorners,
     sideCoverage,continuousSides,
     independentAudit:independentlyVerified,auditSupport}};
  }
