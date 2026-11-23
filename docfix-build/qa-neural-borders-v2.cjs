@@ -31,6 +31,8 @@ assert.ok(html.includes('manualPending=multiSafe&&!physicalVerified'),'uncertain
 assert.ok(html.includes('review=true;previewOnly=true;'),'uncertain single photo is review only');
 assert.ok(code.includes('physicallyVerified:false'),'ML never self-certifies physical outline');
 assert.ok(code.includes("BASE='./vendor/docfix-ml/'"),'all runtime files are local');
+assert.ok(code.includes('new URL(BASE,window.location.href).href'),
+ 'WASM import path must be absolute; relative path duplicates vendor directory');
 assert.ok(!/https?:\/\//i.test(code.replace(/^\/\*[\s\S]*?\*\//,'').replace(/\/\/[^\n]*/g,'')),
  'no public URL in runtime');
 console.log('PASS: local ONNX heatmap, 4-corner safety, 2-card ROI, no CDN and manual confirmation');
