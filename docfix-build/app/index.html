@@ -1307,17 +1307,17 @@ async function photoNormalize(original){
        ||window.DocFixProjectedEdges?.refine?.(original,candidate.quad)||null):null;
     // Keep proven legacy geometry first. ML only refines the provisional
     // suggestion when other physical-edge methods could not settle it.
-    let finalFit=fitted?.quad?fitted:consensus?.quad?consensus:null;
+    const finalFit=fitted?.quad?fitted:consensus?.quad?consensus:null;
     // Neural proposals only fill the gap left by both existing checks.
-    if(!finalFit?.quad&&neural?.quad)finalFit=neural;
-    const quad=finalFit?.quad&&scan.validQuad(finalFit.quad)?finalFit.quad:candidate.quad;
+    const pickedFit=finalFit?.quad?finalFit:neural?.quad?neural:null;
+    const quad=pickedFit?.quad&&scan.validQuad(pickedFit.quad)?pickedFit.quad:candidate.quad;
     const preview=scan.process(original,{crop:true,quad,
-     targetAspect:finalFit?.targetAspect||null,
+     targetAspect:pickedFit?.targetAspect||null,
      rotation:0,filter:'original',strength:0},4200);
     if(!preview?.width||!preview?.height)throw Error('Anteprima senza pixel validi');
     processed=preview;
     sourceQuad=quad.map(p=>({...p}));
-    confidence=finalFit?.confidence||candidate.confidence||.67;
+    confidence=pickedFit?.confidence||candidate.confidence||.67;
     cardLikely=true;review=true;previewOnly=true;
     how=neural?.quad&&!fitted?.quad&&!consensus?.quad
       ?'AI locale DocAligner: quattro angoli proposti · ANTEPRIMA da verificare · conferma prima del PDF'
