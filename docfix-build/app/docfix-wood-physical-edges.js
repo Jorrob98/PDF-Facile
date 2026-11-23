@@ -186,7 +186,9 @@
    for(let j=0;j<13;j++){
     const t=side.start+side.length*(.07+.86*j/12);
     const p=model.a*t+model.b;
-    const x=side.vertical?p:t,y=side.vertical?t:p;
+    // Uint8Array pixel masks must be accessed at INTEGER coordinates.
+    // Subpixel indices would otherwise always read undefined.
+    const x=Math.round(side.vertical?p:t),y=Math.round(side.vertical?t:p);
     const inside=colorAverage(side.vertical,x,y,side.in,false);
     const outside=colorAverage(side.vertical,x,y,side.out,false);
     votes.push(inside>=.69&&outside<=.30&&inside-outside>=.49);
