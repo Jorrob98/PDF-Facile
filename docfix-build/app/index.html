@@ -905,7 +905,7 @@ window.DocFixScanner={detect,detectDocument,detectPreciseBlueCard,detectCentered
  function explain(e){const s=String(e?.message||e||'Errore PDF');if(/encrypted|encrypt|password/i.test(s))return 'Il PDF è cifrato o richiede una password: la modifica non è supportata in sicurezza.';if(/invalid pdf|missing pdf|bad xref|invalid object|corrupt|truncated|end.of.file/i.test(s))return 'PDF illeggibile o danneggiato: prova una copia originale integra.';return s}
  window.DocFixPDFGuard=Object.freeze({inspect,readable,editable,allEditable,explain});
 })();
-</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-auto-quad-consensus.js"></script><script src="./docfix-projected-edges.js"></script><script src="./docfix-single-card-evidence.js"></script><script src="./docfix-neutral-single.js"></script><script src="./docfix-paper-pair.js"></script><script src="./docfix-four-card-order.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
+</script><script></script><script src="./group1-safe-crop.js"></script><script src="./card-physical-edges.js"></script><script src="./card-quad-audit.js"></script><script src="./document-page-guard.js"></script><script src="./card-onepass.js"></script><script src="./card-sideways-pair.js"></script><script src="./card-pair-proof.js"></script><script src="./card-photo-pair.js"></script><script src="./card-stacked-blue-pair.js"></script><script src="./card-guided-split.js"></script><script src="./card-precision-editor.js"></script><script src="./card-auto-quad-consensus.js"></script><script src="./docfix-projected-edges.js"></script><script src="./docfix-neural-edges.js"></script><script src="./docfix-single-card-evidence.js"></script><script src="./docfix-neutral-single.js"></script><script src="./docfix-paper-pair.js"></script><script src="./docfix-four-card-order.js"></script><script src="./card-touching-pair.js"></script><script src="./card-independent-projection.js"></script><script src="./card-blue-orientation.js"></script><script src="./card-texture-crop.js"></script><script src="./card-threeup.js"></script><script src="./card-threeup-polish.js"></script><script src="./card-licence-guard.js"></script><script src="./card-over-paper.js"></script><script src="./card-licence-rear.js"></script><script src="./card-licence-finish.js"></script><script src="./docfix-visual-card.js"></script><script src="./docfix-texture-card.js"></script><script src="./docfix-card-deskew.js"></script><script src="./docfix-fine-deskew.js"></script><script src="./group2-orientation.js"></script><script>/* DocFix Auto — local-only document normalizer. Based on DocFix v39 scanner.
    Conservative edits: uncertain geometry/orientation is surfaced, never silently guessed. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -1144,7 +1144,7 @@ function singleCropGate(original,candidate,kind='generic'){
  }
  return {ok:true,code:'accepted',reason:'Contorno completo riconosciuto',area};
 }
-function photoNormalize(original){
+async function photoNormalize(original){
  const scan=window.DocFixScanner;
  let processed=original,confidence=0,how='Foto completa',review=false,cardLikely=false,sourceQuad=null,precise=false,backLike=false;
  let licenceRear=null,onPaper=null,found=null,kind='generic',selected=null,previewOnly=false;
@@ -1277,6 +1277,18 @@ function photoNormalize(original){
     try{candidate=window.DocFixVisualCard?.detect?.(original)||null;}
     catch(error){errors.push('visual: '+String(error?.message||error));candidate=null;}
    }
+   // Bordi v2: run DocAligner ONCE, strictly from bundled model and WASM.
+   // AI is only a crop suggestion; four-corner manual review remains required.
+   // When no classical candidate exists, a sensible neural perimeter can
+   // still provide an editable preview instead of leaving the full photo.
+   let neural=null;
+   try{
+    neural=await window.DocFixNeuralEdges?.propose?.(original,
+     candidate?.status==='found'&&scan.validQuad(candidate.quad)?candidate.quad:null,
+     {format:'card'})||null;
+    if(neural?.quad&&(!candidate||candidate.status!=='found'||!scan.validQuad(candidate.quad)))
+     candidate={...neural,status:'found',cardLikely:true};
+   }catch(error){errors.push('AI locale: '+String(error?.message||error));}
    if(candidate?.status==='found'&&scan.validQuad(candidate.quad)){
     // Straighten the ORIGINAL source with FOUR colour-supported plastic
     // sides where available. Fallback to the already working 1.9.44 crop
@@ -1293,7 +1305,9 @@ function photoNormalize(original){
     const consensus=!fitted?.quad
      ?(window.DocFixAutoQuadConsensus?.refine?.(original,candidate.quad)
        ||window.DocFixProjectedEdges?.refine?.(original,candidate.quad)||null):null;
-    const finalFit=fitted?.quad?fitted:consensus?.quad?consensus:null;
+    // Keep proven legacy geometry first. ML only refines the provisional
+    // suggestion when other physical-edge methods could not settle it.
+    const finalFit=fitted?.quad?fitted:consensus?.quad?consensus:neural?.quad?neural:null;
     const quad=finalFit?.quad&&scan.validQuad(finalFit.quad)?finalFit.quad:candidate.quad;
     const preview=scan.process(original,{crop:true,quad,
      targetAspect:finalFit?.targetAspect||null,
@@ -1303,7 +1317,9 @@ function photoNormalize(original){
     sourceQuad=quad.map(p=>({...p}));
     confidence=finalFit?.confidence||candidate.confidence||.67;
     cardLikely=true;review=true;previewOnly=true;
-    how=consensus?.quad
+    how=neural?.quad&&!fitted?.quad&&!consensus?.quad
+      ?'AI locale DocAligner: quattro angoli proposti · ANTEPRIMA da verificare · conferma prima del PDF'
+      :consensus?.quad
       ?'Quattro bordi esterni rifiniti con verifica incrociata · ANTEPRIMA da verificare · conferma i 4 angoli prima del PDF'
       :fitted?.quad
       ?(fitted.method==='cie-postcrop-horizontal-edge-deskew'
@@ -1387,7 +1403,7 @@ function preserveFullA4Page(original,force=false){
 async function normalizeRaster(original,{skipPageGuard=false}={}){
  const completePage=skipPageGuard?null:preserveFullA4Page(original);
  if(completePage)return completePage;
- const norm=photoNormalize(original);let processed=norm.processed,rotation=0;
+ const norm=await photoNormalize(original);let processed=norm.processed,rotation=0;
  if(norm.previewOnly){
   const q=qualityAudit(processed,norm.sourceQuad);
   return {processed,rotation:0,review:true,manualPending:true,visualProvisional:true,
@@ -1840,6 +1856,14 @@ function multiCropHealthy(canvas){
 }
 async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSafe=false,cardKind='generic',sourceVerified=false,orientationKnown=false,threeUp=false,forceLandscapeLeft=false,conservativeSegment=false}={}){
  const scan=window.DocFixScanner;
+ // With separate tessere, constrain the neural model to the document ROI.
+ // Do NOT override a perimeter already physically verified by the engine.
+ let neural=null;
+ if(multiSafe&&!sourceVerified&&cropMode()==='smart'){
+  try{neural=await window.DocFixNeuralEdges?.propose?.(original,sourceQuad,{format:'card'})||null;}
+  catch(error){console.warn('DocFix: AI locale su tessera multipla non applicata',error);}
+  if(neural?.quad&&scan.validQuad(neural.quad))sourceQuad=neural.quad;
+ }
  const fine=multiSafe?null:window.DocFixGroup1?.refineQuad?.(original,sourceQuad);
  const baseQuad=multiSafe?sourceQuad:(fine?.refined?fine.quad:sourceQuad);
  let quad=baseQuad.map(p=>({...p})),processed=null,tightened=false,tightMethod='',physicalVerified=!multiSafe;
@@ -1851,7 +1875,8 @@ async function normalizeKnownCard(original,sourceQuad,label,confidence,{multiSaf
   processed=scan.process(original,{crop:true,quad,rotation:0,filter:'original',strength:0},4200);
   physicalVerified=false;
   confidence=Math.min(.75,confidence);
-  tightMethod='due mappe indipendenti · bordi esterni da verificare';
+  tightMethod=neural?.quad?'AI locale offline · bordi esterni da confermare':
+   'due mappe indipendenti · bordi esterni da verificare';
  }else if(multiSafe&&sourceVerified&&cardKind!=='licence'){
   // Verified physical contours on the untouched original: exactly one perspective warp.
   quad=sourceQuad.map(p=>({...p}));
